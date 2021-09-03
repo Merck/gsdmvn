@@ -1,0 +1,137 @@
+---
+title: "Trial design with spending under NPH"
+output:
+  html_vignette
+vignette: >
+  %\VignetteIndexEntry{Trial design with spending under NPH}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  dev = "png", 
+  dev.args= list(type = "cairo")
+)
+library(gsdmvn)
+library(dplyr)
+library(tibble)
+```
+
+
+## Overview
+
+This vignette covers how to implement designs for trials with spending assuming non-proportional hazards.
+We are primarily concerned with practical issues of implementation rather than design strategies, but we will not ignore design strategy.
+
+## Scenario for consideration
+
+Here we set up enrollment, failure and dropout rates along with assumptions for enrollment duration and times of analyses.
+
+
+```{r}
+analysisTimes <- c(18, 24, 30, 36)
+enrollRates <- tibble::tibble(Stratum = "All",
+                              duration = c(2, 2, 2, 6),
+                              rate = c(8, 12, 16, 24))
+failRates <- tibble::tibble(Stratum = "All",
+                            duration=c(3,100),
+                            failRate=log(2)/c(8,14),
+                            hr=c(.9,.6),
+                            dropoutRate=.001
+                           )
+```
+
+## Deriving power for a given sample size
+
+We derive statistical information at targeted analysis times.
+
+```{r}
+library(gsDesign)
+library(gsDesign2)
+xx <- gsDesign2::AHR(enrollRates = enrollRates, failRates = failRates, totalDuration = analysisTimes)
+Events <- ceiling(xx$Events)
+yy <- gs_info_ahr(enrollRates = enrollRates, failRates = failRates, events = Events)
+```
+
+Now we can examine power using `gs_power_npe()`:
+
+```{r}
+timing <- yy$info0/max(yy$info0)
+d <- gsDesign::gsDesign(k=length(timing), test.type=2, sfu= sfLDOF, alpha = .025, timing = timing)
+zz <- gs_power_npe(theta = yy$theta, info = yy$info, info0 = yy$info0, 
+             upper = gs_b, lower = gs_b,
+             upar = d$upper$bound,
+             lpar = d$lower$bound
+)
+zz
+```
+
+
+## Deriving sample size to power a trial
+
+If we were using a fixed design, we would approximate the sample size as follows:
+
+```{r}
+K <- 4
+minx <- ((qnorm(.025) / sqrt(zz$info0[K]) + qnorm(.1) / sqrt(zz$info[K])) / zz$theta[K])^2
+minx
+```
+
+If we inflate the enrollment rates by `minx` and use a fixed design, we will see this achieves the targeted power.
+
+```{r}
+gs_power_npe(theta = yy$theta[K], info = yy$info[K] * minx, info0 = yy$info0[K] * minx, 
+             upar = qnorm(.975), lpar = -Inf) %>% 
+  filter(Bound == "Upper")
+```
+
+The power for a group sequential design with the same final sample size is a bit lower:
+
+```{r}
+zz <- gs_power_npe(theta = yy$theta, info = yy$info * minx, info0 = yy$info0 * minx, 
+             upper = gs_spending_bound, lower = gs_spending_bound,
+             upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+             lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)
+)
+zz
+```
+
+If we inflate this a bit we will be overpowered.
+
+```{r}
+zz <- gs_power_npe(theta = yy$theta, info = yy$info * minx * 1.2, info0 = yy$info0 * minx * 1.2, 
+             upper = gs_spending_bound, lower = gs_spending_bound,
+             upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+             lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)
+)
+zz
+```
+
+Now we use `gs_design_npe()` to inflate the information proportionately to power the trial.
+
+```{r}
+theta <- yy$theta
+info <- yy$info
+info0 <- yy$info0
+upper = gs_spending_bound
+lower = gs_spending_bound
+upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)
+lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)
+alpha = .025
+beta = .1
+binding = FALSE
+test_upper = TRUE
+test_lower = TRUE
+r = 18
+tol = 1e-06
+
+zz <- gs_design_npe(theta = yy$theta, info = yy$info, info0 = yy$info0, 
+             upper = gs_spending_bound, lower = gs_spending_bound,
+             upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+             lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)
+)
+zz
+```

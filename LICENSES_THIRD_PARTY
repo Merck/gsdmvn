@@ -1,0 +1,25 @@
+gsdmvn uses third-party R packages which may be distributed under different
+licenses. We have listed all of these third party packages and their licenses
+below. However, the most up-to-date information can be found via inspecting
+the Imports field in the DESCRIPTION file.
+
+You must agree to the terms of these licenses, in addition to the gsdmvn
+source code license, in order to use this software.
+
+--------------------------------------------------
+Third party R packages listed by License type
+[Format: Name - URL]
+--------------------------------------------------
+
+MIT / X11 License (or adaptations) (https://www.opensource.org/licenses/MIT)
+  * dplyr - https://dplyr.tidyverse.org/LICENSE.html
+  * tibble - https://tibble.tidyverse.org/LICENSE.html
+
+GPL-2 | GPL-3 [expanded from: GPL (>=2)]
+  * gsDesign - https://cran.r-project.org/web/licenses/GPL-3
+  * gsDesign2 - https://www.r-project.org/Licenses/GPL-3
+  * npsurvSS - https://cran.r-project.org/web/licenses/GPL-2
+  * corpcor - https://cran.r-project.org/web/licenses/GPL-3
+  * utils - https://cran.r-project.org/web/licenses/LGPL-3
+  * mvtnorm - https://cran.r-project.org/web/licenses/GPL-2
+
