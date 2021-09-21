@@ -57,6 +57,8 @@ NULL
 #' \code{info0} information under null hypothesis with same expected total events under alternate hypothesis, and
 #' \code{N} expected enrollment at time of analysis.
 #' @examples
+#' library(dplyr)
+#' 
 #' # Design
 #' library(dplyr)
 #' 

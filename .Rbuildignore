@@ -14,7 +14,7 @@
 ^\.gitignore$
 ^\.DS_Store$
 ^\.git\$
-^LICENSES$
+^LICENSE$
 ^LICENSES_THIRD_PARTY$
 ^Meta$
 ^jenkins$
@@ -24,4 +24,4 @@
 ^library$
 ^data-raw$
 ^\.github$
-
+^simulation$

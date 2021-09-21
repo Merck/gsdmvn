@@ -24,7 +24,9 @@ Suggests:
     devtools,
     simtrial,
     kableExtra,
-    gt
+    gt,
+    ggplot2,
+    tidyr
 RoxygenNote: 7.1.1
 VignetteBuilder: knitr
 Remotes: 

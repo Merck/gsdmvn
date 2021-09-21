@@ -102,7 +102,8 @@ NULL
 #' lpar = rep(-Inf, 3)) %>% filter(Bound=="Upper")
 #'
 #' # Fixed bound with futility only at analysis 1; efficacy only at analyses 2, 3
-#' gs_power_npe(theta = c(.1, .2, .3), info = (1:3) * 40, upar = c(Inf, 3, 2), lpar = c(qnorm(.1), -Inf, -Inf))
+#' gs_power_npe(theta = c(.1, .2, .3), info = (1:3) * 40, 
+#'              upar = c(Inf, 3, 2), lpar = c(qnorm(.1), -Inf, -Inf))
 #'
 #' # Spending function bounds
 #' # Lower spending based on non-zero effect

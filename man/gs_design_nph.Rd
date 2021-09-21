@@ -70,6 +70,8 @@ and enrollment pattern
 where the enrollment, failure and dropout rates changes over time.
 }
 \examples{
+library(dplyr)
+
 # Design
 library(dplyr)
 
