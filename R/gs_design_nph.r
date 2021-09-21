@@ -60,6 +60,8 @@ NULL
 #' library(dplyr)
 #' 
 #' # Design
+#' library(dplyr)
+#' 
 #' x <- gs_design_nph()
 #' # Notice cumulative power is 0.9 (90%)
 #' x

@@ -45,6 +45,7 @@ NULL
 #' @export
 #'
 #' @examples
+#' library(dplyr)
 #' # Replicate variance of 1, mean of 35
 #' h1(theta = 5, I = 49) %>% summarise(mu = sum(z * h), var = sum((z - mu)^2 * h))
 #'

@@ -45,6 +45,7 @@ NULL
 #' and a normal density with mean \code{mu = theta * sqrt{I}} and variance 1 times the weight in \code{w}.
 #'
 #' @examples
+#' library(dplyr)
 #' # 2nd analysis with no interim bound and drift 0 should have mean 0, variance 1
 #' hupdate() %>% summarise(mu = sum(z * h), var = sum((z - mu)^2 * h))
 #' @export

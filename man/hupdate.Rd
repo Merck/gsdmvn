@@ -53,6 +53,7 @@ Update grid points for numerical integration from one analysis to the next
 }
 
 \examples{
+library(dplyr)
 # 2nd analysis with no interim bound and drift 0 should have mean 0, variance 1
 hupdate() \%>\% summarise(mu = sum(z * h), var = sum((z - mu)^2 * h))
 }

@@ -71,6 +71,8 @@ where the enrollment, failure and dropout rates changes over time.
 }
 \examples{
 # Design
+library(dplyr)
+
 x <- gs_design_nph()
 # Notice cumulative power is 0.9 (90\%)
 x

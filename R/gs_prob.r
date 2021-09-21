@@ -38,6 +38,7 @@ NULL
 #' @details
 #' Approximation for \code{theta} is based on Wald test and assumes the observed information is equal to the expected.
 #' @examples
+#' library(dplyr)
 #' # Asymmetric 2-sided design
 #' gs_prob(theta = 0, upar = rep(2.2, 3), lpar = rep(0, 3), 
 #'         upper=gs_b, lower=gs_b,  info = 1:3)
