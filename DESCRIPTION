@@ -30,4 +30,3 @@ VignetteBuilder: knitr
 Remotes: 
     Merck/simtrial,
     Merck/gsDesign2
-    
