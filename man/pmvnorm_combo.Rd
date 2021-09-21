@@ -27,7 +27,7 @@ pmvnorm_combo(
 
 \item{algorithm}{ an object of class \code{\link[mvtnorm]{GenzBretz}},
                     \code{\link[mvtnorm]{Miwa}} or \code{\link[mvtnorm]{TVPACK}}
-                    specifying both the algorithm to be used as well as 
+                    specifying both the algorithm to be used as well as
                     the associated hyper parameters.}
 
 \item{...}{additional parameters transfer to `mvtnorm::pmvnorm`}
