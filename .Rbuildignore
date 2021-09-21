@@ -22,3 +22,4 @@
 ^tests/testthat/_snaps$
 ^library$
 ^data-raw$
+^\.github$

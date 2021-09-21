@@ -1,4 +1,8 @@
-
+<!-- badges: start -->
+  [![R-CMD-check](https://github.com/Merck/gsdmvn/workflows/R-CMD-check/badge.svg)](https://github.com/Merck/gsdmvn/actions)
+  [![Codecov test coverage](https://codecov.io/gh/Merck/gsdmvn/branch/master/graph/badge.svg)](https://codecov.io/gh/Merck/gsdmvn?branch=master)
+<!-- badges: end -->
+  
 The goal of **gsdmvn** is to enable fixed or group sequential design
 under non-proportional hazards. Piecewise constant enrollment, failure
 rates and dropout rates for a stratified population are available to
