@@ -94,7 +94,7 @@ NULL
 #' @examples
 #'
 #' library(gsDesign)
-#'
+#' library(dplyr)
 #' # Single analysis
 #' # Lachin book p 71 difference of proportions example
 #' pc <- .28 # Control response rate
