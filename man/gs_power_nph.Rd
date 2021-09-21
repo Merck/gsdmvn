@@ -69,5 +69,6 @@ Need to be added
 \examples{
 library(gsDesign)
 library(gsDesign2)
+library(dplyr)
 gs_power_nph() \%>\% filter(abs(Z) < Inf)
 }

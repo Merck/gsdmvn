@@ -60,6 +60,8 @@ NULL
 #'
 #' @examples
 #' library(gsDesign2)
+#' library(dplyr)
+#' 
 #' gs_power_ahr() %>% filter(abs(Z) < Inf)
 #'
 #' # 2-sided symmetric O'Brien-Fleming spending bound

@@ -86,6 +86,8 @@ NULL
 #' @examples
 #'
 #' library(gsDesign)
+#' library(dplyr)
+#' 
 #' # Default (single analysis; Type I error controlled)
 #' gs_power_npe(theta=0) %>% filter(Bound=="Upper")
 #'

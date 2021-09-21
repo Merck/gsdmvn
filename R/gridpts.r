@@ -57,7 +57,6 @@ NULL
 #' library(dplyr)
 #'
 #' # approximate variance of standard normal (i.e., 1)
-#' library(dplyr)
 #' gridpts() %>% summarise(var = sum(z^2 * w * dnorm(z)))
 #'
 #' # approximate probability above .95 quantile (i.e., .05)

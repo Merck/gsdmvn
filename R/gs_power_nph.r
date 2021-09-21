@@ -51,6 +51,7 @@ NULL
 #' @examples
 #' library(gsDesign)
 #' library(gsDesign2)
+#' library(dplyr)
 #' gs_power_nph() %>% filter(abs(Z) < Inf)
 gs_power_nph <- function(enrollRates=tibble::tibble(Stratum="All",
                                                   duration=c(2,2,10),
