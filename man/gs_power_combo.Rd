@@ -68,6 +68,7 @@ Group sequential design power using MaxCombo test under non-proportional hazards
 \examples{
 library(dplyr)
 library(mvtnorm)
+library(gsDesign)
 
 enrollRates <- tibble::tibble(Stratum = "All", duration = 12, rate = 500/12)
 

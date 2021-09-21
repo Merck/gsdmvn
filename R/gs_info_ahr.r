@@ -55,6 +55,7 @@ NULL
 #' @examples
 #' library(gsDesign)
 #' library(gsDesign2)
+#' 
 #' # Only put in targeted events
 #' gs_info_ahr(events = c(30, 40, 50))
 #' # Only put in targeted analysis times

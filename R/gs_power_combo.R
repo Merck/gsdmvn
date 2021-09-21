@@ -23,7 +23,8 @@
 #' @examples
 #' library(dplyr)
 #' library(mvtnorm)
-#'
+#' library(gsDesign)
+#' 
 #' enrollRates <- tibble::tibble(Stratum = "All", duration = 12, rate = 500/12)
 #'
 #' failRates <- tibble::tibble(Stratum = "All",

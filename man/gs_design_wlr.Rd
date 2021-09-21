@@ -99,6 +99,7 @@ Group sequential design using weighted log-rank test under non-proportional haza
 \examples{
 library(dplyr)
 library(mvtnorm)
+library(gsDesign)
 
 enrollRates <- tibble::tibble(Stratum = "All", duration = 12, rate = 500/12)
 
