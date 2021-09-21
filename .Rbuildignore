@@ -2,7 +2,6 @@
 ^\.Rproj\.user$
 ^_pkgdown\.yml$
 ^pkgdown$
-^inst/pkgdown$
 ^docs$
 ^pkgdown$
 ^.*\.groovy$
