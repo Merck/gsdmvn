@@ -25,3 +25,6 @@ Suggests:
     simtrial
 RoxygenNote: 7.1.1
 VignetteBuilder: knitr
+Remotes: 
+    Merck/simtrial,
+    Merck/gsDesign2
