@@ -23,7 +23,8 @@ Suggests:
     purrr,
     devtools,
     simtrial,
-    kableExtra
+    kableExtra,
+    gt
 RoxygenNote: 7.1.1
 VignetteBuilder: knitr
 Remotes: 
