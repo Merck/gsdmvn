@@ -1,0 +1,13 @@
+pandoc: 2.7.3
+pkgdown: 1.6.1
+pkgdown_sha: ~
+articles:
+  DesignWithAverageHazardRatio: DesignWithAverageHazardRatio.html
+  DesignWithSpending: DesignWithSpending.html
+  NPEbackground: NPEbackground.html
+  NPEbounds: NPEbounds.html
+  PowerEvaluationWithSpending: PowerEvaluationWithSpending.html
+  QuickStart: QuickStart.html
+  SpendingTimeExamples: SpendingTimeExamples.html
+last_built: 2021-09-21T17:54Z
+
