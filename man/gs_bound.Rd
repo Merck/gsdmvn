@@ -35,7 +35,7 @@ gs_bound(
 
 \item{algorithm}{ an object of class \code{\link[mvtnorm]{GenzBretz}},
                     \code{\link[mvtnorm]{Miwa}} or \code{\link[mvtnorm]{TVPACK}}
-                    specifying both the algorithm to be used as well as 
+                    specifying both the algorithm to be used as well as
                     the associated hyper parameters.}
 
 \item{alpha_bound}{logical value to indicate if alpha is Type I error or upper bound. Default is FALSE.}
