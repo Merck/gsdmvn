@@ -808,16 +808,16 @@
 <span class="co">#&gt; # A tibble: 1 × 3</span>
 <span class="co">#&gt;    nsim `Early futility (%)` `Power (%)`</span>
 <span class="co">#&gt;   &lt;int&gt;                &lt;dbl&gt;       &lt;dbl&gt;</span>
-<span class="co">#&gt; 1   200                    3          86</span></code></pre></div>
+<span class="co">#&gt; 1   200                  3.5        90.5</span></code></pre></div>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">xx</span> <span class="op">&lt;-</span> <span class="va">trialsum</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>Positive <span class="op">=</span> <span class="op">(</span><span class="va">Z</span> <span class="op">&gt;=</span> <span class="va">upper</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span><span class="op">(</span><span class="va">xx</span><span class="op">$</span><span class="va">k</span>, <span class="va">xx</span><span class="op">$</span><span class="va">Positive</span><span class="op">)</span>
 <span class="co">#&gt;    </span>
 <span class="co">#&gt;     FALSE TRUE</span>
-<span class="co">#&gt;   1     6    0</span>
-<span class="co">#&gt;   2     0   11</span>
-<span class="co">#&gt;   3     0   96</span>
-<span class="co">#&gt;   4    22   65</span></code></pre></div>
+<span class="co">#&gt;   1     5    0</span>
+<span class="co">#&gt;   2     2    9</span>
+<span class="co">#&gt;   3     0   90</span>
+<span class="co">#&gt;   4    12   82</span></code></pre></div>
 </div>
 <div id="differences-from-gsdesign" class="section level1">
 <h1 class="hasAnchor">
