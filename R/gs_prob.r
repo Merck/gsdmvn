@@ -39,9 +39,11 @@ NULL
 #' Approximation for \code{theta} is based on Wald test and assumes the observed information is equal to the expected.
 #' @examples
 #' # Asymmetric 2-sided design
-#' gs_prob(theta = 0, upar = rep(2.2, 3), lpar = rep(0, 3), upper=gs_b, lower=gs_b,  info = 1:3)
+#' gs_prob(theta = 0, upar = rep(2.2, 3), lpar = rep(0, 3), 
+#'         upper=gs_b, lower=gs_b,  info = 1:3)
 #' # One-sided design
-#' x <- gs_prob(theta = 0, upar = rep(2.2, 3), lpar = rep(-Inf, 3), upper=gs_b, lower=gs_b,  info = 1:3)
+#' x <- gs_prob(theta = 0, upar = rep(2.2, 3), lpar = rep(-Inf, 3), 
+#'              upper=gs_b, lower=gs_b,  info = 1:3)
 #' # Without filtering, this shows unneeded lower bound
 #' x
 #' # Filter to just show bounds intended for use

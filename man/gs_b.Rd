@@ -53,5 +53,7 @@ gs_b(4:2, k = 2)
 # as 50\%, 75\% and 100\% of final spending
 # Information fraction
 IF <- c(.5, .75, 1)
-gs_b(par = gsDesign::gsDesign(alpha = .025, k= length(IF), test.type = 1, sfu = gsDesign::sfLDOF, timing = IF)$upper$bound)
+gs_b(par = gsDesign::gsDesign(alpha = .025, k= length(IF), 
+     test.type = 1, sfu = gsDesign::sfLDOF, 
+     timing = IF)$upper$bound)
 }

@@ -57,7 +57,9 @@
 #' # User defined boundary
 #' gs_design_wlr(enrollRates = enrollRates, failRates = failRates,
 #'              ratio = 1, alpha = 0.025, beta = 0.2,
-#'              weight = function(x, arm0, arm1){gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5)},
+#'              weight = function(x, arm0, arm1){
+#'                  gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5)
+#'              },
 #'              upar = x$upper$bound,
 #'              lpar = x$lower$bound,
 #'              analysisTimes = c(12, 24, 36))
@@ -65,7 +67,9 @@
 #' # Boundary derived by spending function
 #' gs_design_wlr(enrollRates = enrollRates, failRates = failRates,
 #'              ratio = 1, alpha = 0.025, beta = 0.2,
-#'              weight = function(x, arm0, arm1){gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5)},
+#'              weight = function(x, arm0, arm1){
+#'                   gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5)
+#'              },
 #'              upper = gs_spending_bound,
 #'              upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
 #'              lower = gs_spending_bound,

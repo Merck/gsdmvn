@@ -96,9 +96,11 @@ NULL
 #' gs_design_ahr(analysisTimes = c(12, 24, 36),
 #'               binding = TRUE,
 #'               upper = gs_spending_bound,
-#'               upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+#'               upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, 
+#'                           param = NULL, timing = NULL),
 #'               lower = gs_spending_bound,
-#'               lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+#'               lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, 
+#'                           param = NULL, timing = NULL),
 #'               h1_spending = FALSE)
 #'
 #' # 2-sided asymmetric design with O'Brien-Fleming upper spending
@@ -106,9 +108,11 @@ NULL
 #' gs_design_ahr(analysisTimes = c(12, 24, 36),
 #'               binding = TRUE,
 #'               upper = gs_spending_bound,
-#'               upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+#'               upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, 
+#'                           param = NULL, timing = NULL),
 #'               lower = gs_spending_bound,
-#'               lpar = list(sf = gsDesign::sfLDPocock, total_spend = 0.1, param = NULL, timing = NULL),
+#'               lpar = list(sf = gsDesign::sfLDPocock, total_spend = 0.1, 
+#'                           param = NULL, timing = NULL),
 #'               h1_spending = TRUE)
 gs_design_ahr <- function(enrollRates=tibble::tibble(Stratum="All",
                                                      duration=c(2,2,10),

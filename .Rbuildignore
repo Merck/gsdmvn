@@ -14,12 +14,12 @@
 ^\.gitignore$
 ^\.DS_Store$
 ^\.git\$
+^LICENSES$
 ^LICENSES_THIRD_PARTY$
 ^Meta$
 ^jenkins$
 ^jobs-configuration.groovy$
 ^codecov\.yml$
-^vignettes$
 ^tests/testthat/_snaps$
 ^library$
 ^data-raw$

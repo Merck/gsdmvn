@@ -132,16 +132,20 @@ gs_design_npe(theta = pe - pc, info = info1, info0 = info0)$info[1] / info1
 
 # Fixed bound
 design <-
-gs_design_npe(theta = c(.1, .2, .3), info = (1:3) * 80, info0 = (1:3) * 80, info1 = (1:3) * 80,
+gs_design_npe(theta = c(.1, .2, .3), info = (1:3) * 80, 
+              info0 = (1:3) * 80, info1 = (1:3) * 80,
               upper = gs_b, upar = gsDesign::gsDesign(k=3,sfu=gsDesign::sfLDOF)$upper$bound,
               lower = gs_b, lpar = c(-1, 0, 0))
 design
 
 # Same fixed bounds, null hypothesis
-gs_power_npe(theta = rep(0,3), info = design$info0[1:3], upar = design$Z[1:3], lpar = design$Z[4:6])
+gs_power_npe(theta = rep(0,3), info = design$info0[1:3], 
+            upar = design$Z[1:3], lpar = design$Z[4:6])
 
 # Same upper bound; this represents non-binding Type I error and will total 0.025
-gs_power_npe(theta = rep(0,3), info = design$info0[1:3], upar = design$Z[1:3], lpar = rep(-Inf,3)) \%>\% filter(Bound=="Upper")
+gs_power_npe(theta = rep(0,3), info = design$info0[1:3], 
+             upar = design$Z[1:3], lpar = rep(-Inf,3)) \%>\% 
+  filter(Bound=="Upper")
 
 # Spending bound examples
 
@@ -152,7 +156,8 @@ gs_power_npe(theta = rep(0,3), info = design$info0[1:3], upar = design$Z[1:3], l
 design <-
 gs_design_npe(theta = c(.1, .2, .3), info = (1:3) * 40, info0 = (1:3) * 40,
               upper = gs_spending_bound,
-              upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, 
+                          param = NULL, timing = NULL),
               lower = gs_b, lpar = c(-1, -Inf, -Inf),
               test_upper = c(FALSE, TRUE, TRUE))
 design
@@ -162,18 +167,22 @@ design
 # Lower spending based on non-zero effect
 gs_design_npe(theta = c(.1, .2, .3), info = (1:3) * 40,
              upper = gs_spending_bound,
-             upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+             upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, 
+                         param = NULL, timing = NULL),
              lower = gs_spending_bound,
-             lpar = list(sf = gsDesign::sfHSD, total_spend = 0.1, param = -1, timing = NULL))
+             lpar = list(sf = gsDesign::sfHSD, total_spend = 0.1, 
+                         param = -1, timing = NULL))
 
 # Two-sided symmetric spend, O'Brien-Fleming spending
 # Typically, 2-sided bounds are binding
 xx <- gs_design_npe(theta = c(.1, .2, .3), theta1 = rep(0, 3), info = (1:3) * 40,
                     binding = TRUE,
                     upper = gs_spending_bound,
-                    upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+                    upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, 
+                                param = NULL, timing = NULL),
                     lower = gs_spending_bound,
-                    lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL))
+                    lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, 
+                                param = NULL, timing = NULL))
 xx
 
 # Re-use these bounds under alternate hypothesis
