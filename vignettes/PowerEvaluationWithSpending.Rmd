@@ -13,9 +13,7 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>",
-  dev = "png", 
-  dev.args= list(type = "cairo")
+  comment = "#>"
 )
 library(gsdmvn)
 ```
