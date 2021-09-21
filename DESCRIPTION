@@ -22,7 +22,8 @@ Suggests:
     rmarkdown,
     purrr,
     devtools,
-    simtrial
+    simtrial,
+    kableExtra
 RoxygenNote: 7.1.1
 VignetteBuilder: knitr
 Remotes: 

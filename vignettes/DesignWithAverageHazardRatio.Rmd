@@ -9,7 +9,7 @@ output:
     toc_depth: 2
 bibliography: gsDesign.bib
 vignette: >
-  %\VignetteIndexEntry{Trial design with spending under NPH}
+  %\VignetteIndexEntry{Design Using Average Hazard Ratio}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 ---

@@ -21,6 +21,10 @@ knitr::opts_chunk$set(
   dev = "png", 
   dev.args= list(type = "cairo")
 )
+library(tibble)
+library(dplyr)
+library(knitr)
+library(gsdmvn)
 ```
 
 # Overview
@@ -98,9 +102,6 @@ It can be useful to think of $B_k$ as a sum of independent random variables.
 ## Summary of E-, Z- and B-processes
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
-library(tibble)
-library(dplyr)
-library(knitr)
 mt <- tibble::tribble(~Statistic,    ~Example,   ~"Expected value", ~Variance,
   "$\\hat\\theta_k$", "$\\bar X_k$", "$\\theta(t_k)$",  "$\\mathcal{I}_k^{-1}$",
   "$Z_k=\\sqrt{\\mathcal{I}_k}\\hat\\theta_k$","$\\sqrt{n_k}\\bar X_k$", "$\\sqrt{\\mathcal{I}_k}\\theta(t_k)$",  "$1$",
@@ -299,7 +300,6 @@ The columns in the resulting table are
     - `h` - weights `w` times the normal density that can be used for numerical integration; we will demonstrate use below 
 
 ```{r}
-library(gsdmvn)
 # Set up grid over continuation region
 # Null hypothesis
 grid1_0 <- h1(theta = 0, I = info[1], a = a1, b = b1)

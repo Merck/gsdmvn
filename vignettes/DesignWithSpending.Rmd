@@ -18,6 +18,8 @@ knitr::opts_chunk$set(
 library(gsdmvn)
 library(dplyr)
 library(tibble)
+library(gsDesign)
+library(gsDesign2)
 ```
 
 
@@ -49,8 +51,6 @@ failRates <- tibble::tibble(Stratum = "All",
 We derive statistical information at targeted analysis times.
 
 ```{r}
-library(gsDesign)
-library(gsDesign2)
 xx <- gsDesign2::AHR(enrollRates = enrollRates, failRates = failRates, totalDuration = analysisTimes)
 Events <- ceiling(xx$Events)
 yy <- gs_info_ahr(enrollRates = enrollRates, failRates = failRates, events = Events)
