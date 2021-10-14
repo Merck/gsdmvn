@@ -1,8 +1,15 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+# gsdmvn
+
 <!-- badges: start -->
-  [![R-CMD-check](https://github.com/Merck/gsdmvn/workflows/R-CMD-check/badge.svg)](https://github.com/Merck/gsdmvn/actions)
-  [![Codecov test coverage](https://codecov.io/gh/Merck/gsdmvn/branch/master/graph/badge.svg)](https://codecov.io/gh/Merck/gsdmvn?branch=master)
+
+[![R-CMD-check](https://github.com/Merck/gsdmvn/workflows/R-CMD-check/badge.svg)](https://github.com/Merck/gsdmvn/actions)
+[![Codecov test
+coverage](https://codecov.io/gh/Merck/gsdmvn/branch/master/graph/badge.svg)](https://codecov.io/gh/Merck/gsdmvn?branch=master)
 <!-- badges: end -->
-  
+
 The goal of **gsdmvn** is to enable fixed or group sequential design
 under non-proportional hazards. Piecewise constant enrollment, failure
 rates and dropout rates for a stratified population are available to
@@ -13,12 +20,11 @@ progress, substantial capabilities have been enabled. Comments on
 usability and features are encouraged as this is a development version
 of the package.
 
-# gsdmvn
-
 The goal of gsdmvn is to enable group sequential trial design for
 time-to-event endpoints under non-proportional hazards assumptions. The
 package is still maturing; as the package functions become more stable,
-they will likely be included in the **gsDesign2** package.
+they will likely be included in the
+[gsDesign2](https://github.com/Merck/gsDesign2) package.
 
 ## Installation
 
@@ -43,6 +49,7 @@ library(gsDesign)
 library(gsDesign2)
 library(dplyr)
 library(knitr)
+
 ## basic example code
 
 ## Constant enrollment over 12 months
@@ -53,11 +60,13 @@ enrollRates <- tibble::tibble(Stratum = "All", duration = 12, rate = 1)
 ## 4 month delay in effect with HR=0.6 after
 ## Low exponential dropout rate
 medianSurv <- 12
-failRates = tibble::tibble(Stratum = "All",
-                           duration = c(4, Inf),
-                           failRate = log(2) / medianSurv,
-                           hr = c(1, .6),
-                           dropoutRate = .001)
+failRates <- tibble::tibble(
+  Stratum = "All",
+  duration = c(4, Inf),
+  failRate = log(2) / medianSurv,
+  hr = c(1, .6),
+  dropoutRate = .001
+)
 ```
 
 The resulting failure rate specification is the following table. As many
@@ -80,8 +89,8 @@ p-value bound of 0.025 with `upar = qnorm(0.975)`. There is no lower
 bound which is specified with `lpar = -Inf`.
 
 ``` r
-design <- 
-gs_design_ahr(enrollRates, failRates, upar = qnorm(.975), lpar = -Inf, IF = 1, analysisTimes = 36)
+design <-
+  gs_design_ahr(enrollRates, failRates, upar = qnorm(.975), lpar = -Inf, IF = 1, analysisTimes = 36)
 ```
 
 The input enrollment rates are scaled to achieve power:

@@ -1,22 +1,26 @@
 Package: gsdmvn
-Type: Package
 Title: Group sequential design with non-constant effect
 Version: 0.1.1.9000
-Author: Keaven Anderson
-Maintainer: Keaven Anderson <keaven_anderson@merck.com>
+Authors@R: c(
+    person("Keaven", "Anderson", email = "keaven_anderson@merck.com", role = c("aut", "cre")),
+    person("Merck Sharp & Dohme Corp", role = "cph")
+    )
 Description: Basic group sequential design computations extended.
 License: GPL-3
+URL: https://merck.github.io/gsdmvn/, https://github.com/Merck/gsdmvn
+BugReports: https://github.com/Merck/gsdmvn/issues
 Encoding: UTF-8
-LazyData: true
-Imports: gsDesign, 
-         gsDesign2,
-         dplyr,
-         tibble,
-         npsurvSS,
-         corpcor,
-         utils,
-         mvtnorm
-Suggests: 
+VignetteBuilder: knitr
+Imports:
+    gsDesign,
+    gsDesign2,
+    dplyr,
+    tibble,
+    npsurvSS,
+    corpcor,
+    utils,
+    mvtnorm
+Suggests:
     testthat,
     knitr,
     rmarkdown,
@@ -27,8 +31,7 @@ Suggests:
     gt,
     ggplot2,
     tidyr
-RoxygenNote: 7.1.1
-VignetteBuilder: knitr
 Remotes: 
     Merck/simtrial,
     Merck/gsDesign2
+RoxygenNote: 7.1.2
