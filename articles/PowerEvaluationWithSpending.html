@@ -81,7 +81,14 @@
   <a href="../news/index.html">Changelog</a>
 </li>
       </ul>
-<ul class="nav navbar-nav navbar-right"></ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+  <a href="https://github.com/Merck/gsdmvn/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
 </div>
 <!--/.nav-collapse -->
   </div>
@@ -98,7 +105,7 @@
             <h3 class="subtitle">Binomial Trial Example</h3>
             
       
-      
+      <small class="dont-index">Source: <a href="https://github.com/Merck/gsdmvn/blob/master/vignettes/PowerEvaluationWithSpending.Rmd"><code>vignettes/PowerEvaluationWithSpending.Rmd</code></a></small>
       <div class="hidden name"><code>PowerEvaluationWithSpending.Rmd</code></div>
 
     </div>
@@ -115,7 +122,7 @@
 <a href="#scenario-for-consideration" class="anchor"></a>Scenario for consideration</h2>
 <p>We consider a scenario largely based on the CAPTURE study <span class="citation">Investigators and others (1997)</span> where the primary endpoint was a composite of death, acute myocardial infarction or the need for recurrent percutaneous intervention within 30 days of randomization. That is, we consider a 2-arm trial with an experimental arm and a control arm. The primary endpoint for the trial is a binary indicator for each participant if they have a failed outcome. For this case, we consider the parameter <span class="math inline">\(\theta = p_1 - p _2\)</span> where <span class="math inline">\(p_1\)</span> denotes the probability that a trial participant in the control group experiences a failure and <span class="math inline">\(p_2\)</span> represents the same probability for a trial participant in the experimental group. We will assume <span class="math inline">\(K=3\)</span> analyses after 350, 700, and 1400 patients have been observed with equal randomization between the treatment groups. The study was designed with approximately 80% power (Type II error <span class="math inline">\(\beta = 1 - 0.8 = 0.2\)</span>) and 2.5% one-sided Type I error (<span class="math inline">\(\alpha = 0.025\)</span>) to detect a reduction from a 15% event rate (<span class="math inline">\(p_1 = 0.15\)</span>) in the control group to 10% (<span class="math inline">\(p_2 = 0.1\)</span>) in the experimental group. The parameter of interest is <span class="math inline">\(\theta = p_1 - p_2\)</span>. We denote the alternate hypothesis as <span class="math display">\[H_1: \theta = \theta_1= p_1^1 - p_2^1 = 0.15 - 0.10 = 0.05\]</span> and the null hypothesis <span class="math display">\[H_0: \theta = \theta_0 = 0 = p_1^0 - p_2^0\]</span> where <span class="math inline">\(p^0_1 = p^0_2= (p_1^1+p_2^1)/2 = 0.125\)</span> as laid out in <span class="citation">Lachin (2009)</span>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">gsdmvn</span><span class="op">)</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://merck.github.io/gsdmvn/">gsdmvn</a></span><span class="op">)</span>
 <span class="va">p0</span> <span class="op">&lt;-</span> <span class="fl">0.15</span> <span class="co"># assumed failure rate in control group</span>
 <span class="va">p1</span> <span class="op">&lt;-</span> <span class="fl">0.10</span> <span class="co"># assumed failure rate in experimental group</span>
 <span class="va">alpha</span> <span class="op">&lt;-</span> <span class="fl">0.025</span> <span class="co"># Design Type I error</span>
