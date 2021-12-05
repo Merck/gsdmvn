@@ -1,5 +1,5 @@
 pandoc: 2.7.3
-pkgdown: 1.6.1
+pkgdown: 2.0.1
 pkgdown_sha: ~
 articles:
   DesignWithAverageHazardRatio: DesignWithAverageHazardRatio.html
@@ -9,5 +9,8 @@ articles:
   PowerEvaluationWithSpending: PowerEvaluationWithSpending.html
   QuickStart: QuickStart.html
   SpendingTimeExamples: SpendingTimeExamples.html
-last_built: 2021-10-14T16:55Z
+last_built: 2021-12-05T02:34Z
+urls:
+  reference: https://merck.github.io/gsdmvn/reference
+  article: https://merck.github.io/gsdmvn/articles
 

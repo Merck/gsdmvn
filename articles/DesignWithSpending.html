@@ -4,14 +4,14 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="description" content="gsdmvn">
 <title>Trial design with spending under NPH • gsdmvn</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
-<script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="../deps/bootstrap-5.1.0/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.1.0/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
+<!-- bootstrap-toc --><script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
 <meta property="og:title" content="Trial design with spending under NPH">
 <meta property="og:description" content="gsdmvn">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
@@ -19,205 +19,177 @@
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
 </head>
-<body data-spy="scroll" data-target="#toc">
-    <div class="container template-article">
-      <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
-  <div class="container">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">gsdmvn</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.1.9000</span>
-      </span>
-    </div>
+<body>
+    <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
+    
 
-    <div id="navbar" class="navbar-collapse collapse">
-      <ul class="nav navbar-nav">
-<li>
-  <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
+    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
+    
+    <a class="navbar-brand me-2" href="../index.html">gsdmvn</a>
+
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1.9000</small>
+
+    
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div id="navbar" class="collapse navbar-collapse ms-2">
+      <ul class="navbar-nav me-auto">
+<li class="nav-item">
+  <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
-<li>
-  <a href="../reference/index.html">Reference</a>
-</li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    Articles
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
-<li>
-      <a href="../articles/DesignWithAverageHazardRatio.html">Design Using Average Hazard Ratio</a>
-    </li>
-    <li>
-      <a href="../articles/DesignWithSpending.html">Trial design with spending under NPH</a>
-    </li>
-    <li>
-      <a href="../articles/NPEbackground.html">Non-Proportional Effect Size in Group Sequential Design</a>
-    </li>
-    <li>
-      <a href="../articles/NPEbounds.html">Computing Bounds Under Non-Constant Treatment Effect</a>
-    </li>
-    <li>
-      <a href="../articles/PowerEvaluationWithSpending.html">Power Evaluation with Spending bounds</a>
-    </li>
-    <li>
-      <a href="../articles/QuickStart.html">Quick Start for NPH Sample Size and Power</a>
-    </li>
-    <li>
-      <a href="../articles/SpendingTimeExamples.html">Spending Time Examples</a>
-    </li>
-  </ul>
-</li>
-<li>
-  <a href="../news/index.html">Changelog</a>
-</li>
-      </ul>
-<ul class="nav navbar-nav navbar-right">
-<li>
-  <a href="https://github.com/Merck/gsdmvn/">
-    <span class="fab fa-github fa-lg"></span>
-     
-  </a>
-</li>
-      </ul>
-</div>
-<!--/.nav-collapse -->
+<li class="active nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/DesignWithAverageHazardRatio.html">Design Using Average Hazard Ratio</a>
+    <a class="dropdown-item" href="../articles/DesignWithSpending.html">Trial design with spending under NPH</a>
+    <a class="dropdown-item" href="../articles/NPEbackground.html">Non-Proportional Effect Size in Group Sequential Design</a>
+    <a class="dropdown-item" href="../articles/NPEbounds.html">Computing Bounds Under Non-Constant Treatment Effect</a>
+    <a class="dropdown-item" href="../articles/PowerEvaluationWithSpending.html">Power Evaluation with Spending bounds</a>
+    <a class="dropdown-item" href="../articles/QuickStart.html">Quick Start for NPH Sample Size and Power</a>
+    <a class="dropdown-item" href="../articles/SpendingTimeExamples.html">Spending Time Examples</a>
   </div>
-<!--/.container -->
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="../news/index.html">Changelog</a>
+</li>
+      </ul>
+<form class="form-inline my-2 my-lg-0" role="search">
+        <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off">
+</form>
+
+      <ul class="navbar-nav">
+<li class="nav-item">
+  <a class="external-link nav-link" href="https://github.com/Merck/gsdmvn/" aria-label="github">
+    <span class="fab fa fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
 </div>
-<!--/.navbar -->
 
-      
-
-      </header><script src="DesignWithSpending_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
-  <div class="col-md-9 contents">
-    <div class="page-header toc-ignore">
-      <h1 data-toc-skip>Trial design with spending under NPH</h1>
+    
+  </div>
+</nav><div class="container template-article">
+<script src="DesignWithSpending_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+  <main id="main"><div class="page-header">
+      <img src="" class="logo" alt=""><h1>Trial design with spending under NPH</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/Merck/gsdmvn/blob/master/vignettes/DesignWithSpending.Rmd"><code>vignettes/DesignWithSpending.Rmd</code></a></small>
-      <div class="hidden name"><code>DesignWithSpending.Rmd</code></div>
-
+      <small class="dont-index">Source: <a href="https://github.com/Merck/gsdmvn/blob/HEAD/vignettes/DesignWithSpending.Rmd" class="external-link"><code>vignettes/DesignWithSpending.Rmd</code></a></small>
+      <div class="d-none name"><code>DesignWithSpending.Rmd</code></div>
     </div>
 
     
     
-<div id="overview" class="section level2">
-<h2 class="hasAnchor">
-<a href="#overview" class="anchor"></a>Overview</h2>
+<div class="section level2">
+<h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
+</h2>
 <p>This vignette covers how to implement designs for trials with spending assuming non-proportional hazards. We are primarily concerned with practical issues of implementation rather than design strategies, but we will not ignore design strategy.</p>
 </div>
-<div id="scenario-for-consideration" class="section level2">
-<h2 class="hasAnchor">
-<a href="#scenario-for-consideration" class="anchor"></a>Scenario for consideration</h2>
+<div class="section level2">
+<h2 id="scenario-for-consideration">Scenario for consideration<a class="anchor" aria-label="anchor" href="#scenario-for-consideration"></a>
+</h2>
 <p>Here we set up enrollment, failure and dropout rates along with assumptions for enrollment duration and times of analyses.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">analysisTimes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">18</span>, <span class="fl">24</span>, <span class="fl">30</span>, <span class="fl">36</span><span class="op">)</span>
-<span class="va">enrollRates</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>Stratum <span class="op">=</span> <span class="st">"All"</span>,
-                              duration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">6</span><span class="op">)</span>,
-                              rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">8</span>, <span class="fl">12</span>, <span class="fl">16</span>, <span class="fl">24</span><span class="op">)</span><span class="op">)</span>
-<span class="va">failRates</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>Stratum <span class="op">=</span> <span class="st">"All"</span>,
-                            duration<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">100</span><span class="op">)</span>,
-                            failRate<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">8</span>,<span class="fl">14</span><span class="op">)</span>,
-                            hr<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">.9</span>,<span class="fl">.6</span><span class="op">)</span>,
+<code class="sourceCode R"><span class="va">analysisTimes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">18</span>, <span class="fl">24</span>, <span class="fl">30</span>, <span class="fl">36</span><span class="op">)</span>
+<span class="va">enrollRates</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>Stratum <span class="op">=</span> <span class="st">"All"</span>,
+                              duration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">6</span><span class="op">)</span>,
+                              rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8</span>, <span class="fl">12</span>, <span class="fl">16</span>, <span class="fl">24</span><span class="op">)</span><span class="op">)</span>
+<span class="va">failRates</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>Stratum <span class="op">=</span> <span class="st">"All"</span>,
+                            duration<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">100</span><span class="op">)</span>,
+                            failRate<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8</span>,<span class="fl">14</span><span class="op">)</span>,
+                            hr<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.9</span>,<span class="fl">.6</span><span class="op">)</span>,
                             dropoutRate<span class="op">=</span><span class="fl">.001</span>
                            <span class="op">)</span></code></pre></div>
 </div>
-<div id="deriving-power-for-a-given-sample-size" class="section level2">
-<h2 class="hasAnchor">
-<a href="#deriving-power-for-a-given-sample-size" class="anchor"></a>Deriving power for a given sample size</h2>
+<div class="section level2">
+<h2 id="deriving-power-for-a-given-sample-size">Deriving power for a given sample size<a class="anchor" aria-label="anchor" href="#deriving-power-for-a-given-sample-size"></a>
+</h2>
 <p>We derive statistical information at targeted analysis times.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">xx</span> <span class="op">&lt;-</span> <span class="fu">gsDesign2</span><span class="fu">::</span><span class="fu"><a href="https://merck.github.io/gsDesign2/reference/AHR.html">AHR</a></span><span class="op">(</span>enrollRates <span class="op">=</span> <span class="va">enrollRates</span>, failRates <span class="op">=</span> <span class="va">failRates</span>, totalDuration <span class="op">=</span> <span class="va">analysisTimes</span><span class="op">)</span>
-<span class="va">Events</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">ceiling</a></span><span class="op">(</span><span class="va">xx</span><span class="op">$</span><span class="va">Events</span><span class="op">)</span>
+<code class="sourceCode R"><span class="va">xx</span> <span class="op">&lt;-</span> <span class="fu">gsDesign2</span><span class="fu">::</span><span class="fu"><a href="https://merck.github.io/gsDesign2/reference/AHR.html" class="external-link">AHR</a></span><span class="op">(</span>enrollRates <span class="op">=</span> <span class="va">enrollRates</span>, failRates <span class="op">=</span> <span class="va">failRates</span>, totalDuration <span class="op">=</span> <span class="va">analysisTimes</span><span class="op">)</span>
+<span class="va">Events</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">ceiling</a></span><span class="op">(</span><span class="va">xx</span><span class="op">$</span><span class="va">Events</span><span class="op">)</span>
 <span class="va">yy</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gs_info_ahr.html">gs_info_ahr</a></span><span class="op">(</span>enrollRates <span class="op">=</span> <span class="va">enrollRates</span>, failRates <span class="op">=</span> <span class="va">failRates</span>, events <span class="op">=</span> <span class="va">Events</span><span class="op">)</span></code></pre></div>
 <p>Now we can examine power using <code><a href="../reference/gs_power_npe.html">gs_power_npe()</a></code>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">timing</span> <span class="op">&lt;-</span> <span class="va">yy</span><span class="op">$</span><span class="va">info0</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">yy</span><span class="op">$</span><span class="va">info0</span><span class="op">)</span>
-<span class="va">d</span> <span class="op">&lt;-</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/gsDesign/man/gsDesign.html">gsDesign</a></span><span class="op">(</span>k<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">timing</span><span class="op">)</span>, test.type<span class="op">=</span><span class="fl">2</span>, sfu<span class="op">=</span> <span class="va">sfLDOF</span>, alpha <span class="op">=</span> <span class="fl">.025</span>, timing <span class="op">=</span> <span class="va">timing</span><span class="op">)</span>
+<code class="sourceCode R"><span class="va">timing</span> <span class="op">&lt;-</span> <span class="va">yy</span><span class="op">$</span><span class="va">info0</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">yy</span><span class="op">$</span><span class="va">info0</span><span class="op">)</span>
+<span class="va">d</span> <span class="op">&lt;-</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/gsDesign/man/gsDesign.html" class="external-link">gsDesign</a></span><span class="op">(</span>k<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">timing</span><span class="op">)</span>, test.type<span class="op">=</span><span class="fl">2</span>, sfu<span class="op">=</span> <span class="va">sfLDOF</span>, alpha <span class="op">=</span> <span class="fl">.025</span>, timing <span class="op">=</span> <span class="va">timing</span><span class="op">)</span>
 <span class="va">zz</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gs_power_npe.html">gs_power_npe</a></span><span class="op">(</span>theta <span class="op">=</span> <span class="va">yy</span><span class="op">$</span><span class="va">theta</span>, info <span class="op">=</span> <span class="va">yy</span><span class="op">$</span><span class="va">info</span>, info0 <span class="op">=</span> <span class="va">yy</span><span class="op">$</span><span class="va">info0</span>, 
              upper <span class="op">=</span> <span class="va">gs_b</span>, lower <span class="op">=</span> <span class="va">gs_b</span>,
              upar <span class="op">=</span> <span class="va">d</span><span class="op">$</span><span class="va">upper</span><span class="op">$</span><span class="va">bound</span>,
              lpar <span class="op">=</span> <span class="va">d</span><span class="op">$</span><span class="va">lower</span><span class="op">$</span><span class="va">bound</span>
 <span class="op">)</span>
 <span class="va">zz</span>
-<span class="co">#&gt; # A tibble: 8 × 9</span>
+<span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 9</span></span>
 <span class="co">#&gt;   Analysis Bound     Z Probability theta theta1  info info0 info1</span>
-<span class="co">#&gt;      &lt;int&gt; &lt;chr&gt; &lt;dbl&gt;       &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span>
-<span class="co">#&gt; 1        1 Upper  2.67   0.105     0.301  0.301  22.3  22.7  22.3</span>
-<span class="co">#&gt; 2        2 Upper  2.36   0.307     0.346  0.346  28.4  29.0  28.4</span>
-<span class="co">#&gt; 3        3 Upper  2.18   0.493     0.370  0.370  33.4  34.0  33.4</span>
-<span class="co">#&gt; 4        4 Upper  2.07   0.627     0.385  0.385  37.5  38.0  37.5</span>
-<span class="co">#&gt; 5        1 Lower -2.67   0.0000214 0.301  0.301  22.3  22.7  22.3</span>
-<span class="co">#&gt; 6        2 Lower -2.36   0.0000299 0.346  0.346  28.4  29.0  28.4</span>
-<span class="co">#&gt; 7        3 Lower -2.18   0.0000336 0.370  0.370  33.4  34.0  33.4</span>
-<span class="co">#&gt; 8        4 Lower -2.07   0.0000353 0.385  0.385  37.5  38.0  37.5</span></code></pre></div>
+<span class="co">#&gt;      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        1 Upper  2.67   0.105     0.301  0.301  22.3  22.7  22.3</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">2</span>        2 Upper  2.36   0.307     0.346  0.346  28.4  29.0  28.4</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">3</span>        3 Upper  2.18   0.493     0.370  0.370  33.4  34.0  33.4</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">4</span>        4 Upper  2.07   0.627     0.385  0.385  37.5  38.0  37.5</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">5</span>        1 Lower -<span style="color: #BB0000;">2.67</span>   0.000<span style="text-decoration: underline;">021</span>4 0.301  0.301  22.3  22.7  22.3</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">6</span>        2 Lower -<span style="color: #BB0000;">2.36</span>   0.000<span style="text-decoration: underline;">029</span>9 0.346  0.346  28.4  29.0  28.4</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">7</span>        3 Lower -<span style="color: #BB0000;">2.18</span>   0.000<span style="text-decoration: underline;">033</span>6 0.370  0.370  33.4  34.0  33.4</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">8</span>        4 Lower -<span style="color: #BB0000;">2.07</span>   0.000<span style="text-decoration: underline;">035</span>3 0.385  0.385  37.5  38.0  37.5</span></code></pre></div>
 </div>
-<div id="deriving-sample-size-to-power-a-trial" class="section level2">
-<h2 class="hasAnchor">
-<a href="#deriving-sample-size-to-power-a-trial" class="anchor"></a>Deriving sample size to power a trial</h2>
+<div class="section level2">
+<h2 id="deriving-sample-size-to-power-a-trial">Deriving sample size to power a trial<a class="anchor" aria-label="anchor" href="#deriving-sample-size-to-power-a-trial"></a>
+</h2>
 <p>If we were using a fixed design, we would approximate the sample size as follows:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">K</span> <span class="op">&lt;-</span> <span class="fl">4</span>
-<span class="va">minx</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">qnorm</a></span><span class="op">(</span><span class="fl">.025</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="va">zz</span><span class="op">$</span><span class="va">info0</span><span class="op">[</span><span class="va">K</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">qnorm</a></span><span class="op">(</span><span class="fl">.1</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="va">zz</span><span class="op">$</span><span class="va">info</span><span class="op">[</span><span class="va">K</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">/</span> <span class="va">zz</span><span class="op">$</span><span class="va">theta</span><span class="op">[</span><span class="va">K</span><span class="op">]</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span>
+<span class="va">minx</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">qnorm</a></span><span class="op">(</span><span class="fl">.025</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="va">zz</span><span class="op">$</span><span class="va">info0</span><span class="op">[</span><span class="va">K</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">qnorm</a></span><span class="op">(</span><span class="fl">.1</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="va">zz</span><span class="op">$</span><span class="va">info</span><span class="op">[</span><span class="va">K</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">/</span> <span class="va">zz</span><span class="op">$</span><span class="va">theta</span><span class="op">[</span><span class="va">K</span><span class="op">]</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span>
 <span class="va">minx</span>
 <span class="co">#&gt; [1] 1.875516</span></code></pre></div>
 <p>If we inflate the enrollment rates by <code>minx</code> and use a fixed design, we will see this achieves the targeted power.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/gs_power_npe.html">gs_power_npe</a></span><span class="op">(</span>theta <span class="op">=</span> <span class="va">yy</span><span class="op">$</span><span class="va">theta</span><span class="op">[</span><span class="va">K</span><span class="op">]</span>, info <span class="op">=</span> <span class="va">yy</span><span class="op">$</span><span class="va">info</span><span class="op">[</span><span class="va">K</span><span class="op">]</span> <span class="op">*</span> <span class="va">minx</span>, info0 <span class="op">=</span> <span class="va">yy</span><span class="op">$</span><span class="va">info0</span><span class="op">[</span><span class="va">K</span><span class="op">]</span> <span class="op">*</span> <span class="va">minx</span>, 
-             upar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">qnorm</a></span><span class="op">(</span><span class="fl">.975</span><span class="op">)</span>, lpar <span class="op">=</span> <span class="op">-</span><span class="cn">Inf</span><span class="op">)</span> <span class="op">%&gt;%</span> 
-  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">Bound</span> <span class="op">==</span> <span class="st">"Upper"</span><span class="op">)</span>
-<span class="co">#&gt; # A tibble: 1 × 9</span>
+             upar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">qnorm</a></span><span class="op">(</span><span class="fl">.975</span><span class="op">)</span>, lpar <span class="op">=</span> <span class="op">-</span><span class="cn">Inf</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Bound</span> <span class="op">==</span> <span class="st">"Upper"</span><span class="op">)</span>
+<span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 9</span></span>
 <span class="co">#&gt;   Analysis Bound     Z Probability theta theta1  info info0 info1</span>
-<span class="co">#&gt;      &lt;int&gt; &lt;chr&gt; &lt;dbl&gt;       &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span>
-<span class="co">#&gt; 1        1 Upper  1.96       0.898 0.385  0.385  70.3  71.3  70.3</span></code></pre></div>
+<span class="co">#&gt;      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        1 Upper  1.96       0.898 0.385  0.385  70.3  71.3  70.3</span></code></pre></div>
 <p>The power for a group sequential design with the same final sample size is a bit lower:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">zz</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gs_power_npe.html">gs_power_npe</a></span><span class="op">(</span>theta <span class="op">=</span> <span class="va">yy</span><span class="op">$</span><span class="va">theta</span>, info <span class="op">=</span> <span class="va">yy</span><span class="op">$</span><span class="va">info</span> <span class="op">*</span> <span class="va">minx</span>, info0 <span class="op">=</span> <span class="va">yy</span><span class="op">$</span><span class="va">info0</span> <span class="op">*</span> <span class="va">minx</span>, 
              upper <span class="op">=</span> <span class="va">gs_spending_bound</span>, lower <span class="op">=</span> <span class="va">gs_spending_bound</span>,
-             upar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span>, param <span class="op">=</span> <span class="cn">NULL</span>, timing <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>,
-             lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span>, param <span class="op">=</span> <span class="cn">NULL</span>, timing <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
+             upar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html" class="external-link">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span>, param <span class="op">=</span> <span class="cn">NULL</span>, timing <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>,
+             lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html" class="external-link">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span>, param <span class="op">=</span> <span class="cn">NULL</span>, timing <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
 <span class="op">)</span>
 <span class="va">zz</span>
-<span class="co">#&gt; # A tibble: 8 × 9</span>
+<span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 9</span></span>
 <span class="co">#&gt;   Analysis Bound      Z Probability theta theta1  info info0 info1</span>
-<span class="co">#&gt;      &lt;int&gt; &lt;chr&gt;  &lt;dbl&gt;       &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span>
-<span class="co">#&gt; 1        1 Upper  2.67      0.233   0.301  0.301  41.8  42.7  41.8</span>
-<span class="co">#&gt; 2        2 Upper  2.36      0.569   0.346  0.346  53.3  54.4  53.3</span>
-<span class="co">#&gt; 3        3 Upper  2.18      0.778   0.370  0.370  62.7  63.8  62.7</span>
-<span class="co">#&gt; 4        4 Upper  2.07      0.881   0.385  0.385  70.3  71.3  70.3</span>
-<span class="co">#&gt; 5        1 Lower -0.739     0.00365 0.301  0.301  41.8  42.7  41.8</span>
-<span class="co">#&gt; 6        2 Lower  0.159     0.0101  0.346  0.346  53.3  54.4  53.3</span>
-<span class="co">#&gt; 7        3 Lower  0.746     0.0176  0.370  0.370  62.7  63.8  62.7</span>
-<span class="co">#&gt; 8        4 Lower  1.16      0.0250  0.385  0.385  70.3  71.3  70.3</span></code></pre></div>
+<span class="co">#&gt;      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        1 Upper  2.67      0.233   0.301  0.301  41.8  42.7  41.8</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">2</span>        2 Upper  2.36      0.569   0.346  0.346  53.3  54.4  53.3</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">3</span>        3 Upper  2.18      0.778   0.370  0.370  62.7  63.8  62.7</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">4</span>        4 Upper  2.07      0.881   0.385  0.385  70.3  71.3  70.3</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">5</span>        1 Lower -<span style="color: #BB0000;">0.739</span>     0.003<span style="text-decoration: underline;">65</span> 0.301  0.301  41.8  42.7  41.8</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">6</span>        2 Lower  0.159     0.010<span style="text-decoration: underline;">1</span>  0.346  0.346  53.3  54.4  53.3</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">7</span>        3 Lower  0.746     0.017<span style="text-decoration: underline;">6</span>  0.370  0.370  62.7  63.8  62.7</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">8</span>        4 Lower  1.16      0.025<span style="text-decoration: underline;">0</span>  0.385  0.385  70.3  71.3  70.3</span></code></pre></div>
 <p>If we inflate this a bit we will be overpowered.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">zz</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gs_power_npe.html">gs_power_npe</a></span><span class="op">(</span>theta <span class="op">=</span> <span class="va">yy</span><span class="op">$</span><span class="va">theta</span>, info <span class="op">=</span> <span class="va">yy</span><span class="op">$</span><span class="va">info</span> <span class="op">*</span> <span class="va">minx</span> <span class="op">*</span> <span class="fl">1.2</span>, info0 <span class="op">=</span> <span class="va">yy</span><span class="op">$</span><span class="va">info0</span> <span class="op">*</span> <span class="va">minx</span> <span class="op">*</span> <span class="fl">1.2</span>, 
              upper <span class="op">=</span> <span class="va">gs_spending_bound</span>, lower <span class="op">=</span> <span class="va">gs_spending_bound</span>,
-             upar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span>, param <span class="op">=</span> <span class="cn">NULL</span>, timing <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>,
-             lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span>, param <span class="op">=</span> <span class="cn">NULL</span>, timing <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
+             upar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html" class="external-link">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span>, param <span class="op">=</span> <span class="cn">NULL</span>, timing <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>,
+             lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html" class="external-link">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span>, param <span class="op">=</span> <span class="cn">NULL</span>, timing <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
 <span class="op">)</span>
 <span class="va">zz</span>
-<span class="co">#&gt; # A tibble: 8 × 9</span>
+<span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 9</span></span>
 <span class="co">#&gt;   Analysis Bound      Z Probability theta theta1  info info0 info1</span>
-<span class="co">#&gt;      &lt;int&gt; &lt;chr&gt;  &lt;dbl&gt;       &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span>
-<span class="co">#&gt; 1        1 Upper  2.67      0.294   0.301  0.301  50.2  51.2  50.2</span>
-<span class="co">#&gt; 2        2 Upper  2.36      0.660   0.346  0.346  64.0  65.3  64.0</span>
-<span class="co">#&gt; 3        3 Upper  2.18      0.851   0.370  0.370  75.3  76.5  75.3</span>
-<span class="co">#&gt; 4        4 Upper  2.07      0.931   0.385  0.385  84.4  85.5  84.4</span>
-<span class="co">#&gt; 5        1 Lower -0.554     0.00365 0.301  0.301  50.2  51.2  50.2</span>
-<span class="co">#&gt; 6        2 Lower  0.400     0.0101  0.346  0.346  64.0  65.3  64.0</span>
-<span class="co">#&gt; 7        3 Lower  1.03      0.0176  0.370  0.370  75.3  76.5  75.3</span>
-<span class="co">#&gt; 8        4 Lower  1.47      0.0250  0.385  0.385  84.4  85.5  84.4</span></code></pre></div>
+<span class="co">#&gt;      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        1 Upper  2.67      0.294   0.301  0.301  50.2  51.2  50.2</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">2</span>        2 Upper  2.36      0.660   0.346  0.346  64.0  65.3  64.0</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">3</span>        3 Upper  2.18      0.851   0.370  0.370  75.3  76.5  75.3</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">4</span>        4 Upper  2.07      0.931   0.385  0.385  84.4  85.5  84.4</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">5</span>        1 Lower -<span style="color: #BB0000;">0.554</span>     0.003<span style="text-decoration: underline;">65</span> 0.301  0.301  50.2  51.2  50.2</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">6</span>        2 Lower  0.400     0.010<span style="text-decoration: underline;">1</span>  0.346  0.346  64.0  65.3  64.0</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">7</span>        3 Lower  1.03      0.017<span style="text-decoration: underline;">6</span>  0.370  0.370  75.3  76.5  75.3</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">8</span>        4 Lower  1.47      0.025<span style="text-decoration: underline;">0</span>  0.385  0.385  84.4  85.5  84.4</span></code></pre></div>
 <p>Now we use <code><a href="../reference/gs_design_npe.html">gs_design_npe()</a></code> to inflate the information proportionately to power the trial.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">theta</span> <span class="op">&lt;-</span> <span class="va">yy</span><span class="op">$</span><span class="va">theta</span>
@@ -225,8 +197,8 @@
 <span class="va">info0</span> <span class="op">&lt;-</span> <span class="va">yy</span><span class="op">$</span><span class="va">info0</span>
 <span class="va">upper</span> <span class="op">=</span> <span class="va">gs_spending_bound</span>
 <span class="va">lower</span> <span class="op">=</span> <span class="va">gs_spending_bound</span>
-<span class="va">upar</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span>, param <span class="op">=</span> <span class="cn">NULL</span>, timing <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
-<span class="va">lpar</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span>, param <span class="op">=</span> <span class="cn">NULL</span>, timing <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
+<span class="va">upar</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html" class="external-link">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span>, param <span class="op">=</span> <span class="cn">NULL</span>, timing <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
+<span class="va">lpar</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html" class="external-link">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span>, param <span class="op">=</span> <span class="cn">NULL</span>, timing <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
 <span class="va">alpha</span> <span class="op">=</span> <span class="fl">.025</span>
 <span class="va">beta</span> <span class="op">=</span> <span class="fl">.1</span>
 <span class="va">binding</span> <span class="op">=</span> <span class="cn">FALSE</span>
@@ -237,45 +209,44 @@
 
 <span class="va">zz</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gs_design_npe.html">gs_design_npe</a></span><span class="op">(</span>theta <span class="op">=</span> <span class="va">yy</span><span class="op">$</span><span class="va">theta</span>, info <span class="op">=</span> <span class="va">yy</span><span class="op">$</span><span class="va">info</span>, info0 <span class="op">=</span> <span class="va">yy</span><span class="op">$</span><span class="va">info0</span>, 
              upper <span class="op">=</span> <span class="va">gs_spending_bound</span>, lower <span class="op">=</span> <span class="va">gs_spending_bound</span>,
-             upar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span>, param <span class="op">=</span> <span class="cn">NULL</span>, timing <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>,
-             lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span>, param <span class="op">=</span> <span class="cn">NULL</span>, timing <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
+             upar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html" class="external-link">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span>, param <span class="op">=</span> <span class="cn">NULL</span>, timing <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>,
+             lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html" class="external-link">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span>, param <span class="op">=</span> <span class="cn">NULL</span>, timing <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
 <span class="op">)</span>
 <span class="va">zz</span>
-<span class="co">#&gt; # A tibble: 8 × 9</span>
+<span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 9</span></span>
 <span class="co">#&gt;   Analysis Bound      Z Probability theta theta1  info info0 info1</span>
-<span class="co">#&gt;      &lt;int&gt; &lt;chr&gt;  &lt;dbl&gt;       &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span>
-<span class="co">#&gt; 1        1 Upper  2.67      0.252   0.301  0.301  44.5  45.4  44.5</span>
-<span class="co">#&gt; 2        2 Upper  2.36      0.600   0.346  0.346  56.8  57.9  56.8</span>
-<span class="co">#&gt; 3        3 Upper  2.18      0.804   0.370  0.370  66.8  67.9  66.8</span>
-<span class="co">#&gt; 4        4 Upper  2.07      0.900   0.385  0.385  74.9  75.8  74.9</span>
-<span class="co">#&gt; 5        1 Lower -0.678     0.00365 0.301  0.301  44.5  45.4  44.5</span>
-<span class="co">#&gt; 6        2 Lower  0.238     0.0101  0.346  0.346  56.8  57.9  56.8</span>
-<span class="co">#&gt; 7        3 Lower  0.839     0.0176  0.370  0.370  66.8  67.9  66.8</span>
-<span class="co">#&gt; 8        4 Lower  1.26      0.0250  0.385  0.385  74.9  75.8  74.9</span></code></pre></div>
+<span class="co">#&gt;      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        1 Upper  2.67      0.252   0.301  0.301  44.5  45.4  44.5</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">2</span>        2 Upper  2.36      0.600   0.346  0.346  56.8  57.9  56.8</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">3</span>        3 Upper  2.18      0.804   0.370  0.370  66.8  67.9  66.8</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">4</span>        4 Upper  2.07      0.900   0.385  0.385  74.9  75.8  74.9</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">5</span>        1 Lower -<span style="color: #BB0000;">0.678</span>     0.003<span style="text-decoration: underline;">65</span> 0.301  0.301  44.5  45.4  44.5</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">6</span>        2 Lower  0.238     0.010<span style="text-decoration: underline;">1</span>  0.346  0.346  56.8  57.9  56.8</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">7</span>        3 Lower  0.839     0.017<span style="text-decoration: underline;">6</span>  0.370  0.370  66.8  67.9  66.8</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">8</span>        4 Lower  1.26      0.025<span style="text-decoration: underline;">0</span>  0.385  0.385  74.9  75.8  74.9</span></code></pre></div>
 </div>
-  </div>
-
-  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
-
-        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
-    </nav>
-</div>
-
+  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 
 
-      <footer><div class="copyright">
-  <p>Developed by Keaven Anderson. Site built with pkgdown 1.6.1.
-  </p>
-  <p>Copyright © Merck Sharp &amp; Dohme Corp., a subsidiary of Merck &amp; Co., Inc., Kenilworth, NJ, USA.</p>
+    <footer><div class="pkgdown-footer-left">
+  <p></p>
+<p>Developed by Keaven Anderson. Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1. <br>Copyright © Merck Sharp &amp; Dohme Corp., a subsidiary of Merck &amp; Co., Inc., Kenilworth, NJ, USA.</p>
 </div>
 
-      </footer>
+<div class="pkgdown-footer-right">
+  <p></p>
+<p><span></span></p>
+</div>
+
+    </footer>
 </div>
 
   
 
+  
 
   </body>
 </html>

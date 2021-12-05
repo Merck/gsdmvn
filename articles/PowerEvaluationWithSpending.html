@@ -4,14 +4,14 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="description" content="gsdmvn">
 <title>Power Evaluation with Spending bounds • gsdmvn</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
-<script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="../deps/bootstrap-5.1.0/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.1.0/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
+<!-- bootstrap-toc --><script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
 <meta property="og:title" content="Power Evaluation with Spending bounds">
 <meta property="og:description" content="gsdmvn">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
@@ -19,119 +19,91 @@
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
 </head>
-<body data-spy="scroll" data-target="#toc">
-    <div class="container template-article">
-      <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
-  <div class="container">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">gsdmvn</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.1.9000</span>
-      </span>
-    </div>
+<body>
+    <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
+    
 
-    <div id="navbar" class="navbar-collapse collapse">
-      <ul class="nav navbar-nav">
-<li>
-  <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
+    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
+    
+    <a class="navbar-brand me-2" href="../index.html">gsdmvn</a>
+
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1.9000</small>
+
+    
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div id="navbar" class="collapse navbar-collapse ms-2">
+      <ul class="navbar-nav me-auto">
+<li class="nav-item">
+  <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
-<li>
-  <a href="../reference/index.html">Reference</a>
-</li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    Articles
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
-<li>
-      <a href="../articles/DesignWithAverageHazardRatio.html">Design Using Average Hazard Ratio</a>
-    </li>
-    <li>
-      <a href="../articles/DesignWithSpending.html">Trial design with spending under NPH</a>
-    </li>
-    <li>
-      <a href="../articles/NPEbackground.html">Non-Proportional Effect Size in Group Sequential Design</a>
-    </li>
-    <li>
-      <a href="../articles/NPEbounds.html">Computing Bounds Under Non-Constant Treatment Effect</a>
-    </li>
-    <li>
-      <a href="../articles/PowerEvaluationWithSpending.html">Power Evaluation with Spending bounds</a>
-    </li>
-    <li>
-      <a href="../articles/QuickStart.html">Quick Start for NPH Sample Size and Power</a>
-    </li>
-    <li>
-      <a href="../articles/SpendingTimeExamples.html">Spending Time Examples</a>
-    </li>
-  </ul>
-</li>
-<li>
-  <a href="../news/index.html">Changelog</a>
-</li>
-      </ul>
-<ul class="nav navbar-nav navbar-right">
-<li>
-  <a href="https://github.com/Merck/gsdmvn/">
-    <span class="fab fa-github fa-lg"></span>
-     
-  </a>
-</li>
-      </ul>
-</div>
-<!--/.nav-collapse -->
+<li class="active nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/DesignWithAverageHazardRatio.html">Design Using Average Hazard Ratio</a>
+    <a class="dropdown-item" href="../articles/DesignWithSpending.html">Trial design with spending under NPH</a>
+    <a class="dropdown-item" href="../articles/NPEbackground.html">Non-Proportional Effect Size in Group Sequential Design</a>
+    <a class="dropdown-item" href="../articles/NPEbounds.html">Computing Bounds Under Non-Constant Treatment Effect</a>
+    <a class="dropdown-item" href="../articles/PowerEvaluationWithSpending.html">Power Evaluation with Spending bounds</a>
+    <a class="dropdown-item" href="../articles/QuickStart.html">Quick Start for NPH Sample Size and Power</a>
+    <a class="dropdown-item" href="../articles/SpendingTimeExamples.html">Spending Time Examples</a>
   </div>
-<!--/.container -->
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="../news/index.html">Changelog</a>
+</li>
+      </ul>
+<form class="form-inline my-2 my-lg-0" role="search">
+        <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off">
+</form>
+
+      <ul class="navbar-nav">
+<li class="nav-item">
+  <a class="external-link nav-link" href="https://github.com/Merck/gsdmvn/" aria-label="github">
+    <span class="fab fa fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
 </div>
-<!--/.navbar -->
 
-      
-
-      </header><script src="PowerEvaluationWithSpending_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
-  <div class="col-md-9 contents">
-    <div class="page-header toc-ignore">
-      <h1 data-toc-skip>Power Evaluation with Spending bounds</h1>
-            <h3 class="subtitle">Binomial Trial Example</h3>
+    
+  </div>
+</nav><div class="container template-article">
+<script src="PowerEvaluationWithSpending_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+  <main id="main"><div class="page-header">
+      <img src="" class="logo" alt=""><h1>Power Evaluation with Spending bounds</h1>
+            <h3 data-toc-skip class="subtitle">Binomial Trial Example</h3>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/Merck/gsdmvn/blob/master/vignettes/PowerEvaluationWithSpending.Rmd"><code>vignettes/PowerEvaluationWithSpending.Rmd</code></a></small>
-      <div class="hidden name"><code>PowerEvaluationWithSpending.Rmd</code></div>
-
+      <small class="dont-index">Source: <a href="https://github.com/Merck/gsdmvn/blob/HEAD/vignettes/PowerEvaluationWithSpending.Rmd" class="external-link"><code>vignettes/PowerEvaluationWithSpending.Rmd</code></a></small>
+      <div class="d-none name"><code>PowerEvaluationWithSpending.Rmd</code></div>
     </div>
 
     
     
-<div id="overview" class="section level2">
-<h2 class="hasAnchor">
-<a href="#overview" class="anchor"></a>Overview</h2>
+<div class="section level2">
+<h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
+</h2>
 <p>This vignette covers how to compute power or Type I error for a design derived with a spending bound. We will write this with a general non-constant treatment effect using <code><a href="../reference/gs_design_npe.html">gs_design_npe()</a></code> to derived the design under one parameter setting and computing power under another setting. We will use a trial with a binary endpoint to enable a full illustration.</p>
 </div>
-<div id="scenario-for-consideration" class="section level2">
-<h2 class="hasAnchor">
-<a href="#scenario-for-consideration" class="anchor"></a>Scenario for consideration</h2>
+<div class="section level2">
+<h2 id="scenario-for-consideration">Scenario for consideration<a class="anchor" aria-label="anchor" href="#scenario-for-consideration"></a>
+</h2>
 <p>We consider a scenario largely based on the CAPTURE study <span class="citation">Investigators and others (1997)</span> where the primary endpoint was a composite of death, acute myocardial infarction or the need for recurrent percutaneous intervention within 30 days of randomization. That is, we consider a 2-arm trial with an experimental arm and a control arm. The primary endpoint for the trial is a binary indicator for each participant if they have a failed outcome. For this case, we consider the parameter <span class="math inline">\(\theta = p_1 - p _2\)</span> where <span class="math inline">\(p_1\)</span> denotes the probability that a trial participant in the control group experiences a failure and <span class="math inline">\(p_2\)</span> represents the same probability for a trial participant in the experimental group. We will assume <span class="math inline">\(K=3\)</span> analyses after 350, 700, and 1400 patients have been observed with equal randomization between the treatment groups. The study was designed with approximately 80% power (Type II error <span class="math inline">\(\beta = 1 - 0.8 = 0.2\)</span>) and 2.5% one-sided Type I error (<span class="math inline">\(\alpha = 0.025\)</span>) to detect a reduction from a 15% event rate (<span class="math inline">\(p_1 = 0.15\)</span>) in the control group to 10% (<span class="math inline">\(p_2 = 0.1\)</span>) in the experimental group. The parameter of interest is <span class="math inline">\(\theta = p_1 - p_2\)</span>. We denote the alternate hypothesis as <span class="math display">\[H_1: \theta = \theta_1= p_1^1 - p_2^1 = 0.15 - 0.10 = 0.05\]</span> and the null hypothesis <span class="math display">\[H_0: \theta = \theta_0 = 0 = p_1^0 - p_2^0\]</span> where <span class="math inline">\(p^0_1 = p^0_2= (p_1^1+p_2^1)/2 = 0.125\)</span> as laid out in <span class="citation">Lachin (2009)</span>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://merck.github.io/gsdmvn/">gsdmvn</a></span><span class="op">)</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://merck.github.io/gsdmvn/">gsdmvn</a></span><span class="op">)</span>
 <span class="va">p0</span> <span class="op">&lt;-</span> <span class="fl">0.15</span> <span class="co"># assumed failure rate in control group</span>
 <span class="va">p1</span> <span class="op">&lt;-</span> <span class="fl">0.10</span> <span class="co"># assumed failure rate in experimental group</span>
 <span class="va">alpha</span> <span class="op">&lt;-</span> <span class="fl">0.025</span> <span class="co"># Design Type I error</span>
 <span class="va">beta</span> <span class="op">&lt;-</span> <span class="fl">0.2</span> <span class="co"># Design Type II error for 80% power</span></code></pre></div>
 <p>We note that had we considered a success outcome such as objective response in an oncology study, we would let <span class="math inline">\(p_1\)</span> denote the experimental group and <span class="math inline">\(p_2\)</span> the control group response rate. Thus, we always set up the notation so the <span class="math inline">\(p_1&gt;p_2\)</span> represents superiority for the experimental group.</p>
 </div>
-<div id="notation-and-statistical-testing" class="section level2">
-<h2 class="hasAnchor">
-<a href="#notation-and-statistical-testing" class="anchor"></a>Notation and Statistical Testing</h2>
+<div class="section level2">
+<h2 id="notation-and-statistical-testing">Notation and Statistical Testing<a class="anchor" aria-label="anchor" href="#notation-and-statistical-testing"></a>
+</h2>
 <p>We let <span class="math inline">\(X_{ij}\sim \hbox{Bernoulli}(p_i),\)</span> <span class="math inline">\(j=1,2,\ldots,n_{ik}\)</span> denote independent random variables in the control (<span class="math inline">\(i=1\)</span>) and experimental (<span class="math inline">\(i=2\)</span>) groups through analysis <span class="math inline">\(k=1,2,\ldots,K\)</span> where <span class="math inline">\(n_{i1} &lt; n_{i2}&lt;\ldots&lt;n_K\)</span>. We let <span class="math inline">\(Y_{ik}=\sum_{j=1}^{n_k}X_{ij}\)</span>. At analysis <span class="math inline">\(k=1,2,\ldots\)</span> and for <span class="math inline">\(j=1,2\)</span> we denote the proportion of failures in group <span class="math inline">\(i\)</span> at analysis <span class="math inline">\(k\)</span></p>
 <p><span class="math display">\[ \hat{p}_{ik}=Y_{ik}/n_{ik}.\]</span> Estimating under null hypothesis <span class="math inline">\(H_0: p_1=p_2\equiv p_0\)</span> we estimate</p>
 <p><span class="math display">\[ \hat{p}_{0k}=\frac{Y_{1k}+ Y_{2k}}{n_{1k}+ n_{2k}}=
@@ -145,9 +117,9 @@
 \mathcal{\hat I}_{0k} =&amp; 1/\hat \sigma^2_{0k},
 \end{align}\]</span> <span class="math inline">\(k=1,2,\ldots,K\)</span>. Testing, as recommended by <span class="citation">Lachin (2009)</span>, is done with the large sample test with the null hypothesis variance estimate and without continuity correction: <span class="math display">\[Z_k = \hat\theta_k/\hat\sigma_{0k}=\frac{\hat p_{1k} - \hat p_{2k}}{\sqrt{(1/n_{1k}+ 1/n_{2k})\hat p_{0k}(1-\hat p_{0k})} },\]</span> which is asymptotically Normal(0,1) if <span class="math inline">\(p_1=p_2\)</span> and Normal(0, <span class="math inline">\(\sigma_{0k}^2/\sigma_k^2\)</span>) more generally for any <span class="math inline">\(p_1, p_2\)</span>, <span class="math inline">\(k=1,2,\ldots,K\)</span>. We note that <span class="math inline">\(\chi^2=Z^2_k\)</span> is the <span class="math inline">\(\chi^2\)</span> test without continuity correction as recommended by <span class="citation">Gordon and Watson (1996)</span>. Note finally that this extends in a straightforward way the non-inferiority test of <span class="citation">Farrington and Manning (1990)</span> if the null hypothesis is <span class="math inline">\(\theta = p_1 - p_2 - \delta = 0\)</span> for some non-inferiority margin <span class="math inline">\(\delta &gt; 0\)</span>; <span class="math inline">\(\delta &lt; 0\)</span> would correspond to what is referred to as super-superiority <span class="citation">Chan (2002)</span>, requiring that experimental therapy has been shown to be superior to control by at least a margin <span class="math inline">\(-\delta&gt;0\)</span>.</p>
 </div>
-<div id="power-calculations" class="section level2">
-<h2 class="hasAnchor">
-<a href="#power-calculations" class="anchor"></a>Power Calculations</h2>
+<div class="section level2">
+<h2 id="power-calculations">Power Calculations<a class="anchor" aria-label="anchor" href="#power-calculations"></a>
+</h2>
 <p>We begin with a fixed design to simplify. We follow the approach of <span class="citation">Lachin (2009)</span> to compute power accounting for the different variance (statistical information) computations under the null hypothesis noted in the previous section. Noting the asymptotic equivalence</p>
 <p><span class="math display">\[Z_k\approx \hat\theta_k/\sigma_{0k}=\frac{\hat p_{1k} - \hat p_{2k}}{\sqrt{(1/n_{1k}+ 1/n_{2k})p_{0}(1- p_0)} }.\]</span> We denote <span class="math inline">\(n_k=n_{1k}+n_{2k},\)</span> <span class="math inline">\(k=1,2,\ldots, K\)</span> and assume a constant proportion <span class="math inline">\(\xi_i\)</span> randomized to each group <span class="math inline">\(i=1,2.\)</span> Thus,</p>
 <p><span class="math display">\[Z_k\approx \frac{\sqrt{n_k}(\hat p_{1k} - \hat p_{2k})}{\sqrt{(1/\xi_1+ 1/\xi_2)p_{0}(1- p_0)} }.\]</span></p>
@@ -155,11 +127,11 @@
 <p><span class="math display">\[Z_k\sim\hbox{Normal}\left(\sqrt{n_k}\frac{p_1 - p_2}{\sqrt{(1/\xi_1+ 1/\xi_2) p_0(1- p_0)} },\sigma^2_{0k}/\sigma^2_{1k}\right).\]</span> We note that</p>
 <p><span class="math display">\[ \sigma^2_{0k}/\sigma^2_{1k} = \frac{ p_0(1-p_0)\left(1/\xi_1+ 1/\xi_2\right)}{p_1(1-p_1)/\xi_1+p_2(1-p_2)/\xi_2}.\]</span> We also note by definition that <span class="math inline">\(\sigma^2_{0k}/\sigma^2_{1k}=\mathcal I_k/\mathcal I_{0k}.\)</span> Based on an input <span class="math inline">\(p_1, p_2, \xi_1, \xi_2 = 1-\xi_1, n_k\)</span> we will compute <span class="math inline">\(\theta, \mathcal{I}_k, \mathcal{I}_{0k}\)</span>, <span class="math inline">\(k=1,2,\ldots,K\)</span>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/">tibble</a></span><span class="op">)</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/" class="external-link">tibble</a></span><span class="op">)</span>
 <span class="va">gs_info_binomial</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span>, <span class="va">xi1</span>, <span class="va">n</span>, <span class="va">delta</span> <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span><span class="op">{</span>
-  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html">is.null</a></span><span class="op">(</span><span class="va">delta</span><span class="op">)</span><span class="op">)</span> <span class="va">delta</span> <span class="op">&lt;-</span> <span class="va">p1</span> <span class="op">-</span> <span class="va">p2</span>
+  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">delta</span><span class="op">)</span><span class="op">)</span> <span class="va">delta</span> <span class="op">&lt;-</span> <span class="va">p1</span> <span class="op">-</span> <span class="va">p2</span>
   <span class="co"># Compute (constant) effect size at each analysis theta</span>
-  <span class="va">theta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="va">p1</span> <span class="op">-</span> <span class="va">p2</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span>
+  <span class="va">theta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">p1</span> <span class="op">-</span> <span class="va">p2</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span>
   <span class="co"># compute null hypothesis rate, p0</span>
   <span class="va">p0</span> <span class="op">&lt;-</span> <span class="va">xi1</span> <span class="op">*</span> <span class="va">p1</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">xi1</span><span class="op">)</span> <span class="op">*</span> <span class="va">p2</span>
   <span class="co"># compute information based on p1, p2</span>
@@ -170,73 +142,73 @@
   <span class="va">p1star</span> <span class="op">&lt;-</span> <span class="va">p0</span> <span class="op">+</span> <span class="va">delta</span> <span class="op">*</span> <span class="va">xi1</span>
   <span class="va">p2star</span> <span class="op">&lt;-</span> <span class="va">p0</span> <span class="op">-</span> <span class="va">delta</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">xi1</span><span class="op">)</span>
   <span class="va">info1</span> <span class="op">&lt;-</span>  <span class="va">n</span> <span class="op">/</span> <span class="op">(</span><span class="va">p1star</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">p1star</span><span class="op">)</span> <span class="op">/</span> <span class="va">xi1</span> <span class="op">+</span> <span class="va">p2star</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">p2star</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">xi1</span><span class="op">)</span><span class="op">)</span>
-  <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>Analysis <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>,
+  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>Analysis <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>,
                 n <span class="op">=</span> <span class="va">n</span>,
                 theta <span class="op">=</span> <span class="va">theta</span>,
-                theta1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="va">delta</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span>,
+                theta1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">delta</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span>,
                 info <span class="op">=</span> <span class="va">info</span>,
                 info0 <span class="op">=</span> <span class="va">info0</span>,
                 info1 <span class="op">=</span> <span class="va">info1</span><span class="op">)</span><span class="op">)</span>
 <span class="op">}</span></code></pre></div>
 <p>For the CAPTURE trial, we have</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">h1</span> <span class="op">&lt;-</span> <span class="fu">gs_info_binomial</span><span class="op">(</span>p1 <span class="op">=</span> <span class="fl">.15</span>, p2 <span class="op">=</span> <span class="fl">.1</span>, xi1 <span class="op">=</span> <span class="fl">.5</span>, n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">350</span>, <span class="fl">700</span>, <span class="fl">1400</span><span class="op">)</span><span class="op">)</span>
+<code class="sourceCode R"><span class="va">h1</span> <span class="op">&lt;-</span> <span class="fu">gs_info_binomial</span><span class="op">(</span>p1 <span class="op">=</span> <span class="fl">.15</span>, p2 <span class="op">=</span> <span class="fl">.1</span>, xi1 <span class="op">=</span> <span class="fl">.5</span>, n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">350</span>, <span class="fl">700</span>, <span class="fl">1400</span><span class="op">)</span><span class="op">)</span>
 <span class="va">h1</span>
-<span class="co">#&gt; # A tibble: 3 × 7</span>
+<span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 7</span></span>
 <span class="co">#&gt;   Analysis     n theta theta1  info info0 info1</span>
-<span class="co">#&gt;      &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span>
-<span class="co">#&gt; 1        1   350  0.05   0.05  805.   800  805.</span>
-<span class="co">#&gt; 2        2   700  0.05   0.05 1609.  1600 1609.</span>
-<span class="co">#&gt; 3        3  1400  0.05   0.05 3218.  3200 3218.</span></code></pre></div>
+<span class="co">#&gt;      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        1   350  0.05   0.05  805.   800  805.</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">2</span>        2   700  0.05   0.05 <span style="text-decoration: underline;">1</span>609.  <span style="text-decoration: underline;">1</span>600 <span style="text-decoration: underline;">1</span>609.</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">3</span>        3  <span style="text-decoration: underline;">1</span>400  0.05   0.05 <span style="text-decoration: underline;">3</span>218.  <span style="text-decoration: underline;">3</span>200 <span style="text-decoration: underline;">3</span>218.</span></code></pre></div>
 <p>Now we examine information for a smaller assumed treatment difference than the alternative:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">h</span> <span class="op">&lt;-</span> <span class="fu">gs_info_binomial</span><span class="op">(</span>p1 <span class="op">=</span> <span class="fl">.15</span>, p2 <span class="op">=</span> <span class="fl">.12</span>, xi1 <span class="op">=</span> <span class="fl">.5</span>, delta <span class="op">=</span> <span class="fl">.05</span>, n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">350</span>, <span class="fl">700</span>, <span class="fl">1400</span><span class="op">)</span><span class="op">)</span>
+<code class="sourceCode R"><span class="va">h</span> <span class="op">&lt;-</span> <span class="fu">gs_info_binomial</span><span class="op">(</span>p1 <span class="op">=</span> <span class="fl">.15</span>, p2 <span class="op">=</span> <span class="fl">.12</span>, xi1 <span class="op">=</span> <span class="fl">.5</span>, delta <span class="op">=</span> <span class="fl">.05</span>, n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">350</span>, <span class="fl">700</span>, <span class="fl">1400</span><span class="op">)</span><span class="op">)</span>
 <span class="va">h</span>
-<span class="co">#&gt; # A tibble: 3 × 7</span>
+<span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 7</span></span>
 <span class="co">#&gt;   Analysis     n theta theta1  info info0 info1</span>
-<span class="co">#&gt;      &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span>
-<span class="co">#&gt; 1        1   350  0.03   0.05  751.  749.  753.</span>
-<span class="co">#&gt; 2        2   700  0.03   0.05 1502. 1499. 1507.</span>
-<span class="co">#&gt; 3        3  1400  0.03   0.05 3003. 2997. 3013.</span></code></pre></div>
+<span class="co">#&gt;      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        1   350  0.03   0.05  751.  749.  753.</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">2</span>        2   700  0.03   0.05 <span style="text-decoration: underline;">1</span>502. <span style="text-decoration: underline;">1</span>499. <span style="text-decoration: underline;">1</span>507.</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">3</span>        3  <span style="text-decoration: underline;">1</span>400  0.03   0.05 <span style="text-decoration: underline;">3</span>003. <span style="text-decoration: underline;">2</span>997. <span style="text-decoration: underline;">3</span>013.</span></code></pre></div>
 <p>We can plug these into <code><a href="../reference/gs_power_npe.html">gs_power_npe()</a></code> with the intended spending functions. We begin with power under the alternate hypothesis</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/gs_power_npe.html">gs_power_npe</a></span><span class="op">(</span>theta <span class="op">=</span> <span class="va">h1</span><span class="op">$</span><span class="va">theta</span>, theta1 <span class="op">=</span> <span class="va">h1</span><span class="op">$</span><span class="va">theta</span>, info <span class="op">=</span> <span class="va">h1</span><span class="op">$</span><span class="va">info</span>,
              info0 <span class="op">=</span> <span class="va">h1</span><span class="op">$</span><span class="va">info0</span>, info1 <span class="op">=</span> <span class="va">h1</span><span class="op">$</span><span class="va">info1</span>,
              upper <span class="op">=</span> <span class="va">gs_spending_bound</span>,
-             upar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span><span class="op">)</span>,
+             upar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html" class="external-link">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span><span class="op">)</span>,
              lower <span class="op">=</span> <span class="va">gs_spending_bound</span>,
-             lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfHSD.html">sfHSD</a></span>, param <span class="op">=</span> <span class="op">-</span><span class="fl">2</span>, total_spend <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span>
+             lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfHSD.html" class="external-link">sfHSD</a></span>, param <span class="op">=</span> <span class="op">-</span><span class="fl">2</span>, total_spend <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span>
 <span class="op">)</span>
-<span class="co">#&gt; # A tibble: 6 × 9</span>
+<span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 9</span></span>
 <span class="co">#&gt;   Analysis Bound      Z Probability theta theta1  info info0 info1</span>
-<span class="co">#&gt;      &lt;int&gt; &lt;chr&gt;  &lt;dbl&gt;       &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span>
-<span class="co">#&gt; 1        1 Upper  4.33      0.00178  0.05   0.05  805.   800  805.</span>
-<span class="co">#&gt; 2        2 Upper  2.96      0.169    0.05   0.05 1609.  1600 1609.</span>
-<span class="co">#&gt; 3        3 Upper  1.97      0.794    0.05   0.05 3218.  3200 3218.</span>
-<span class="co">#&gt; 4        1 Lower -0.629     0.0203   0.05   0.05  805.   800  805.</span>
-<span class="co">#&gt; 5        2 Lower  0.295     0.0538   0.05   0.05 1609.  1600 1609.</span>
-<span class="co">#&gt; 6        3 Lower  1.94      0.200    0.05   0.05 3218.  3200 3218.</span></code></pre></div>
+<span class="co">#&gt;      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        1 Upper  4.33      0.001<span style="text-decoration: underline;">78</span>  0.05   0.05  805.   800  805.</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">2</span>        2 Upper  2.96      0.169    0.05   0.05 <span style="text-decoration: underline;">1</span>609.  <span style="text-decoration: underline;">1</span>600 <span style="text-decoration: underline;">1</span>609.</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">3</span>        3 Upper  1.97      0.794    0.05   0.05 <span style="text-decoration: underline;">3</span>218.  <span style="text-decoration: underline;">3</span>200 <span style="text-decoration: underline;">3</span>218.</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">4</span>        1 Lower -<span style="color: #BB0000;">0.629</span>     0.020<span style="text-decoration: underline;">3</span>   0.05   0.05  805.   800  805.</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">5</span>        2 Lower  0.295     0.053<span style="text-decoration: underline;">8</span>   0.05   0.05 <span style="text-decoration: underline;">1</span>609.  <span style="text-decoration: underline;">1</span>600 <span style="text-decoration: underline;">1</span>609.</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">6</span>        3 Lower  1.94      0.200    0.05   0.05 <span style="text-decoration: underline;">3</span>218.  <span style="text-decoration: underline;">3</span>200 <span style="text-decoration: underline;">3</span>218.</span></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/gs_power_npe.html">gs_power_npe</a></span><span class="op">(</span>theta <span class="op">=</span> <span class="va">h</span><span class="op">$</span><span class="va">theta</span>, theta1 <span class="op">=</span> <span class="va">h</span><span class="op">$</span><span class="va">theta1</span>, info <span class="op">=</span> <span class="va">h</span><span class="op">$</span><span class="va">info</span>,
              info0 <span class="op">=</span> <span class="va">h</span><span class="op">$</span><span class="va">info0</span>, info1 <span class="op">=</span> <span class="va">h</span><span class="op">$</span><span class="va">info1</span>,
              upper <span class="op">=</span> <span class="va">gs_spending_bound</span>,
-             upar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span><span class="op">)</span>,
+             upar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html" class="external-link">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span><span class="op">)</span>,
              lower <span class="op">=</span> <span class="va">gs_spending_bound</span>,
-             lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfHSD.html">sfHSD</a></span>, param <span class="op">=</span> <span class="op">-</span><span class="fl">2</span>, total_spend <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span>
+             lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfHSD.html" class="external-link">sfHSD</a></span>, param <span class="op">=</span> <span class="op">-</span><span class="fl">2</span>, total_spend <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span>
 <span class="op">)</span>
-<span class="co">#&gt; # A tibble: 6 × 9</span>
+<span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 9</span></span>
 <span class="co">#&gt;   Analysis Bound      Z Probability theta theta1  info info0 info1</span>
-<span class="co">#&gt;      &lt;int&gt; &lt;chr&gt;  &lt;dbl&gt;       &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span>
-<span class="co">#&gt; 1        1 Upper  4.33     0.000224  0.03   0.05  751.  749.  753.</span>
-<span class="co">#&gt; 2        2 Upper  2.96     0.0359    0.03   0.05 1502. 1499. 1507.</span>
-<span class="co">#&gt; 3        3 Upper  1.97     0.364     0.03   0.05 3003. 2997. 3013.</span>
-<span class="co">#&gt; 4        1 Lower -0.675    0.0672    0.03   0.05  751.  749.  753.</span>
-<span class="co">#&gt; 5        2 Lower  0.230    0.195     0.03   0.05 1502. 1499. 1507.</span>
-<span class="co">#&gt; 6        3 Lower  1.85     0.594     0.03   0.05 3003. 2997. 3013.</span></code></pre></div>
+<span class="co">#&gt;      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        1 Upper  4.33     0.000<span style="text-decoration: underline;">224</span>  0.03   0.05  751.  749.  753.</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">2</span>        2 Upper  2.96     0.035<span style="text-decoration: underline;">9</span>    0.03   0.05 <span style="text-decoration: underline;">1</span>502. <span style="text-decoration: underline;">1</span>499. <span style="text-decoration: underline;">1</span>507.</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">3</span>        3 Upper  1.97     0.364     0.03   0.05 <span style="text-decoration: underline;">3</span>003. <span style="text-decoration: underline;">2</span>997. <span style="text-decoration: underline;">3</span>013.</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">4</span>        1 Lower -<span style="color: #BB0000;">0.675</span>    0.067<span style="text-decoration: underline;">2</span>    0.03   0.05  751.  749.  753.</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">5</span>        2 Lower  0.230    0.195     0.03   0.05 <span style="text-decoration: underline;">1</span>502. <span style="text-decoration: underline;">1</span>499. <span style="text-decoration: underline;">1</span>507.</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">6</span>        3 Lower  1.85     0.594     0.03   0.05 <span style="text-decoration: underline;">3</span>003. <span style="text-decoration: underline;">2</span>997. <span style="text-decoration: underline;">3</span>013.</span></code></pre></div>
 </div>
-<div id="references" class="section level1 unnumbered">
-<h1 class="hasAnchor">
-<a href="#references" class="anchor"></a>References</h1>
+<div class="section level1 unnumbered">
+<h1 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h1>
 <div id="refs" class="references">
 <div id="ref-Chan2002">
 <p>Chan, Ivan SF. 2002. “Power and Sample Size Determination for Noninferiority Trials Using an Exact Method.” <em>Journal of Biopharmaceutical Statistics</em> 12 (4): 457–69.</p>
@@ -255,29 +227,28 @@
 </div>
 </div>
 </div>
-  </div>
-
-  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
-
-        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
-    </nav>
-</div>
-
+  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 
 
-      <footer><div class="copyright">
-  <p>Developed by Keaven Anderson. Site built with pkgdown 1.6.1.
-  </p>
-  <p>Copyright © Merck Sharp &amp; Dohme Corp., a subsidiary of Merck &amp; Co., Inc., Kenilworth, NJ, USA.</p>
+    <footer><div class="pkgdown-footer-left">
+  <p></p>
+<p>Developed by Keaven Anderson. Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1. <br>Copyright © Merck Sharp &amp; Dohme Corp., a subsidiary of Merck &amp; Co., Inc., Kenilworth, NJ, USA.</p>
 </div>
 
-      </footer>
+<div class="pkgdown-footer-right">
+  <p></p>
+<p><span></span></p>
+</div>
+
+    </footer>
 </div>
 
   
 
+  
 
   </body>
 </html>
