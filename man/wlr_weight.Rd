@@ -16,9 +16,9 @@ wlr_weight_n(x, arm0, arm1, power = 1)
 \arguments{
 \item{x}{analysis time}
 
-\item{arm0}{an "arm" object defined in `npsurvSS` package}
+\item{arm0}{an "arm" object defined in \code{npsurvSS} package}
 
-\item{arm1}{an "arm" object defined in `npsurvSS` package}
+\item{arm1}{an "arm" object defined in \code{npsurvSS} package}
 
 \item{rho}{A scalar parameter that controls the type of test}
 
@@ -29,9 +29,11 @@ wlr_weight_n(x, arm0, arm1, power = 1)
 \item{power}{A scalar parameter that controls the power of the weight function}
 }
 \description{
-* `wlr_weight_fh` is Fleming-Harriongton, FH(rho, gamma) weight function.
-* `wlr_weight_1`  is constant for log rank test
-* `wlr_weight_power` is Gehan-Breslow and Tarone-Ware weight function.
+\itemize{
+\item \code{wlr_weight_fh} is Fleming-Harriongton, FH(rho, gamma) weight function.
+\item \code{wlr_weight_1}  is constant for log rank test
+\item \code{wlr_weight_power} is Gehan-Breslow and Tarone-Ware weight function.
+}
 }
 \section{Specification}{
 

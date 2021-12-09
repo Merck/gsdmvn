@@ -22,7 +22,7 @@ gs_prob(theta, upper = gs_b, lower = gs_b, upar, lpar, info, r = 18)
 \item{r}{Integer, at least 2; default of 18 recommended by Jennison and Turnbull}
 }
 \value{
-A `tibble` with a row for each finite bound and analysis containing the following variables:
+A \code{tibble} with a row for each finite bound and analysis containing the following variables:
 Analysis analysis number
 Bound Upper (efficacy) or Lower (futility)
 Z Z-value at bound
