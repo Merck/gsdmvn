@@ -95,6 +95,7 @@
 <p>We consider a scenario largely based on the CAPTURE study <span class="citation">Investigators and others (1997)</span> where the primary endpoint was a composite of death, acute myocardial infarction or the need for recurrent percutaneous intervention within 30 days of randomization. That is, we consider a 2-arm trial with an experimental arm and a control arm. The primary endpoint for the trial is a binary indicator for each participant if they have a failed outcome. For this case, we consider the parameter <span class="math inline">\(\theta = p_1 - p _2\)</span> where <span class="math inline">\(p_1\)</span> denotes the probability that a trial participant in the control group experiences a failure and <span class="math inline">\(p_2\)</span> represents the same probability for a trial participant in the experimental group. We will assume <span class="math inline">\(K=3\)</span> analyses after 350, 700, and 1400 patients have been observed with equal randomization between the treatment groups. The study was designed with approximately 80% power (Type II error <span class="math inline">\(\beta = 1 - 0.8 = 0.2\)</span>) and 2.5% one-sided Type I error (<span class="math inline">\(\alpha = 0.025\)</span>) to detect a reduction from a 15% event rate (<span class="math inline">\(p_1 = 0.15\)</span>) in the control group to 10% (<span class="math inline">\(p_2 = 0.1\)</span>) in the experimental group. The parameter of interest is <span class="math inline">\(\theta = p_1 - p_2\)</span>. We denote the alternate hypothesis as <span class="math display">\[H_1: \theta = \theta_1= p_1^1 - p_2^1 = 0.15 - 0.10 = 0.05\]</span> and the null hypothesis <span class="math display">\[H_0: \theta = \theta_0 = 0 = p_1^0 - p_2^0\]</span> where <span class="math inline">\(p^0_1 = p^0_2= (p_1^1+p_2^1)/2 = 0.125\)</span> as laid out in <span class="citation">Lachin (2009)</span>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://merck.github.io/gsdmvn/">gsdmvn</a></span><span class="op">)</span>
+
 <span class="va">p0</span> <span class="op">&lt;-</span> <span class="fl">0.15</span> <span class="co"># assumed failure rate in control group</span>
 <span class="va">p1</span> <span class="op">&lt;-</span> <span class="fl">0.10</span> <span class="co"># assumed failure rate in experimental group</span>
 <span class="va">alpha</span> <span class="op">&lt;-</span> <span class="fl">0.025</span> <span class="co"># Design Type I error</span>
@@ -128,6 +129,7 @@
 <p><span class="math display">\[ \sigma^2_{0k}/\sigma^2_{1k} = \frac{ p_0(1-p_0)\left(1/\xi_1+ 1/\xi_2\right)}{p_1(1-p_1)/\xi_1+p_2(1-p_2)/\xi_2}.\]</span> We also note by definition that <span class="math inline">\(\sigma^2_{0k}/\sigma^2_{1k}=\mathcal I_k/\mathcal I_{0k}.\)</span> Based on an input <span class="math inline">\(p_1, p_2, \xi_1, \xi_2 = 1-\xi_1, n_k\)</span> we will compute <span class="math inline">\(\theta, \mathcal{I}_k, \mathcal{I}_{0k}\)</span>, <span class="math inline">\(k=1,2,\ldots,K\)</span>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/" class="external-link">tibble</a></span><span class="op">)</span>
+
 <span class="va">gs_info_binomial</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span>, <span class="va">xi1</span>, <span class="va">n</span>, <span class="va">delta</span> <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span><span class="op">{</span>
   <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">delta</span><span class="op">)</span><span class="op">)</span> <span class="va">delta</span> <span class="op">&lt;-</span> <span class="va">p1</span> <span class="op">-</span> <span class="va">p2</span>
   <span class="co"># Compute (constant) effect size at each analysis theta</span>
@@ -206,9 +208,9 @@
 <span class="co">#&gt; <span style="color: #BCBCBC;">5</span>        2 Lower  0.230    0.195     0.03   0.05 <span style="text-decoration: underline;">1</span>502. <span style="text-decoration: underline;">1</span>499. <span style="text-decoration: underline;">1</span>507.</span>
 <span class="co">#&gt; <span style="color: #BCBCBC;">6</span>        3 Lower  1.85     0.594     0.03   0.05 <span style="text-decoration: underline;">3</span>003. <span style="text-decoration: underline;">2</span>997. <span style="text-decoration: underline;">3</span>013.</span></code></pre></div>
 </div>
-<div class="section level1 unnumbered">
-<h1 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
-</h1>
+<div class="section level2 unnumbered">
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
 <div id="refs" class="references">
 <div id="ref-Chan2002">
 <p>Chan, Ivan SF. 2002. “Power and Sample Size Determination for Noninferiority Trials Using an Exact Method.” <em>Journal of Biopharmaceutical Statistics</em> 12 (4): 457–69.</p>
