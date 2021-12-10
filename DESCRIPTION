@@ -34,4 +34,5 @@ Suggests:
 Remotes: 
     Merck/simtrial,
     Merck/gsDesign2
+Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2

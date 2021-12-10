@@ -12,16 +12,20 @@ generalizing the theory presented by Jennison and Turnbull (2000) to cases with
 non-homogeneous treatment effect over time.
 The primary application for this is group sequential design under the assumption of non-proportional hazards.
 The gsdmvn package has 4 types of functions
-1) support for asymptotic normal distribution computation,
-2) support for group sequential bound derivation, and
-3) support for design and power calculations.
-4) applications to designs for survival analysis under non-proportional hazards assumptions.
+\enumerate{
+\item support for asymptotic normal distribution computation,
+\item support for group sequential bound derivation, and
+\item support for design and power calculations.
+\item applications to designs for survival analysis under non-proportional hazards assumptions.
+}
 }
 \details{
 In addition to the above function categeories, vignettes show how to implement
-1) design for a binomial endpoint as an example of how to extend the package to other endpoint types,
-2) the extensive capabilities around group sequential boundary calculations,
+\enumerate{
+\item design for a binomial endpoint as an example of how to extend the package to other endpoint types,
+\item the extensive capabilities around group sequential boundary calculations,
 including enabling capabilities not in the gsDesign package.
+}
 }
 \section{gsdmvn functions}{
 

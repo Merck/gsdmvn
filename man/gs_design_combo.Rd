@@ -47,12 +47,12 @@ Refer examples for its data structure.}
 
 \item{algorithm}{ an object of class \code{\link[mvtnorm]{GenzBretz}},
                     \code{\link[mvtnorm]{Miwa}} or \code{\link[mvtnorm]{TVPACK}}
-                    specifying both the algorithm to be used as well as 
+                    specifying both the algorithm to be used as well as
                     the associated hyper parameters.}
 
 \item{n_upper_bound}{a numeric value of upper limit of sample size}
 
-\item{...}{additional parameters transfer to `mvtnorm::pmvnorm`}
+\item{...}{additional parameters transfer to \code{mvtnorm::pmvnorm}}
 }
 \description{
 Group sequential design using MaxCombo test under non-proportional hazards

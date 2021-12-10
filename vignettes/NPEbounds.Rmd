@@ -1,7 +1,6 @@
 ---
 title: "Computing Bounds Under Non-Constant Treatment Effect"
 author: "Keaven Anderson"
-date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 bibliography: gsDesign.bib
 vignette: >
@@ -17,7 +16,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Overview
+## Overview
 
 We consider one- and two-sided hypothesis testing using a group sequential design with possibly non-constant treatment effect.
 That can be useful for situations such as an assumed non-proportional hazards model or using weighted logrank tests for a time-to-event endpoint. 
@@ -58,7 +57,7 @@ We note that information may differ under different values of $\theta(t)$.
 For fixed designs, \cite{LachinBook} computes sample size based on different variances under the null and alternate hypothesis.
 
 
-# Two-sided testing and design
+## Two-sided testing and design
 
 We denote an alternative $H_{1}$: $\theta(t)=\theta_1(t)$; we will always assume $H_1$ for power calculations and sometimes will use $H_1$ for controlling lower boundary $a_k$ crossing probabilities. 
 A value of $\theta(t)>0$ will reflect a positive benefit. 
@@ -72,8 +71,7 @@ For $k=1,2,\ldots,K$, the trial is stopped at analysis $k$ to reject $H_0$ if $a
 If the trial continues until stage $k$ without crossing a bound and $Z_k\leq a_k$ then $H_1$ is rejected in favor of $H_0$, $k=1,2,\ldots,K$. 
 Note that if $a_K< b_K$ there is the possibility of completing the trial without rejecting $H_0$ or $H_1$. 
 
-
-## Haybittle-Peto and spending bounds
+### Haybittle-Peto and spending bounds
 
 The recursive algorithm of the previous section allows computation of both spending bounds and Haybittle-Peto bounds.
 For a Haybittle-Peto efficacy bound, one would normally set $b_k=\Phi^{-1}(1-\epsilon)$ for $k=1,2,\ldots,K-1$ and some small $\epsilon>0$ such as $\epsilon= 0.001$ which yields $b_k=3.09$.
@@ -85,7 +83,7 @@ As noted by @JTBook, $b_1,\ldots,b_K$ if determined under the null hypothesis de
 When computing bounds based on $\beta_k(\theta)$, $k=1,\ldots,K$,  where some $\theta(t_k)\neq 0$ we have an additional dependency with $a_k$ depending not only on $t_k$ and $b_k$, $k=1,\ldots,K$, but also on the final total information $\mathcal{I}_K$.
 Thus, a spending bound under something other than the null hypothesis needs to be recomputed each time $\mathcal{I}_K$ changes, whereas it only needs to be computed once when $\theta(t_k)=0$, $k=1,\ldots,K$.
 
-## Bounds based on boundary families
+### Bounds based on boundary families
 
 Assume constants $b_1^*,\ldots,b_K^*$ and a total targeted one-sided Type I error $\alpha$.
 We wish to find $C_u$ as a function of $t_1,\ldots t_K$ such that if $b_k=C_ub_k^*$ then $\alpha(0)=\alpha.$
@@ -99,11 +97,11 @@ For 2-sided symmetric bounds with $a_k=-b_k$, $k=1,\ldots,K$, we only need to so
 
 At this point, we do not solve for this type of bound for asymmetric upper and lower bounds.
 
-# Sample size
+## Sample size
 
 For sample size, we assume $t_k$, and $\theta(t_k)$ $1,\ldots,K$ are fixed. 
 We assume $\beta(\theta)$ is decreasing as $\mathcal{I}$ is decreasing.
 This will automatically be the case when $\theta(t_k)>0$, $k=1,\ldots,K$ and for many other cases.
 Thus, the information required is done by a search for $\mathcal{I_K}$ that yields $\alpha(\theta)$ yields the targeted power.
 
-# References
+## References

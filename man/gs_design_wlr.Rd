@@ -37,14 +37,18 @@ gs_design_wlr(
 \item{ratio}{Experimental:Control randomization ratio (not yet implemented)}
 
 \item{weight}{weight of weighted log rank test
-* "1"=unweighted,
-* "n"=Gehan-Breslow,
-* "sqrtN"=Tarone-Ware,
-* "FH_p[a]_q[b]"= Fleming-Harrington with p=a and q=b}
+\itemize{
+\item \code{"1"}=unweighted,
+\item \code{"n"}=Gehan-Breslow,
+\item \code{"sqrtN"}=Tarone-Ware,
+\item \code{"FH_p[a]_q[b]"}= Fleming-Harrington with p=a and q=b
+}}
 
 \item{approx}{approximate estimation method for Z statistics
-* "event driven" = only work under propotional hazard model with log rank test
-* "asymptotic"}
+\itemize{
+\item \code{"event driven"} = only work under proportional hazard model with log rank test
+\item \code{"asymptotic"}
+}}
 
 \item{alpha}{One-sided Type I error}
 

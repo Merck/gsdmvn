@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Overview
+## Overview
 
 We provide simple examples for use of the **gsdmvn** package for deriving fixed and group sequential designs under non-proportional hazards.
 The piecewise model for enrollment, failure rates, dropout rates and changing hazard ratio over time allow great flexibility in design assumptions. 
@@ -41,7 +41,7 @@ Topics included here are:
 All of these items are discussed briefly to enable a quick start for early adopters while also suggesting the ultimate possibilities that the software enables.
 Finally, while the final section provides current enhancement priorities, potential topic-related enhancements are discussed throughout the document.
 
-# Packages Used
+## Packages Used
 
 - The **gsdmvn** package is used here to implement group sequential distribution theory under non-proportional hazards and to derive a wide variety of boundary types for group sequential designs.
 - The **gsDesign** package is used as a check for results under proportional hazards as well as a source from deriving bounds using spending functions.
@@ -51,8 +51,7 @@ Finally, while the final section provides current enhancement priorities, potent
 The **gsdmvn** package will likely will likely be incorporated eventually into the **gsDesign2** package, resulting in a fully featured design package.
 However, features and implementation in **gsdmvn** will be allowed to change as needed during the agile rapid development phase.
 
-
-```{r setup, warning = FALSE}
+```{r, message=FALSE, warning=FALSE}
 library(gsdmvn)
 library(gsDesign)
 library(gsDesign2)
@@ -61,7 +60,7 @@ library(knitr)
 library(dplyr)
 ```
 
-# Enrollment Rates
+## Enrollment Rates
 
 Piecewise constant enrollment rates are input in a tabular format.
 Here we assume enrollment will ramp-up with 25%, 50%, and 75% of the final enrollment rate for 2 months each followed by a steady state 100% enrollment for another 6 months.
@@ -69,12 +68,11 @@ The rates will be increased later to power the design appropriately.
 However, the fixed enrollment rate periods will remain unchanged.
 
 ```{r}
-enrollRates <- tibble::tibble(Stratum = "All", duration = c(2, 2, 2, 6), rate = (1:4)/4)
+enrollRates <- tibble::tibble(Stratum = "All", duration = c(2, 2, 2, 6), rate = (1:4) / 4)
 enrollRates
 ```
 
-
-# Failure and Dropout Rates
+## Failure and Dropout Rates
 
 Constant failure and dropout rates are specified by study period and stratum; we consider a single stratum here.
 A hazard ratio is provided for treatment/control hazard rate for each period and stratum.
@@ -90,15 +88,17 @@ Finally, we assume a low 0.001 exponential dropout rate for both treatment group
 
 ```{r}
 medianSurv <- 12
-failRates = tibble::tibble(Stratum = "All",
-                           duration = c(4, Inf),
-                           failRate = log(2) / medianSurv,
-                           hr = c(1, .6),
-                           dropoutRate = .001)
+failRates <- tibble::tibble(
+  Stratum = "All",
+  duration = c(4, Inf),
+  failRate = log(2) / medianSurv,
+  hr = c(1, .6),
+  dropoutRate = .001
+)
 failRates
 ```
 
-# Fixed Design
+## Fixed Design
 
 Under the above enrollment, failure and dropout rate assumptions we now derive sample size for a trial targeted to complete in 36 months with no interim analysis, 90% power and 2.5% Type I error.
 The parameter `upar = qnorm(1 - .025)` in this case is the upper bound for the single analysis, while the parameter `beta = 0.1` is the Type II error (1 - power).
@@ -110,15 +110,16 @@ The design can be derived under these assumptions.
 # Type I error
 alpha <- .025
 design <-
-   gs_design_ahr(enrollRates = enrollRates,
-                 failRates = failRates,
-                 alpha = alpha,
-                 beta = .1, # Type II error = 1 - power
-                 analysisTimes = 36, # Planned trial duration
-                 IF = 1, # single analysis at information-fraction of 1
-                 upar = qnorm(1 - alpha), # Final analysis bound
-                 lpar = -Inf # No futility bound
-               )
+  gs_design_ahr(
+    enrollRates = enrollRates,
+    failRates = failRates,
+    alpha = alpha,
+    beta = .1, # Type II error = 1 - power
+    analysisTimes = 36, # Planned trial duration
+    IF = 1, # Single analysis at information-fraction of 1
+    upar = qnorm(1 - alpha), # Final analysis bound
+    lpar = -Inf # No futility bound
+  )
 ```
 
 There are three components to the resulting design.
@@ -142,13 +143,13 @@ The power is in the `Probability` column on the row with the `Upper` bound. The 
 The variables `info` and `info0` are statistical information at each analysis under the alternate and null hypothesis, respectively.
 
 ```{r,message=FALSE,warning=FALSE}
-design$bounds 
+design$bounds
 ```
 
 We note that the targeted `Events` are approximately what would be proposed with the @Schoenfeld1981 formula:
 
 ```{r}
-gsDesign::nEvents(hr=design$bounds$AHR)
+gsDesign::nEvents(hr = design$bounds$AHR)
 ```
 
 The difference is that `gs_design_ahr()` accounts for both a null and alternate hypothesis variance estimate for `theta=log(AHR)` at each analysis to yield a slightly more conservative event target due to slower accumulation of statistical information under the alternate hypothesis. See @LachinBook for this approach for fixed design; to our knowledge, this has not previously been extended to group sequential design. Due to simplicity, there may be reasons to allow approaches with a single variance estimate in future releases.
@@ -156,18 +157,19 @@ The difference is that `gs_design_ahr()` accounts for both a null and alternate 
 Finally, we note that with a shorter trial duration of 30 months, we need both a larger sample size and targeted number of events due to a larger expected AHR at the time of analysis:
 
 ```{r}
-gs_design_ahr(enrollRates = enrollRates,
-            failRates = failRates,
-            alpha = alpha,
-            beta = .1, # Type II error = 1 - power
-            analysisTimes = 30, # Planned trial duration
-            IF = 1, # single analysis at information-fraction of 1
-            upar = qnorm(1 - alpha), # Final analysis bound
-            lpar = -Inf # No futility bound
-          )$bounds %>% kable(digits=c(0,0,1,0,0,3,4,3,3,2,2))
+gs_design_ahr(
+  enrollRates = enrollRates,
+  failRates = failRates,
+  alpha = alpha,
+  beta = .1, # Type II error = 1 - power
+  analysisTimes = 30, # Planned trial duration
+  IF = 1, # single analysis at information-fraction of 1
+  upar = qnorm(1 - alpha), # Final analysis bound
+  lpar = -Inf # No futility bound
+)$bounds %>% kable(digits = c(0, 0, 1, 0, 0, 3, 4, 3, 3, 2, 2))
 ```
 
-# Group Sequential Design
+## Group Sequential Design
 
 We will not go into detail for group sequential designs here.
 In brief, however, a sequence of tests $Z_1, Z_2,\ldots, Z_K$ that follow a multivariate normal distribution are peformed to test if a new treatment is better than control @JTBook.
@@ -178,8 +180,7 @@ $$\alpha = 1 - P_0(\cap_{k=1}^K Z_k < b_k)$$
 Where $P_0()$ refers to a probability under the null hypothesis.
 This is referred to as a non-binding bound since it is assumed the trial will not be stopped early for futility if some $Z_k$ is small.
 
-## Simple Efficacy Bound Definition
-
+### Simple Efficacy Bound Definition
 
 @LanDeMets developed the spending function method for deriving group sequential bounds.
 This involves use of a non-decreasing spending function $f(t)$ for $t\ge 0$ where $f(0)=0$ and $f(t)=\alpha$ for $t \ge 1$.
@@ -194,36 +195,39 @@ Perhaps the most common spending function for this approach is the @LanDeMets ap
 $$f(t) = 2-2\Phi\left(\frac{\Phi^{-1}(1-\alpha/2)}{t^{1/2}}\right).$$
 
 ```{r, echo=FALSE, fig.width=6.5}
-t <- (0:50)/50
-plot(t, 2 - 2 * pnorm(qnorm(1-.0125)/sqrt(t)), type="l", ylab = "f(t)", xlab = "t")
+t <- (0:50) / 50
+plot(t, 2 - 2 * pnorm(qnorm(1 - .0125) / sqrt(t)), type = "l", ylab = "f(t)", xlab = "t")
 ```
 
 Suppose $K=3$ and $t_1=0.5$, $t_2 = 0.75$, $t_3 = 1$.
 We can define bounds with the **gsDesign** group sequential design function `gsDesign()` and Lan-DeMets O'Brien-Fleming spending function for $\alpha = 0.025$.
 
 ```{r}
-b <- gsDesign::gsDesign(k=3, timing = c(0.5, 0.75, 1), test.type=1, alpha = 0.025, sfu = gsDesign::sfLDOF)$upper$bound
+b <- gsDesign::gsDesign(k = 3, timing = c(0.5, 0.75, 1), test.type = 1, alpha = 0.025, sfu = gsDesign::sfLDOF)$upper$bound
 b
 ```
 
 Now we can define a one-sided group sequential design under the same enrollment, failure and dropout assumptions used previously.
 
 ```{r}
-design1s <- gs_design_ahr(enrollRates = enrollRates,
-                          failRates = failRates,
-                          analysisTimes = 36, # Trial duration
-                          upper = gs_spending_bound,
-                          upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
-                          lower = gs_b,
-                          lpar = rep(-Inf, 3), # No futility bound
-                          IF = c(.5, .75, 1)
-                        )
+design1s <- gs_design_ahr(
+  enrollRates = enrollRates,
+  failRates = failRates,
+  analysisTimes = 36, # Trial duration
+  upper = gs_spending_bound,
+  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+  lower = gs_b,
+  lpar = rep(-Inf, 3), # No futility bound
+  IF = c(.5, .75, 1)
+)
 ```
 
 Bounds at the 3 analyses are as follows; note that expected sample size at time of each data cutoff for analysis is also here in `N`. We filter on the upper bound so that lower bounds with `Z = -Inf` are not shown.
 
 ```{r}
-design1s$bounds %>% filter(Bound == "Upper") %>% kable(digits=c(0,0,1,0,0,3,4,3,3,2,2))
+design1s$bounds %>%
+  filter(Bound == "Upper") %>%
+  kable(digits = c(0, 0, 1, 0, 0, 3, 4, 3, 3, 2, 2))
 ```
 
 The boundary crossing probabilities column labeled `Probability` here are under the alternate hypothesis.
@@ -231,23 +235,23 @@ These are cumulative probabilities totaling 0.9 at the final analysis, represent
 If we wish to see the boundary probabilities under the null hypothesis, we can change the hazard ratio to 1 in the input `failRates`, use the output `enrollRates` from `designs` as follows.
 
 ```{r}
-gs_power_ahr(enrollRates = design1s$enrollRates,
-             failRates = design1s$failRates %>% mutate(hr = 1),
-             upper = gs_spending_bound,
-             upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
-             lpar = rep(-Inf, 3), # No futility bound
-             events = design1s$bound$Events[1:3]
-) %>% filter(Bound == "Upper") %>% kable(digits=c(0,0,1,0,0,3,4,3,3,2,2))
+gs_power_ahr(
+  enrollRates = design1s$enrollRates,
+  failRates = design1s$failRates %>% mutate(hr = 1),
+  upper = gs_spending_bound,
+  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+  lpar = rep(-Inf, 3), # No futility bound
+  events = design1s$bound$Events[1:3]
+) %>%
+  filter(Bound == "Upper") %>%
+  kable(digits = c(0, 0, 1, 0, 0, 3, 4, 3, 3, 2, 2))
 ```
 
-
-
-## Two-Sided Testing
+### Two-Sided Testing
 
 We will consider both symmetric and asymmetric 2-sided designs.
 
-
-### Symmetric 2-sided bounds
+#### Symmetric 2-sided bounds
 
 For a symmetric design, we can again define a bound using `gsDesign::gsDesign()`.
 For this example, the bound is identical to `b` above to the digits calculated.
@@ -257,38 +261,39 @@ b2 <- gsDesign::gsDesign(test.type = 2, sfu = sfLDOF, alpha = 0.025, timing = c(
 b2
 ```
 
-Now we replicate with 'gs_design_ahr()`:
-
+Now we replicate with `gs_design_ahr()`:
 
 ```{r}
-design2ss <- gs_design_ahr(enrollRates = enrollRates,
-                           failRates = failRates,
-                           analysisTimes = 36, # Trial duration
-                           IF = c(.5, .75, 1), # Information fraction at analyses
-                           upper = gs_spending_bound,
-                           upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
-                           lower = gs_spending_bound,
-                           lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
-                           h1_spending = FALSE
-                        )
+design2ss <- gs_design_ahr(
+  enrollRates = enrollRates,
+  failRates = failRates,
+  analysisTimes = 36, # Trial duration
+  IF = c(.5, .75, 1), # Information fraction at analyses
+  upper = gs_spending_bound,
+  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+  lower = gs_spending_bound,
+  lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+  h1_spending = FALSE
+)
 ```
 
 
 Design bounds are confirmed with: 
 
 ```{r, message=FALSE}
-design2ss$bounds %>% kable(digits=c(0,0,1,0,0,3,4,3,3,2,2))
+design2ss$bounds %>% kable(digits = c(0, 0, 1, 0, 0, 3, 4, 3, 3, 2, 2))
 ```
 
 The bounds can be plotted easily:
 
 ```{r,fig.width=6.5}
-ggplot(data = design2ss$bound, aes(x=Events, y=Z, group = Bound)) + geom_line(aes(linetype=Bound)) + geom_point() +
+ggplot(data = design2ss$bound, aes(x = Events, y = Z, group = Bound)) +
+  geom_line(aes(linetype = Bound)) +
+  geom_point() +
   ggtitle("2-sided symmetric bounds with O'Brien-Fleming-like spending")
 ```
 
-
-### Asymmetric 2-sided bounds
+#### Asymmetric 2-sided bounds
 
 Asymmetric 2-sided designs are more common than symmetric since the objectives of the two bounds tend to be different.
 There is often caution to analyze early for efficacy or to use other than a conservative bound; both of these principles have been used with the example designs so far.
@@ -301,13 +306,14 @@ For efficacy, we add an infinite bound at this first interim analysis.
 b2sa <- c(Inf, b) # Same efficacy bound as before
 a2sa <- c(rep(qnorm(.05), 2), rep(-Inf, 2)) # Single futility analysis bound
 
-design2sa <- gs_design_nph(enrollRates = enrollRates,
-                        failRates = failRates,
-                        analysisTimes = 36, # Trial duration
-                        upper = gs_b, upar = b2sa,
-                        lower = gs_b, lpar = a2sa, # Asymmetric 2-sided bound
-                        IF = c(.3, .5, .75, 1)
-                        )
+design2sa <- gs_design_nph(
+  enrollRates = enrollRates,
+  failRates = failRates,
+  analysisTimes = 36, # Trial duration
+  upper = gs_b, upar = b2sa,
+  lower = gs_b, lpar = a2sa, # Asymmetric 2-sided bound
+  IF = c(.3, .5, .75, 1)
+)
 ```
 
 We now have a slightly larger sample size to account for the possibility of an early futility stop.
@@ -319,7 +325,9 @@ design2sa$enrollRates %>% summarise(N = ceiling(sum(rate * duration)))
 Bounds are now:
 
 ```{r}
-design2sa$bounds %>% filter(abs(Z) < Inf) %>% kable(digits=c(0,0,2,4,2,1,2,1,1,1))
+design2sa$bounds %>%
+  filter(abs(Z) < Inf) %>%
+  kable(digits = c(0, 0, 2, 4, 2, 1, 2, 1, 1, 1))
 ```
 
 We see that there does not need to be a (finite) stopping rule for each bound at each analysis.
@@ -332,17 +340,19 @@ This price is generally acceptable for regulatory acceptance and operational fle
 
 ```{r}
 events <- (design2sa$bounds %>% filter(Bound == "Upper"))$Events
-gs_power_nph(enrollRates = design1s$enrollRates,
-           failRates = design2sa$failRates %>% mutate(hr = 1),
-           upar = b2sa,
-           lpar = a2sa,
-           events = events,
-           maxEvents = max(events)) %>% 
-# filter eliminates bounds that are infinite
-  filter(abs(Z) < Inf)  %>% kable(digits=c(0,0,2,4,1,1,2,2,1,1))
+gs_power_nph(
+  enrollRates = design1s$enrollRates,
+  failRates = design2sa$failRates %>% mutate(hr = 1),
+  upar = b2sa,
+  lpar = a2sa,
+  events = events,
+  maxEvents = max(events)
+) %>%
+  # filter eliminates bounds that are infinite
+  filter(abs(Z) < Inf) %>% kable(digits = c(0, 0, 2, 4, 1, 1, 2, 2, 1, 1))
 ```
 
-# Confirmation by Simulation
+## Confirmation by Simulation
 
 We do a small simulation to approximate the boundary crossing probabilities just shown in the 2-sided asymmetric design `design2sa`.
 First, we generate test statistics for each analysis for a number of simulated trials.
@@ -351,21 +361,26 @@ First, we generate test statistics for each analysis for a number of simulated t
 fr <- simfix2simPWSurv(failRates = failRates)
 nsim <- 200 # Number of trial simulations
 simresult <- NULL
-N <- ceiling(design2sa$enrollRates %>% summarize(N = sum(rate/2 * duration)))*2
+N <- ceiling(design2sa$enrollRates %>% summarize(N = sum(rate / 2 * duration))) * 2
 K <- max(design2sa$bounds$Analysis)
 events <- ceiling(sort(unique(design2sa$bounds$Events)))
 
-for(i in 1:nsim){
-  sim <- simPWSurv(n = as.numeric(N),
-                   enrollRates = design2sa$enrollRates,
-                   failRates = fr$failRates,
-                   dropoutRates = fr$dropoutRates
-                  )
-  for(k in 1:K){
-    Z <- sim %>% cutDataAtCount(events[k]) %>% # cut simulation for analysis at targeted events
-         tensurv(txval = "Experimental") %>% tenFH(rg = tibble(rho = 0, gamma = 0))
-    simresult <- rbind(simresult,
-                       tibble(sim = i, k = k, Z = -Z$Z)) # Change sign for Z
+for (i in 1:nsim) {
+  sim <- simPWSurv(
+    n = as.numeric(N),
+    enrollRates = design2sa$enrollRates,
+    failRates = fr$failRates,
+    dropoutRates = fr$dropoutRates
+  )
+  for (k in 1:K) {
+    Z <- sim %>%
+      cutDataAtCount(events[k]) %>% # Cut simulation for analysis at targeted events
+      tensurv(txval = "Experimental") %>%
+      tenFH(rg = tibble(rho = 0, gamma = 0))
+    simresult <- rbind(
+      simresult,
+      tibble(sim = i, k = k, Z = -Z$Z) # Change sign for Z
+    )
   }
 }
 ```
@@ -373,19 +388,22 @@ for(i in 1:nsim){
 Now we analyze the individual trials and summarize results. A larger simulation would be required to more accurately assess the asymptotic approximation for boundary crossing probabilities.
 
 ```{r}
-bds <- tibble::tibble(k = sort(unique(design2sa$bounds$Analysis)),
-            upper = (design2sa$bounds %>% filter(Bound == "Upper"))$Z,
-            lower = (design2sa$bounds %>% filter(Bound == "Lower"))$Z
+bds <- tibble::tibble(
+  k = sort(unique(design2sa$bounds$Analysis)),
+  upper = (design2sa$bounds %>% filter(Bound == "Upper"))$Z,
+  lower = (design2sa$bounds %>% filter(Bound == "Lower"))$Z
 )
-trialsum <- simresult %>% 
-            full_join(bds, by = "k") %>%
-            filter(Z < lower | Z >= upper | k == K) %>%
-            group_by(sim) %>%
-            slice(1) %>% 
-            ungroup()
-trialsum %>% summarize(nsim = n(),
-                       "Early futility (%)" = 100 * mean(Z < lower),
-                       "Power (%)" = 100 * mean(Z >= upper))
+trialsum <- simresult %>%
+  full_join(bds, by = "k") %>%
+  filter(Z < lower | Z >= upper | k == K) %>%
+  group_by(sim) %>%
+  slice(1) %>%
+  ungroup()
+trialsum %>% summarize(
+  nsim = n(),
+  "Early futility (%)" = 100 * mean(Z < lower),
+  "Power (%)" = 100 * mean(Z >= upper)
+)
 ```
 
 ```{r}
@@ -393,45 +411,49 @@ xx <- trialsum %>% mutate(Positive = (Z >= upper))
 table(xx$k, xx$Positive)
 ```
 
-
-# Differences From **gsDesign**
+## Differences From **gsDesign**
 
 The sample size computation from the **gsdmvn** package is slightly different than from the **gsDesign** package for proportional hazards model.
 We demonstrate this with the bounds for the 1-sided test above under a proportional hazards model with an underlying hazard ratio of 0.7.
 
 ```{r}
-design1sPH <- gs_design_nph(enrollRates = enrollRates,
-                        failRates = failRates %>% mutate(hr = .7),
-                        analysisTimes = 36, # Trial duration
-                        upar = b,
-                        lpar = rep(-Inf, 3), # No futility bound
-                        IF = c(.5, .75, 1)
-                        )
+design1sPH <- gs_design_nph(
+  enrollRates = enrollRates,
+  failRates = failRates %>% mutate(hr = .7),
+  analysisTimes = 36, # Trial duration
+  upar = b,
+  lpar = rep(-Inf, 3), # No futility bound
+  IF = c(.5, .75, 1)
+)
 design1sPH$enrollRates %>% kable()
 ```
 
 This results in total sample size:
 
 ```{r}
-design1sPH$enrollRates %>% tail(1) %>% select(N)
+design1sPH$enrollRates %>%
+  tail(1) %>%
+  select(N)
 ```
 
 Now we derive a design with the same targeted properties using the **gsDesign** package.
 
 ```{r,warning=FALSE}
-x <- gsSurv(k = 3,
-            test.type = 1,
-            alpha = .025,
-            beta = .1,
-            timing = c(.5, .75, 1),
-            sfu = sfLDOF,
-            lambda = log(2) / medianSurv,
-            hr = .7, 
-            eta = .001, # dropout rate
-            gamma = c(.25, .5, .75, 1),
-            R = c(2, 2, 2, 6),
-            minfup = 24,
-            T = 36)
+x <- gsSurv(
+  k = 3,
+  test.type = 1,
+  alpha = .025,
+  beta = .1,
+  timing = c(.5, .75, 1),
+  sfu = sfLDOF,
+  lambda = log(2) / medianSurv,
+  hr = .7,
+  eta = .001, # Dropout rate
+  gamma = c(.25, .5, .75, 1),
+  R = c(2, 2, 2, 6),
+  minfup = 24,
+  T = 36
+)
 gsBoundSummary(x) %>% kable(row.names = FALSE)
 ```
 
@@ -441,6 +463,4 @@ Enrollment rates are:
 x$gamma %>% kable()
 ```
 
-
-
-# References
+## References

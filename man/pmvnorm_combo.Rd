@@ -27,10 +27,10 @@ pmvnorm_combo(
 
 \item{algorithm}{ an object of class \code{\link[mvtnorm]{GenzBretz}},
                     \code{\link[mvtnorm]{Miwa}} or \code{\link[mvtnorm]{TVPACK}}
-                    specifying both the algorithm to be used as well as 
+                    specifying both the algorithm to be used as well as
                     the associated hyper parameters.}
 
-\item{...}{additional parameters transfer to `mvtnorm::pmvnorm`}
+\item{...}{additional parameters transfer to \code{mvtnorm::pmvnorm}}
 }
 \description{
 Computes the distribution function of the multivariate normal distribution
@@ -42,5 +42,5 @@ Here i is a group indicator and j is a within group statistics indicator.
 Let G_i = max({Z_ij}) for all test within one group.
 This program are calculating the probability
 
-  $$Pr( lower < max(G) < upper )$$
+$$Pr( lower < max(G) < upper )$$
 }

@@ -26,12 +26,12 @@ specified.}
 }
 \value{
 A \code{tibble} with one row containing
-`AHR` blinded average hazard ratio based on assumed period-specific hazard ratios input in `failRates`
+\code{AHR} blinded average hazard ratio based on assumed period-specific hazard ratios input in \code{failRates}
 and observed events in the corresponding intervals
-`Events` total observed number of events, `info` statistical information based on Schoenfeld approximation,
-and info0 (information under related null hypothesis) for each value of `totalDuration` input;
-if `simple=FALSE`, `Stratum` and `t` (beginning of each constant HR period) are also returned
-and `HR` is returned instead of `AHR`
+\code{Events} total observed number of events, \code{info} statistical information based on Schoenfeld approximation,
+and info0 (information under related null hypothesis) for each value of \code{totalDuration} input;
+if \code{simple=FALSE}, \code{Stratum} and \code{t} (beginning of each constant HR period) are also returned
+and \code{HR} is returned instead of \code{AHR}
 }
 \description{
 Based on blinded data and assumed hazard ratios in different intervals, compute

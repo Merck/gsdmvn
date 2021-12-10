@@ -179,13 +179,13 @@ gs_sigma2_wlr <- function(arm0,
 #' @param events Targeted minimum events at each analysis
 #' @param analysisTimes Targeted minimum study duration at each analysis
 #' @param weight weight of weighted log rank test
-#'               * "1"=unweighted,
-#'               * "n"=Gehan-Breslow,
-#'               * "sqrtN"=Tarone-Ware,
-#'               * "FH_p[a]_q[b]"= Fleming-Harrington with p=a and q=b
+#' - `"1"`=unweighted,
+#' - `"n"`=Gehan-Breslow,
+#' - `"sqrtN"`=Tarone-Ware,
+#' - `"FH_p[a]_q[b]"`= Fleming-Harrington with p=a and q=b
 #' @param approx approximate estimation method for Z statistics
-#'               * "event driven" = only work under propotional hazard model with log rank test
-#'               * "asymptotic"
+#' - `"event driven"` = only work under proportional hazard model with log rank test
+#' - `"asymptotic"`
 #'
 #' @return a \code{tibble} with columns \code{Analysis, Time, N, Events, AHR, delta, sigma2, theta, info, info0.}
 #' \code{info, info0} contains statistical information under H1, H0, respectively.

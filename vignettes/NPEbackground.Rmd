@@ -25,8 +25,7 @@ library(knitr)
 library(gsdmvn)
 ```
 
-# Overview
-
+## Overview
 
 The acronym NPES is short for non-proportional effect size. 
 While it is motivated primarily by a use for when designing a time-to-event trial under non-proportional hazards (NPH), we have simplified and generalized the concept here. The model is likely to be useful for rank-based survival tests beyond the logrank test that will be considered initially by @Tsiatis.
@@ -40,9 +39,9 @@ This vignettes addresses distribution theory and initial technical issues around
 This is then applied to generalize computational algorithms provided in Chapter 19 of @JTBook that are used to compute boundary crossing probabilities as well as boundaries for group sequential designs.
 Additional specifics around boundary computation, power and sample size are provided in a separate vignette.
 
-# The probability model
+## The probability model
 
-## The continuous model and E-process
+### The continuous model and E-process
 
 We consider a simple example here to motivate distribution theory that is quite general and applies across many situations.
 For instance @PLWBook immediately suggest paired observations, time-to-event and binary outcomes as endpoints where the theory is applicable.
@@ -70,7 +69,7 @@ $$ \mathcal{I}_k \equiv \frac{1}{\hbox{Var}(\hat\theta(t_k))} = n_k.$$
 We now see that $t_k$, $1\le k\le K$ is the so-called information fraction at analysis $k$ in that
 $t_k=\mathcal{I}_k/\mathcal{I}_K.$
 
-## Z-process
+### Z-process
 
 The Z-process is commonly used (e.g., @JTBook) and will be used below to extend the computational algorithm in Chapter 19 of @JTBook by defining equivalently in the first and second lines below for $k=1,\ldots,K$
 
@@ -82,7 +81,7 @@ and the expected value is
 
 $$E(Z_{k})= \sqrt{\mathcal{I}_k}\theta(t_{k})= \sqrt{n_k}E(\bar X_k) .$$
 
-## B-process
+### B-process
 
 B-values are mnemonic for Brownian motion.
 For $1\le k\le K$ we define
@@ -97,7 +96,7 @@ For our example, we have
 $$B_k=\frac{1}{\sqrt N}\sum_{i=1}^{n_k}X_i.$$
 It can be useful to think of $B_k$ as a sum of independent random variables.
 
-## Summary of E-, Z- and B-processes
+### Summary of E-, Z- and B-processes
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
 mt <- tibble::tribble(~Statistic,    ~Example,   ~"Expected value", ~Variance,
@@ -108,7 +107,7 @@ mt <- tibble::tribble(~Statistic,    ~Example,   ~"Expected value", ~Variance,
 mt %>% kable(escape=FALSE)
 ```
 
-## Conditional independence, covariance and canonical form
+### Conditional independence, covariance and canonical form
 
 We assume independent increments in the B-process.
 That is, for $1\le j < k\le K$
@@ -141,7 +140,7 @@ The independence of $B_j$ and
 $$B_k-B_j=\sum_{i=n_j + 1}^{n_k}X_i/(\sqrt N\sigma)$$
 is obvious for this example. 
 
-# Test bounds and crossing probabilities
+## Test bounds and crossing probabilities
 
 In this section we define notation for bounds and boundary crossing probabilities for a group sequential design.
 We also define an algorithm for computing bounds based on a targeted boundary crossing probability at each analysis.
@@ -152,7 +151,7 @@ For $k=1,2,\ldots,K-1$, interim cutoffs $-\infty \le a_k< b_k\le \infty$ are set
 An infinite efficacy bound at an analysis means that bound cannot be crossed at that analysis.
 Thus, $3K$ parameters define a group sequential design: $a_k$, $b_k$, and $\mathcal{I}_k$, $k=1,2,\ldots,K$. 
 
-## Notation for boundary crossing probabilities
+### Notation for boundary crossing probabilities
 
 We now apply the above distributional assumptions to compute boundary crossing probabilities.
 We use a shorthand notation in this section to have $\theta$ represent $\theta()$ and $\theta=0$ to represent $\theta(t)\equiv 0$ for all $t$.
@@ -173,7 +172,7 @@ Note that we can also set $a_k= -\infty$ for any or all analyses if a lower boun
 For $k<K$, we can set $b_k=\infty$ where an upper bound is not desired.
 Obviously, for each $k$, we want either $a_k>-\infty$ or $b_k<\infty$.
 
-## Recursive algorithms
+### Recursive algorithms
 
 We now provide a small update to the algorithm of Chapter 19 of @JTBook to do the numerical integration required to compute the boundary crossing probabilites of the previous section and also identifying group sequential boundaries satisfying desired characteristics. 
 The key to these calculations is the conditional power identitity in equation (1) above which allows building recursive numerical integration identities to enable simple, efficient numerical integration.
@@ -188,8 +187,8 @@ $$\begin{align}
 g_k(z; \theta) &= \frac{d}{dz}P_\theta(\{Z_k\le z\}\cap_{j=1}^{k-1}\{a_j\le Z_j<b_j\}) \\
  &=\int_{a_{k-1}}^{b_{k-1}}\frac{d}{dz}P_\theta(\{Z_k\le z |Z_{k-1}=z_{k-1}\})g_{k-1}(z_{k-1}; \theta)dz_{k-1}\\
  &=\int_{a_{k-1}}^{b_{k-1}}f_k(z_{k-1},z;\theta)g_{k-1}(z_{k-1}; \theta)dz_{k-1}.\tag{3}
- \end{align}
-$$
+ \end{align}$$
+
 The bottom line notation here is the same as on p. 347 in @JTBook.
 However, $f_k()$ here takes a slightly different form.
 
@@ -211,7 +210,7 @@ $$\alpha_{k}(\theta)=\int_{b_k}^\infty g_k(z;\theta)dz\tag{5}$$
 and
 $$\beta_{k}(\theta)=\int_{-\infty}^{a_k} g_k(z;\theta)dz.\tag{6}$$
 
-## Deriving spending boundaries
+### Deriving spending boundaries
 
 We can now derive boundaries satisfying given boundary crossing probabilities using equations (2-6) above.
 Suppose for we have specified $b_1,\ldots,b_{k-1}$ and $a_1,\ldots,a_{k-1}$ and now wish to derive $a_k$ and $b_k$ such that equations (5) and (6) hold.
@@ -236,17 +235,17 @@ $$b^{(0)} = \Phi^{-1}(1- \alpha_k(\theta)) + \sqrt{\mathcal{I}_k}\theta(t_k).\ta
 Normally, $b_k$ will be calculated with $\theta(t_k)=0$ for $k=1,2,\ldots,K$ which simplifies the above.
 However, $a_k$ computed analogously will often use a non-zero $\theta$ to enable so-called $\beta$-spending.
 
-# Numerical integration
+## Numerical integration
 
 The numerical integration required to compute boundary probabilities and derive boundaries is the same as that defined in section 19.3 of @JTBook. The single change is the replacement of the non-proportional effect size assumption of equation (3) above replacing the equivalent of equation (4) used for a constant effect size as in @JTBook.
 
-## Demonstrating calculations
+### Demonstrating calculations
 
 We walk through how to perform the basic calculations above.
 The basic scenario will have one interim analysis in addition to the final analysis.
 We will target Type I error $\alpha=0.025$ and Type II error $\beta = 0.1$, the latter corresponding to a target of 90% power.
 We will assume a power spending function with $\rho=2$ for both bounds.
-That is, for information fraction $t$, the cumulative spending will be $\alpha \time t^2$ for the upper bound and $\beta \times t^2$ for the lower bound.
+That is, for information fraction $t$, the cumulative spending will be $\alpha \times t^2$ for the upper bound and $\beta \times t^2$ for the lower bound.
 Statistical information will be 1 for the first analysis and 4 for the final analysis, leading to information fraction $t_1= 1/4, t_2=1$ for the interim and final, respectively.
 We assume $\theta_1 = .5$, $\theta_3=1.5$.
 
@@ -416,5 +415,4 @@ gs_power_npe(theta = theta, theta1 = theta, info = info, binding = TRUE,
 )
 ```
 
-
-# References
+## References

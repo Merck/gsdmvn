@@ -16,7 +16,7 @@ gs_spending_combo(par = NULL, info = NULL, ...)
 
 \item{info}{statistical information at all analyses, at least up to analysis k}
 
-\item{...}{additional parameters transfered to `par$sf`.}
+\item{...}{additional parameters transfered to \code{par$sf}.}
 }
 \description{
 Derive spending bound for MaxCombo group sequential boundary
