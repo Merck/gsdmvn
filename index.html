@@ -81,6 +81,15 @@
 <p>The goal of <strong>gsdmvn</strong> is to enable fixed or group sequential design under non-proportional hazards. Piecewise constant enrollment, failure rates and dropout rates for a stratified population are available to enable highly flexible enrollment, time-to-event and time-to-dropout assumptions. Substantial flexibility on top of what is in the gsDesign package is intended for selecting boundaries. While this work is in progress, substantial capabilities have been enabled. Comments on usability and features are encouraged as this is a development version of the package.</p>
 <p>The goal of gsdmvn is to enable group sequential trial design for time-to-event endpoints under non-proportional hazards assumptions. The package is still maturing; as the package functions become more stable, they will likely be included in the <a href="https://github.com/Merck/gsDesign2" class="external-link">gsDesign2</a> package.</p>
 <div class="section level2">
+<h2 id="branch-specifications">Branch Specifications<a class="anchor" aria-label="anchor" href="#branch-specifications"></a>
+</h2>
+<ul>
+<li><p>The <code>development</code> branch includes all work under development.</p></li>
+<li><p>The <code>table_bound</code> branch is branched from the <code>development</code> branch, and it targets to get the outputs of <code>gd_design_ahr()</code>, <code><a href="reference/gs_power_ahr.html">gs_power_ahr()</a></code>,<code>gs_desgin_wlr()</code>, etc.., into a well-organized form.</p></li>
+<li><p>The <code>update_futility_bound</code> branch is branched from the <code>development</code> branch, and it targets to develop code so one can update the futility bound.</p></li>
+</ul>
+</div>
+<div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <p>You can install <code>gsdmvn</code> with:</p>
