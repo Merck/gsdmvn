@@ -26,6 +26,14 @@ package is still maturing; as the package functions become more stable,
 they will likely be included in the
 [gsDesign2](https://github.com/Merck/gsDesign2) package.
 
+## Branch Specifications
+
+- The `development` branch includes all work under development.
+
+- The `table_bound` branch is branched from the `development` branch, and it targets to get the outputs of `gd_design_ahr()`, `gs_power_ahr()`,`gs_desgin_wlr()`, etc.., into a well-organized form.
+
+- The `update_futility_bound` branch is branched from the `development` branch, and it targets to develop code so one can update the futility bound.
+
 ## Installation
 
 You can install `gsdmvn` with:
