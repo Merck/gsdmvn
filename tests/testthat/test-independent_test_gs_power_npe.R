@@ -22,8 +22,8 @@ b.ia <- gsDesign::sfLDOF(alpha = alpha.t, t = r)
 alpha.ia <- b.ia$spend
 
 Pb <- function(alpha.t, alpha.ia, r, b){
-  temp = mvtnorm::pmvnorm(lower = c(-Inf, b), u
-                          pper = c(qnorm(1-alpha.ia), Inf),
+  temp = mvtnorm::pmvnorm(lower = c(-Inf, b), 
+                          upper = c(qnorm(1-alpha.ia), Inf),
                           corr = rbind(c(1, sqrt(r)), c(sqrt(r), 1)))
   return(alpha.t - alpha.ia - temp)
 }
