@@ -44,7 +44,21 @@ test_that("Validate the function based on examples with individual functions",{
     weight = weight
   )
   fh01 <- gs_info %>% dplyr::mutate_if(is.numeric, round, digits = 5)
-
+  
+  N01 <- sum(enrollRates$rate * enrollRates$duration)
+  n0 <- N01 / 2
+  n1 <- N01 / 2
+  
+  delta01 <- abs(sapply(analysisTimes, function(x) {
+    gsdmvn:::gs_delta_wlr(arm0, arm1, tmax = x, weight = weight)
+  }))
+  sigma201 <- abs(sapply(analysisTimes, function(x) {
+    gsdmvn:::gs_sigma2_wlr(arm0, arm1, tmax = x, weight = weight)
+  }))
+  
+  info01 <- N01 * sigma201
+  theta01 <- delta01 / sigma201
+  
   evt01 <- gsdmvn:::prob_event.arm(arm0, tmax = analysisTimes) * n0 +
     gsdmvn:::prob_event.arm(arm1, tmax = analysisTimes) * n1
   log_ahr <- sapply(analysisTimes, function(t_k) {
@@ -57,18 +71,7 @@ test_that("Validate the function based on examples with individual functions",{
         normalization = TRUE
       )
   })
-  delta01 <- abs(sapply(analysisTimes, function(x) {
-    gsdmvn:::gs_delta_wlr(arm0, arm1, tmax = x, weight = weight)
-  }))
-  sigma201 <- abs(sapply(analysisTimes, function(x) {
-    gsdmvn:::gs_sigma2_wlr(arm0, arm1, tmax = x, weight = weight)
-  }))
-  theta01 <- delta01 / sigma201
-
-  N01 <- sum(enrollRates$rate * enrollRates$duration)
-  n0 <- n1 <- N01 / 2
-  info01 <- N01 * sigma201
-
+  
   #FH(0,1)
   expect_equal(object = as.numeric(fh01$N), expected = rep(N01,3), tolerance = 1)
   expect_equal(object = as.numeric(fh01$Events), expected = evt01, tolerance = 1)

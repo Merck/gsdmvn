@@ -1,4 +1,3 @@
-
 testthat::test_that("compare gs_spending_bound with gsDesign results with equal IA timing for upper and lower bound", {
 
   x <- gsDesign::gsSurv(k = 3,
@@ -6,9 +5,9 @@ testthat::test_that("compare gs_spending_bound with gsDesign results with equal 
                         alpha = 0.025,
                         beta = 0.2,
                         timing = 1,
-                        sfu = sfLDOF,
+                        sfu = gsDesign::sfLDOF,
                         sfupar = c( 0 ),
-                        sfl = sfLDOF,
+                        sfl = gsDesign::sfLDOF,
                         sflpar = c( 0 ),
                         lambdaC = c( 0.1 ),
                         hr = 0.6,
@@ -21,7 +20,7 @@ testthat::test_that("compare gs_spending_bound with gsDesign results with equal 
                         minfup = 24,
                         ratio = 1 )
 
-  info < -x$n.I
+  info <- x$n.I
   a <- -Inf
   b <- Inf
   b <- gs_spending_bound()
@@ -75,7 +74,7 @@ testthat::test_that("compare gs_spending_bound with gsDesign results with equal 
                           efficacy = FALSE,
                           info = info)
 
-  test2<-cbind(a,a2,a3)
+  test2 <- cbind(a,a2,a3)
 
   expect_equal(object = as.numeric(test1), expected = x$upper$bound, tolerance = 0.0001)
   expect_equal(object = as.numeric(test2), expected = x$lower$bound, tolerance = 0.0001)
@@ -89,9 +88,9 @@ testthat::test_that("compare gs_spending_bound with gsDesign results with unequa
                        alpha = 0.025,
                        beta = 0.2,
                        timing = c( 0.6,0.8),
-                       sfu = sfLDOF,
+                       sfu = gsDesign::sfLDOF,
                        sfupar = c( 0 ),
-                       sfl = sfLDOF,
+                       sfl = gsDesign::sfLDOF,
                        sflpar = c( 0 ),
                        lambdaC = c( 0.1 ),
                        hr = 0.6,
@@ -118,7 +117,7 @@ testthat::test_that("compare gs_spending_bound with gsDesign results with unequa
                           theta = 0,
                           hgm1 = hgm1_0,
                           info=info)
-  hgm2_0<-hupdate(theta = 0,
+  hgm2_0 <- hupdate(theta = 0,
                   I = info[2],
                   a = a,
                   b = b2,
@@ -146,7 +145,7 @@ testthat::test_that("compare gs_spending_bound with gsDesign results with unequa
                           efficacy = FALSE,
                           info = info)
 
-  hgm2_1 < -hupdate(theta = y$theta[2],
+  hgm2_1 <- hupdate(theta = y$theta[2],
                     I = info[2],
                     a = a2,
                     b = b2,
