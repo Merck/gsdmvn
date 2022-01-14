@@ -1,4 +1,4 @@
-load("./tests/testthat/fixtures/simulation_test_gs_power_ahr_data.Rdata")
+load("./fixtures/simulation_test_gs_power_ahr_data.Rdata")
 
 x <- gsSurv(
   k = 2,
