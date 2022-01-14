@@ -10,7 +10,7 @@ test_that("Validate the function based on simple calculation",{
     dropoutRate = 0.001
   )
   # Define study design object in each arm
-  gs_arm <- gsdmvn::gs_create_arm(
+  gs_arm <- gsdmvn:::gs_create_arm(
     enrollRates,
     failRates,
     ratio = 2, # Randomization ratio
@@ -32,19 +32,19 @@ test_that("Validate the function based on simple calculation",{
 
 
   #calculate FH weights
-  survprob<-1-npsurvSS::psurv(1:36,arm0)/3 - npsurvSS::psurv(1:36,arm1)*2/3
-  fhwei<-survprob^0.666*(1-survprob)^0.888
+  survprob <- 1 - npsurvSS::psurv(1:36, arm0)/3 - npsurvSS::psurv(1:36, arm1)*2/3
+  fhwei <- survprob^0.666*(1-survprob)^0.888
 
   #FH
-  pckfhwei<-gsdmvn::wlr_weight_fh(x=1:36, arm0, arm1, rho = 0.666, gamma = 0.888, tau = NULL)
+  pckfhwei<-gsdmvn::wlr_weight_fh(x = 1:36, arm0, arm1, rho = 0.666, gamma = 0.888, tau = NULL)
   #wlr_weight_1
-  FH00wt<-gsdmvn::wlr_weight_1(x=1:36,arm0, arm1)
+  FH00wt<-gsdmvn::wlr_weight_1(x = 1:36, arm0, arm1)
   #wlr_weight_n()
-  pckwlrn<-gsdmvn::wlr_weight_n(x=1:36, arm0, arm1, power = 0.666)
+  pckwlrn<-gsdmvn::wlr_weight_n(x = 1:36, arm0, arm1, power = 0.666)
 
 
 
-  expect_equal(object=as.numeric(pckwlrn), expected=wlrn, tolerance=0.0001)
-  expect_equal(object=as.numeric(fhwei), expected=pckfhwei, tolerance=0.0001)
-  expect_equal(object=as.numeric(FH00wt), expected=1, tolerance=0)
+  expect_equal(object = as.numeric(pckwlrn), expected = wlrn, tolerance = 0.0001)
+  expect_equal(object = as.numeric(fhwei), expected = pckfhwei, tolerance = 0.0001)
+  expect_equal(object = as.numeric(FH00wt), expected = 1, tolerance = 0)
 })

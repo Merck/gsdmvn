@@ -27,8 +27,8 @@ test_that("h1() returns results as expected ",{
     b = gstry$upper$bound,
     n.I = gstry$n.I , theta = gstry$theta
   )
-  expect_equal(object = as.numeric(c(upper.null,upper.alt)), expected = x$upper$prob[1,], tolerance = 0.0001)
-  expect_equal(object = as.numeric(c(lower.null,lower.alt)), expected = x$lower$prob[1,], tolerance = 0.0001)
+  expect_equal(object = as.numeric(c(upper.null, upper.alt)), expected = x$upper$prob[1,], tolerance = 0.0001)
+  expect_equal(object = as.numeric(c(lower.null, lower.alt)), expected = x$lower$prob[1,], tolerance = 0.0001)
   })
 
 test_that("h1() returns probability almost zero for extreme case",{

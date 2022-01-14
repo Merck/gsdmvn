@@ -25,7 +25,7 @@ test_that("Validate the function based on examples with individual functions",{
 
   #create arms
   # Define study design object in each arm
-  gs_arm <- gsdmvn::gs_create_arm(
+  gs_arm <- gsdmvn:::gs_create_arm(
     enrollRates,
     failRates,
     ratio = 2,      # Randomization ratio

@@ -12,17 +12,17 @@ failRates <- tibble::tibble(Stratum = "All",
                             failRate=log(2)/c(9, 18),
                             hr = c(.9, .6),
                             dropoutRate = rep(.001, 2))
-arm <- gs_create_arm(enrollRates = enrollRates,
-                     failRates = failRates,
-                     ratio = 1,
-                     total_time = 1e6)
-sigma <- gs_sigma2_combo(arm0 = arm$arm0,
-                         arm1 = arm$arm1,
-                         tmax = 30,
-                         rho = rho,
-                         gamma=gamma,
-                         tau = rep(-1, length(rho)),
-                         approx="asymptotic")
+arm <- gsdmvn:::gs_create_arm(enrollRates = enrollRates,
+                              failRates = failRates,
+                              ratio = 1,
+                              total_time = 1e6)
+sigma <- gsdmvn:::gs_sigma2_combo(arm0 = arm$arm0,
+                                  arm1 = arm$arm1,
+                                  tmax = 30,
+                                  rho = rho,
+                                  gamma = gamma,
+                                  tau = rep(-1, length(rho)),
+                                  approx = "asymptotic")
 corr <- cov2cor(sigma)
 n_test <- length(rho)
 theta <- rep(0, n_test)
@@ -65,17 +65,17 @@ failRates <- tibble::tibble(Stratum = "All",
                             failRate = log(2)/c(9, 18),
                             hr = c(.9, .6),
                             dropoutRate = rep(.001, 2))
-arm <- gs_create_arm(enrollRates = enrollRates,
-                     failRates = failRates,
-                     ratio = 1,
-                     total_time = 1e6)
-sigma <- gs_sigma2_combo (arm0 = arm$arm0,
-                          arm1 = arm$arm1,
-                          tmax = 30,
-                          rho = rho,
-                          gamma = gamma,
-                          tau = rep(-1, length(rho)),
-                          approx ="asymptotic")
+arm <- gsdmvn:::gs_create_arm(enrollRates = enrollRates,
+                              failRates = failRates,
+                              ratio = 1,
+                              total_time = 1e6)
+sigma <- gsdmvn:::gs_sigma2_combo (arm0 = arm$arm0,
+                                   arm1 = arm$arm1,
+                                   tmax = 30,
+                                   rho = rho,
+                                   gamma = gamma,
+                                   tau = rep(-1, length(rho)),
+                                   approx ="asymptotic")
 corr <- cov2cor(sigma)
 n_test <- length(rho)
 theta <- rep(0, n_test)

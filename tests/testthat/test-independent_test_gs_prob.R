@@ -4,17 +4,17 @@ testthat::test_that("expect equal with gsDesign::gsProbability outcome for signl
 
 
   test1 <- gs_prob(theta = 0,
-                   upar = gsDesign::gsDesign(k=3,sfu=gsDesign::sfLDOF)$upper$bound,
-                   lpar = gsDesign::gsDesign(k=3,sfl=gsDesign::sfLDOF)$lower$bound,
+                   upar = gsDesign::gsDesign(k = 3,sfu = gsDesign::sfLDOF)$upper$bound,
+                   lpar = gsDesign::gsDesign(k = 3,sfl = gsDesign::sfLDOF)$lower$bound,
                    upper = gs_b,
                    lower = gs_b,
                    info = 1:3)
 
   x <- gsDesign::gsProbability(
     k = 3,
-    a = gsDesign::gsDesign(k=3,sfl=gsDesign::sfLDOF)$lower$bound,
-    b = gsDesign::gsDesign(k=3,sfu=gsDesign::sfLDOF)$upper$bound,
-    n.I = gsDesign::gsDesign(k=3,sfu=gsDesign::sfLDOF)$n.I,
+    a = gsDesign::gsDesign(k = 3,sfl = gsDesign::sfLDOF)$lower$bound,
+    b = gsDesign::gsDesign(k = 3,sfu = gsDesign::sfLDOF)$upper$bound,
+    n.I = gsDesign::gsDesign(k = 3,sfu = gsDesign::sfLDOF)$n.I,
     theta = 0
   )
 
@@ -27,7 +27,7 @@ testthat::test_that("expect equal with mvtnorm outcome at final analysis, k=2",{
 
   P <- function(alpha.t, alpha.ia, r, b){
     temp = mvtnorm::pmvnorm(lower = c(-Inf, b),
-                            upper = c(qnorm(1-alpha.ia), Inf),
+                            upper = c(qnorm(1 - alpha.ia), Inf),
                             corr = rbind(c(1, sqrt(r)), c(sqrt(r), 1)))
     return(alpha.t - alpha.ia - temp)
   }
@@ -41,8 +41,8 @@ testthat::test_that("expect equal with mvtnorm outcome at final analysis, k=2",{
   p <- 1- pnorm(b$root)
 
   test2 <- gs_prob(theta = 0,
-                   upar = gsDesign::gsDesign(k=2,sfu=gsDesign::sfLDOF)$upper$bound,
-                   lpar = gsDesign::gsDesign(k=2,sfl=gsDesign::sfLDOF)$lower$bound,
+                   upar = gsDesign::gsDesign(k = 2,sfu = gsDesign::sfLDOF)$upper$bound,
+                   lpar = gsDesign::gsDesign(k = 2,sfl = gsDesign::sfLDOF)$lower$bound,
                    upper = gs_b,
                    lower = gs_b,
                    info = 1:2)

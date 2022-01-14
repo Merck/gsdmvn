@@ -52,10 +52,10 @@ failRates <- tibble::tibble(Stratum = "All",
                             failRate = log(2)/c(9, 18),
                             hr = c(.9,.6),
                             dropoutRate = rep(.001, 2))
-arm <- gs_create_arm(enrollRates,
-                     failRates,
-                     ratio = 1,
-                     total_time = 1e6)
+arm <- gsdmvn:::gs_create_arm(enrollRates,
+                              failRates,
+                              ratio = 1,
+                              total_time = 1e6)
 delta <- gs_delta_combo(arm0 = arm$arm0,
                         arm1 = arm$arm1,
                         tmax = 30,

@@ -16,23 +16,23 @@ fh_test <- rbind(data.frame(rho = 0,
                             Analysis = 1:3,
                             analysisTimes = analysisTimes)
 )
-gs_arm <- gs_create_arm(enrollRates,
-                        failRates,
-                        ratio = 1,                       # Randomization ratio
-                        total_time = max(analysisTimes)) # Total study duration
+gs_arm <- gsdmvn:::gs_create_arm(enrollRates,
+                                 failRates,
+                                 ratio = 1,                       # Randomization ratio
+                                 total_time = max(analysisTimes)) # Total study duration
 
-utility_combo <- gs_utility_combo(enrollRates = enrollRates,
-                                  failRates = failRates,
-                                  fh_test = fh_test,
-                                  ratio = 1,
-                                  algorithm = GenzBretz(maxpts = 1e5, abseps = 1e-5))
+utility_combo <- gsdmvn:::gs_utility_combo(enrollRates = enrollRates,
+                                           failRates = failRates,
+                                           fh_test = fh_test,
+                                           ratio = 1,
+                                           algorithm = GenzBretz(maxpts = 1e5, abseps = 1e-5))
 
-info_combo_test <- gs_info_combo(enrollRates = enrollRates,
-                                 failRates = failRates,
-                                 ratio = 1,
-                                 analysisTimes = analysisTimes,
-                                 rho = 0,
-                                 gamma = 0)
+info_combo_test <- gsdmvn:::gs_info_combo(enrollRates = enrollRates,
+                                          failRates = failRates,
+                                          ratio = 1,
+                                          analysisTimes = analysisTimes,
+                                          rho = 0,
+                                          gamma = 0)
 test_that("gs_utility_combo output correct info as gs_info_combo",{
   expect_equal(utility_combo$info[1:11], info_combo_test[1:11])
 })
@@ -77,23 +77,23 @@ fh_test <- rbind(data.frame(rho = rho,
                             Analysis = 1,
                             analysisTimes = analysisTimes)
 )
-gs_arm <- gs_create_arm(enrollRates,
-                        failRates,
-                        ratio = 1,                   # Randomization ratio
-                        total_time = max(analysisTimes)) # Total study duration
+gs_arm <- gsdmvn:::gs_create_arm(enrollRates,
+                                 failRates,
+                                 ratio = 1,                   # Randomization ratio
+                                 total_time = max(analysisTimes)) # Total study duration
 
-utility_combo <- gs_utility_combo(enrollRates = enrollRates,
-                                  failRates = failRates,
-                                  fh_test = fh_test,
-                                  ratio = 1,
-                                  algorithm = GenzBretz(maxpts= 1e5, abseps= 1e-5))
+utility_combo <- gsdmvn:::gs_utility_combo(enrollRates = enrollRates,
+                                           failRates = failRates,
+                                           fh_test = fh_test,
+                                           ratio = 1,
+                                           algorithm = GenzBretz(maxpts = 1e5, abseps = 1e-5))
 
-info_combo_test <- gs_info_combo(enrollRates = enrollRates,
-                                 failRates = failRates,
-                                 ratio = 1,
-                                 analysisTimes = analysisTimes,
-                                 rho = rho,
-                                 gamma = gamma)
+info_combo_test <- gsdmvn:::gs_info_combo(enrollRates = enrollRates,
+                                          failRates = failRates,
+                                          ratio = 1,
+                                          analysisTimes = analysisTimes,
+                                          rho = rho,
+                                          gamma = gamma)
 test_that ( "gs_utility_combo output correct info as gs_info_combo",{
   expect_equal(utility_combo$info[1:11], info_combo_test[1:11])
 })
@@ -103,12 +103,12 @@ test_that ( "gs_utility_combo output correct theta effect as gs_info_combo",{
   expect_equal(utility_combo$theta, theta_test)
 })
 
-sigma2 <- gs_sigma2_combo(arm0 = gs_arm$arm0,
-                          arm1 = gs_arm$arm1,
-                          tmax = analysisTimes,
-                          rho = rho,
-                          gamma = gamma,
-                          tau = tau)
+sigma2 <- gsdmvn:::gs_sigma2_combo(arm0 = gs_arm$arm0,
+                                   arm1 = gs_arm$arm1,
+                                   tmax = analysisTimes,
+                                   rho = rho,
+                                   gamma = gamma,
+                                   tau = tau)
 corr_test <-cov2cor(sigma2)
 test_that ( "gs_utility_combo output correct correlation matrix as gs_info_combo",{
   expect_equal(utility_combo$corr, corr_test)

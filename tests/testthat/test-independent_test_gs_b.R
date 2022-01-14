@@ -5,7 +5,7 @@ testthat::test_that("gs_b() returns values as expected", {
 
   par = 1:10
   k=5
-  expect_equal(par[5], gs_b(par,k=k))
+  expect_equal(par[5], gs_b(par,k = k))
 })
 
 testthat::test_that("gs_b() returns NA if the number of interim analysis is larger than the length of par", {

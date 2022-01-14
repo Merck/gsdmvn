@@ -24,7 +24,7 @@ test_that("Check using gs_info_wlr and gs_power_npe", {
 
   #create arms
   # Define study design object in each arm
-  gs_arm <- gsdmvn::gs_create_arm(
+  gs_arm <- gsdmvn:::gs_create_arm(
     enrollRates,
     failRates,
     ratio = 2, # Randomization ratio
