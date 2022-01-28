@@ -1,0 +1,294 @@
+---
+title: "Updated Version of gs_design_xxx"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_depth: 4
+    toc_float: true
+    number_sections: true
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r, message=FALSE, warning=FALSE}
+library(dplyr)
+devtools::load_all()
+```
+
+This vignette discusses the usage of updated 
+
+- `gs_power_npe()` 
+- `gs_design_npe()` 
+- `gs_design_ahr()`
+- `gs_design_wlr()`
+
+The different between the new version and the old version is that, when you set the argument `calc_ho_prob = TRUE`, it calculate the crossing probability under the null hypothesis.
+
+For `gs_design_combo()`, it is not updated, since it already reports the crossing probability under the null hypothesis.
+
+- Can we add IF in `gs_design_combo()`?
+- How about theta? (Different test have different theta)
+
+The design parameters we use in this vignette is
+```{r}
+# enrollment/failure rates
+enrollRates <- tibble(Stratum = "All", 
+                      duration = 12, 
+                      rate = 1)
+failRates <- tibble(Stratum = "All", duration = c(4, 100), 
+                    failRate = log(2) / 12,
+                    hr = c(1, .6), 
+                    dropoutRate = .001)
+# Information fraction
+IF <- (1:3)/3 
+# Analysis times in months; first 2 will be ignored as IF will not be achieved
+analysisTimes <- c(.01, .02, 36)  
+# Experimental / Control randomization ratio
+ratio <- 1 
+# 1-sided Type I error
+alpha <- 0.025 
+# Type II error (1 - power)
+beta <- .1 
+# Upper bound
+upper <- gs_spending_bound
+upar <- list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)
+# Lower bound
+lower <- gs_spending_bound
+lpar <- list(sf = gsDesign::sfHSD, total_spend = 0.1, param = 0, timing = NULL)
+# weight function in WLR
+wgt00 <- function(x, arm0, arm1){
+                 gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0)}
+wgt05 <- function(x, arm0, arm1){
+                 gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = .5)}
+# test in COMBO
+fh_test <- rbind(
+      data.frame(rho = 0, gamma = 0, tau = -1, test = 1, Analysis = 1:3,analysisTimes = c(12, 24, 36)), 
+      data.frame(rho = c(0, 0.5), gamma = 0.5, tau = -1, test = 2:3, Analysis = 3, analysisTimes = 36)
+      )
+```
+
+
+
+
+# `gs_power_npe`
+
+The previous outputs of `gs_power_npe` is 
+```{r}
+gsdmvn::gs_power_npe(
+  theta = c(.1, .2, .3), 
+  info = (1:3) * 40, info0 = (1:3) * 40,
+  upper = gs_b, upar = gsDesign::gsDesign(k = 3, sfu = gsDesign::sfLDOF)$upper$bound,
+  lower = gs_b, lpar = c(-1, 0, 0)) %>% 
+  gt::gt()
+```
+
+The updated outputs of `gs_power_npe2` is
+```{r}
+gs_power_npe2(
+  theta = c(.1, .2, .3), 
+  info = (1:3) * 40, info0 = (1:3) * 40,
+  upper = gs_b, upar = gsDesign::gsDesign(k = 3, sfu = gsDesign::sfLDOF)$upper$bound,
+  lower = gs_b, lpar = c(-1, 0, 0),
+  calc_h0_prob = TRUE) %>% 
+  gt::gt()
+```
+
+# `gs_design_npe`
+The previous outputs of `gs_design_npe` is 
+```{r}
+gsdmvn::gs_design_npe(
+  theta = c(.1, .2, .3), 
+  info = (1:3) * 80, info0 = (1:3) * 80, info1 = (1:3) * 80,
+  upper = gs_b, upar = gsDesign::gsDesign(k = 3,sfu = gsDesign::sfLDOF)$upper$bound,
+  lower = gs_b, lpar = c(-1, 0, 0)) %>% 
+  gt::gt()
+```
+
+The updated outputs of `gs_design_npe2` is
+```{r}
+gs_design_npe2(
+  theta = c(.1, .2, .3), 
+  info = (1:3) * 80, info0 = (1:3) * 80, info1 = (1:3) * 80,
+  upper = gs_b, upar = gsDesign::gsDesign(k = 3,sfu = gsDesign::sfLDOF)$upper$bound,
+  lower = gs_b, lpar = c(-1, 0, 0), 
+  calc_h0_prob = TRUE)  %>% 
+  gt::gt()
+```
+
+# `gs_design_ahr`
+The previous outputs of `gs_design_ahr` is 
+
+```{r}
+# AHR design 
+x_ahr <- gs_design_ahr(
+   enrollRates = enrollRates,
+   failRates = failRates,
+   # Information fraction
+   IF = IF, 
+   # Analysis times in months; first 2 will be ignored as IF will not be achieved
+   analysisTimes = analysisTimes, 
+   # Experimental / Control randomization ratio
+   ratio = ratio, 
+   # 1-sided Type I error
+   alpha = alpha, 
+   # Type II error (1 - power)
+   beta = beta, 
+   upper = upper,
+   upar = upar,
+   lower = lower,
+   lpar = lpar
+)
+
+x_ahr$bounds %>% 
+  gt::gt()
+```
+
+The updated outputs of `gs_design_ahr2` is
+```{r}
+x_ahr2 <- gs_design_ahr2(
+   enrollRates = enrollRates,
+   failRates = failRates,
+   # Information fraction
+   IF = IF, 
+   # Analysis times in months; first 2 will be ignored as IF will not be achieved
+   analysisTimes = analysisTimes, 
+   # Experimental / Control randomization ratio
+   ratio = ratio, 
+   # 1-sided Type I error
+   alpha = alpha, 
+   # Type II error (1 - power)
+   beta = beta, 
+   upper = upper,
+   upar = upar,
+   lower = lower,
+   lpar = lpar
+)
+x_ahr2$bounds %>% 
+  gt::gt()
+```
+
+
+Alternatively, we can output 2 tables:
+
+
+```{r}
+x_ahr2$bounds %>% select(Analysis, Time, N, Events, AHR) %>% unique() %>%  gt::gt()
+x_ahr2$bounds %>% select(Analysis, Bound, Probability, info, info0, hypothesis) %>% gt::gt()
+```
+
+The bounds can be summarized as
+```{r}
+summary_bound(x_ahr2, method = "AHR")
+```
+
+# `gs_design_wlr`
+
+The previous outputs of `gs_design_wlr` is 
+```{r}
+x_wlr <- gsdmvn::gs_design_wlr(
+   enrollRates = enrollRates,
+   failRates = failRates,
+   weight = wgt05, 
+   # Information fraction
+   IF = NULL, 
+   # Analysis times in months; first 2 will be ignored as IF will not be achieved
+   analysisTimes = sort(unique(x_ahr$bounds$Time)), 
+   # Experimental / Control randomization ratio
+   ratio = ratio, 
+   # 1-sided Type I error
+   alpha = alpha, 
+   # Type II error (1 - power)
+   beta = beta,   
+   upper = upper,
+   upar = upar,
+   lower = lower,
+   lpar = lpar
+)
+
+x_wlr$bounds %>% 
+  gt::gt()
+```
+
+The updated outputs of `gs_design_wlr2` is
+```{r}
+x_wlr2 <- gs_design_wlr2(
+   enrollRates = enrollRates,
+   failRates = failRates,
+   weight = wgt05, 
+   # Information fraction
+   IF = NULL, 
+   # Analysis times in months; first 2 will be ignored as IF will not be achieved
+   analysisTimes = sort(unique(x_ahr$bounds$Time)), 
+   # Experimental / Control randomization ratio
+   ratio = ratio, 
+   # 1-sided Type I error
+   alpha = alpha, 
+   # Type II error (1 - power)
+   beta = beta,   
+   upper = upper,
+   upar = upar,
+   lower = lower,
+   lpar = lpar
+)
+
+x_wlr2$bounds %>% 
+  gt::gt()
+```
+
+The bounds can be summarized as 
+```{r}
+summary_bound(x_wlr2, method = "WLR")
+```
+
+# Max Combo 
+The original output of `gs_design_combo` is 
+```{r}
+x_combo <- gsdmvn::gs_design_combo(
+  ratio = 1, 
+  alpha = 0.025, 
+  beta = 0.2, 
+  enrollRates = tibble::tibble(Stratum = "All", duration = 12, rate = 500/12),
+  failRates = tibble::tibble(Stratum = "All", duration = c(4, 100), 
+                             failRate = log(2) / 15, hr = c(1, .6), dropoutRate = .001), 
+  fh_test = fh_test,
+  binding = FALSE,
+  upper = gsdmvn::gs_spending_combo,
+  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+  lower = gsdmvn::gs_spending_combo,
+  lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.2))
+
+x_combo %>% gt::gt()
+```              
+
+The output of updated `gs_design_combo2` is
+```{r}
+x_combo2 <- gsdmvn::gs_design_combo2(
+  ratio = 1, 
+  alpha = 0.025, 
+  beta = 0.2, 
+  enrollRates = tibble::tibble(Stratum = "All", duration = 12, rate = 500/12),
+  failRates = tibble::tibble(Stratum = "All", duration = c(4, 100), 
+                             failRate = log(2) / 15, hr = c(1, .6), dropoutRate = .001), 
+  fh_test = fh_test,
+  upper = gsdmvn::gs_spending_combo,
+  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+  lower = gsdmvn::gs_spending_combo,
+  lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.2))
+```
+
+```{r}
+x_combo2 %>% gt::gt()
+```
+
+The bounds can be summarized as 
+```{r, eval=FALSE}
+summary_bound(x_combo2, method = "COMBO")
+```
+
