@@ -1,0 +1,73 @@
+---
+title: "Group Sequential Design for Binary Outcomes"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    theme: flatly
+    highlight: tango
+bibliography: gsDesign.bib
+vignette: |
+  %\VignetteIndexEntry{Group Sequential Design for Binary Outcomes}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(tibble)
+library(dplyr)
+library(knitr)
+library(gsdmvn)
+```
+
+## Overview
+
+We consider group sequential design comparing two binomial distributions based on comparing two treatment groups for a binary outcome.
+There are several issues to consider:
+
+- The measure of treatment difference or natural parameter; we focus on risk difference.
+- Null and alternate hypothesis variance incorporation.
+- Superiority, non-inferiority and super-superiority designs.
+- Stratified populations.
+- Fixed and group sequential designs.
+
+The focus here is for sample sizes that are large enough so that asymptotic theory works well without continuity corrections.
+Simulation is used throughout to demonstrate how to check this assumption as well as to check the examples presented.
+
+## Single analysis unstratified
+
+### Notation
+
+Throughout we assume a control group and a single experimental group indexed by $C$ and $E$, respectively.
+We also focus on pairwise comparisons.
+We assume for control and experimental groups, respectively:
+
+- Randomization between two treatment groups with sample sizes $N_C$ and $N_E$; the randomization ratio planned is $r=N_E/N_C$.
+- Independent observations with a binary outcome that is observed with probability $p_C$ and $p_E$.
+- Random variables $X_C\sim\hbox{Binomial}(N_C, p_C), X_E\sim\hbox{Binomial}(N_E,p_E)$ with observed outcomes $x_E, x_C$.  
+- The constant $d=\pm 1$ indicating whether is an outcome is bad (failure; $d=1$) or good (response; $d=-1).
+- The natural parameter risk difference is denoted by $\theta = d\times (p_C - p_E)$. Thus, whether $d=1$ or $d=-1$, $\theta > 0$ indicates a more favorable outcome distribution in the experimental group than in the control group.
+
+
+### Asymptotic distribution of risk difference
+
+### Testing
+
+### Sample size and power
+
+### Extending to non-inferiority and super-superiority
+
+## Single analysis, stratified population
+
+### Assumptions
+
+### Weighting options
+
+## Group sequential design
+
+## References
