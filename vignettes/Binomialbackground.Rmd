@@ -7,6 +7,7 @@ output:
     toc_float: true
     theme: flatly
     highlight: tango
+    code_folding: hide
 bibliography: gsDesign.bib
 vignette: |
   %\VignetteIndexEntry{Group Sequential Design for Binary Outcomes}
@@ -41,7 +42,7 @@ Simulation is used throughout to demonstrate how to check this assumption as wel
 
 ## Single analysis unstratified
 
-### Notation
+### Notation and asymptotic distribution
 
 Throughout we assume a control group and a single experimental group indexed by $C$ and $E$, respectively.
 We also focus on pairwise comparisons.
@@ -49,15 +50,83 @@ We assume for control and experimental groups, respectively:
 
 - Randomization between two treatment groups with sample sizes $N_C$ and $N_E$; the randomization ratio planned is $r=N_E/N_C$.
 - Independent observations with a binary outcome that is observed with probability $p_C$ and $p_E$.
-- Random variables $X_C\sim\hbox{Binomial}(N_C, p_C), X_E\sim\hbox{Binomial}(N_E,p_E)$ with observed outcomes $x_E, x_C$.  
+- Random variables $X_C\sim\hbox{Binomial}(N_C, p_C), X_E\sim\hbox{Binomial}(N_E,p_E)$ with observed outcomes $x_C, x_E$ and observed rates of $\bar p_C=x_C/N_C, \bar p_E=x_E/N_E$.  
 - The constant $d=\pm 1$ indicating whether is an outcome is bad (failure; $d=1$) or good (response; $d=-1).
 - The natural parameter risk difference is denoted by $\theta = d\times (p_C - p_E)$. Thus, whether $d=1$ or $d=-1$, $\theta > 0$ indicates a more favorable outcome distribution in the experimental group than in the control group.
+- Estimation of risk difference with $\hat\theta=d\times(\bar p_C - \bar p_E).$
 
-### Asymptotic distribution of risk difference
+Letting $N=N_C+N_E$, we note that $N_C=N/(r+1)$ and $N_E=Nr/(r+1)$.
+We have $E(\hat\theta)=\theta$ and 
+
+$$
+\begin{aligned}
+\sigma^2 &= \hbox{Var}(\hat\theta)= \frac{p_C(1- p_C)}{N_C}+\frac{p_E(1- p_E)}{N_E}\\
+ &= \frac{r+1}{N}\left(p_C(1- p_C)+\frac{p_E(1- p_E)}{r}\right).
+\end{aligned}
+$$
+
+
 
 ### Testing
 
-Start with superiority and move on to non-inferiority, super-superiority
+We will formulate hypothesis testing with two fixed real values $\theta_0 < \theta_1$, a null hypothesis $H_0: \theta=\theta_0$ and alternate hypothesis $H_a: \theta=theta_1$.
+Testing will be one-sided at level $\alpha, 0<\alpha<1$, with the null hypothesis being rejected if 
+$$Z-\theta_0\ge \Phi^{-1}(1-\alpha).$$
+where 
+
+$$Z=\frac{d\times(\bar p_C - \bar p_E)}{\hat\sigma_0}$$
+and $\hat\sigma^2_0$ is the maximum likelihood estimate of the variance $\sigma^2$ under $H_0$.
+Letting $\bar p=(x_C+x_E)/(N_C+N_E)$ we have 
+$$\hat\sigma^2_0 = \bar p (1-\bar p)\times \left(\frac{1}{N_C}+\frac{1}{N_E}\right)= \bar p (1-\bar p)\frac{r+1}{N}\left(1 + \frac{1}{r}\right).$$
+Note that when we have equal randomization, this has the perhaps more recognizable $\hat\sigma^2_0 = \bar p (1-\bar p)\frac{4}{N}.$
+
+We do a quick 20,000 simulations and compare the density histogram of outcomes to the standard normal density.
+Assume $r=1, d = 1, p_C=p_E=0.125, N=200$.
+We then compute $\sigma$ as `r round(sqrt(.125 * .875/200 * 4), 3)`.
+Even for this *not huge* sample size the normal density fits quite well other than some flatness in the middle.
+
+
+```{r, message = FALSE}
+# Hypothesized failure rate
+p <- .125
+#  Other parameters
+set.seed(123)
+r <- 1
+N <- 200
+NC <- N / (r + 1)
+NE <- r * N / (r + 1)
+library(ggplot2)
+# Generate random counts of events for each treatment
+xC <- rbinom(n = 20000, size = NC, prob = p)
+xE <- rbinom(n = 20000, size = NE, prob = p)
+# Treatment difference estimate
+thetahat <- xC / NC - xE / NE
+# Standard error under H0
+pbar <- (xC + xE) / N
+se0 <- sqrt(pbar * (1 - pbar)*(1 / NC + 1 / NE))
+# Z to test H0
+Z <- thetahat / se0
+x <- seq(-4, 4, .1)
+se0a <- sqrt(p * (1 - p) * (1 / NC + 1 / NE))
+y <- data.frame(Z = x, Density = dnorm(x = x, mean = 0, sd = 1)) 
+ggplot() + 
+  geom_histogram(data = data.frame(Z), aes(x = Z, y = ..density..), color = 1, fill = "white") +
+    ylab("Density") +
+  geom_line(data = y, aes(x=Z, y = Density))
+```
+
+Now we extend the compuation of $\hat\sigma^2_0$ to $\theta_0\neq 0$ using the restriction that rate estimates $\bar p_{C0}, \bar p_{E0}$ under the null hypothesis satisfy $\bar p_{C0}=\bar p_{E0}+d\theta_0$.
+Once solved, we will have
+$$\hat\sigma^2_0= \frac{\bar p_{C0}(1- \bar p_{C0})}{N_C}+\frac{\bar p_{E0}(1- \bar p_{E0})}{N_E}= \frac{r+1}{N}\left(\bar p_{C0}(1- \bar p_{C0})+\frac{\bar p_{E0}(1- \bar p_{E0})}{r}\right).
+$$
+
+
+Assuming $0 < x_C<N_C$ and $0<x_E<N_E$ we will estimate the above variance with:
+
+$$\hat\sigma^2=\widehat{\hbox{Var}}(\hat\theta)=\frac{\bar p_C(1- \bar p_C)}{N_C}+\frac{\bar p_E(1- \bar p_E)}{N_E}.$$
+We will use the asymptotic approximation $Z=\hat\theta/\hat\sigma\sim\hbox{Normal}(\delta, 1)$ where $\delta=d\times(p_C-p_E)/\sigma$ is the standardized effect size.
+Squaring this and applying a continuity correction is a typical two-sided testing approach. Using the normally distributed $Z$ enables one-sided testing. 
+The continuity correction is unneeded as shown below.
 
 ### Sample size and power
 
