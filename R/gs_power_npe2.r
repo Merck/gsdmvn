@@ -1,10 +1,10 @@
-gs_power_npe2 <- function(theta = .1, theta1 = NULL,
-                          info = 1, info1 = NULL, info0 = NULL,
-                          binding = FALSE,
-                          upper = gs_b, upar = qnorm(.975), test_upper = TRUE,
-                          lower = gs_b, lpar = -Inf, test_lower = TRUE,
-                          r = 18, tol = 1e-6,
-                          calc_h0_prob = FALSE){
+gs_power_npe2 <- function(
+  theta = .1, theta1 = NULL,
+  info = 1, info1 = NULL, info0 = NULL,
+  binding = FALSE,
+  upper = gs_b, upar = qnorm(.975), test_upper = TRUE,
+  lower = gs_b, lpar = -Inf, test_lower = TRUE,
+  r = 18, tol = 1e-6){
   # --------------------------------------------- #
   #     check & set up parameters                 #
   # --------------------------------------------- #
@@ -88,10 +88,6 @@ gs_power_npe2 <- function(theta = .1, theta1 = NULL,
     info1 = rep(info1, 2),
     hypothesis = rep("H1", 2*K))
   
-  if(calc_h0_prob == FALSE){
-    return(table_H1)
-  }
-  
   # --------------------------------------------- #
   #     calculate crossing probability            #
   #       under the null hypothesis               #
@@ -165,7 +161,7 @@ gs_power_npe2 <- function(theta = .1, theta1 = NULL,
                     cumsum(lowerProb)),
     theta = rep(rep(0, K), 2),
     theta1 = rep(rep(0, K), 2),
-    IF = rep(info0 / max(info0), 2),
+    IF = rep(info1 / max(info1), 2),
     info = rep(info0, 2),  #rep(info, 2),
     info0 = rep(info0, 2),
     info1 = rep(info1, 2),

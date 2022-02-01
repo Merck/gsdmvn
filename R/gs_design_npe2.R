@@ -1,11 +1,11 @@
 gs_design_npe2 <- function(
   theta = .1, theta1 = NULL, 
   info = 1, info0 = NULL, info1 = NULL,
-  alpha = 0.025, beta = .1, binding = FALSE,
+  alpha = 0.025, beta = .1, 
+  binding = FALSE,
   upper = gs_b, upar = qnorm(.975), test_upper = TRUE,
   lower = gs_b, lpar= -Inf, test_lower = TRUE,
-  r = 18, tol = 1e-6,
-  calc_h0_prob = FALSE){
+  r = 18, tol = 1e-6){
   #######################################################################################
   # WRITE INPUT CHECK TESTS AND RETURN APPROPRIATE ERROR MESSAGES
   # info should be a scalar or vector of positive increasing values
@@ -186,6 +186,10 @@ gs_design_npe2 <- function(
   )
   if(inherits(res, "try-error")){stop("gs_design_npe: Sample size solution not found")}
   
+  
+  # --------------------------------------------- #
+  #     return the output                         #
+  # --------------------------------------------- #
   ## Update targeted info, info0 based on inflation factor and return a tibble with
   ## bounds, targeted information, and boundary crossing probabilities at each analysis
   # return(gs_power_npe(theta = theta, theta1 = theta1,
@@ -194,42 +198,39 @@ gs_design_npe2 <- function(
   #                     upper=upper, lower=lower, upar = upar, lpar= lpar,
   #                     test_upper = test_upper, test_lower = test_lower,
   #                     r = r, tol = tol))
+  out <- gs_power_npe2(
+    theta = theta, theta1 = theta1,
+    info = info * res$root, info1 = info1 * res$root, info0 = info0 * res$root,
+    binding = binding,
+    upper = upper, upar = upar, test_upper = test_upper,
+    lower = lower, lpar = lpar, test_lower = test_lower,
+    r = r, tol = tol)
   
-  if(calc_h0_prob == TRUE){
-    return(gs_power_npe2(
-      theta = theta, theta1 = theta1,
-      info = info * res$root, info1 = info1 * res$root, info0 = info0 * res$root,
-      binding = binding,
-      upper = upper, upar = upar, test_upper = test_upper,
-      lower = lower, lpar = lpar, test_lower = test_lower,
-      r = r, tol = tol,
-      calc_h0_prob = TRUE))
-  }else{
-    return(gs_power_npe2(
-      theta = theta, theta1 = theta1,
-      info = info * res$root, info1 = info1 * res$root, info0 = info0 * res$root,
-      binding = binding,
-      upper = upper, upar = upar, test_upper = test_upper,
-      lower = lower, lpar = lpar, test_lower = test_lower,
-      r = r, tol = tol))
-  }
+  return(out)
+  
   
 }
 ## Create a function that uses gs_power_npe to compute difference from targeted power
 ## for a given sample size inflation factor
-errbeta <- function(x = 1, K = 1, beta = .1, theta = .1, theta1 = .1, info = 1, info1 = 1, info0 = 1, binding = FALSE,
-                    Zupper = gs_b, Zlower = gs_b, upar = qnorm(.975), lpar= -Inf,
-                    test_upper = TRUE, test_lower = TRUE,
+errbeta <- function(x = 1, K = 1, 
+                    beta = .1, theta = .1, theta1 = .1, 
+                    info = 1, info1 = 1, info0 = 1,
+                    binding = FALSE,
+                    Zupper = gs_b, upar = qnorm(.975), test_upper = TRUE,
+                    Zlower = gs_b, lpar= -Inf, test_lower = TRUE,
                     r = 18, tol = 1e-6){
-  return(1 -  beta -
-           gs_power_npe2(theta = theta, theta1 = theta1,
-                         info = info * x, info1 = info1 * x, info0 = info0 * x, binding = binding,
-                         upper = Zupper, lower = Zlower, upar = upar, lpar= lpar,
-                         test_upper = test_upper, test_lower = test_lower,
-                         r = r, tol = tol
-           )%>% 
-           filter(hypothesis == "H1" & Bound == "Upper" & Analysis == K) %>% 
-           select(Probability) %>% 
-           unlist() %>% 
-           as.numeric()) # $Probability[K])
+  out <- 1 -  
+    beta -
+    gs_power_npe2(theta = theta, theta1 = theta1,
+                  info = info * x, info1 = info1 * x, info0 = info0 * x, binding = binding,
+                  upper = Zupper, lower = Zlower, upar = upar, lpar= lpar,
+                  test_upper = test_upper, test_lower = test_lower,
+                  r = r, tol = tol
+    )%>% # $Probability[K])
+    filter(hypothesis == "H1" & Bound == "Upper" & Analysis == K) %>% 
+    select(Probability) %>% 
+    unlist() %>% 
+    as.numeric()
+  
+  return(out) 
 }

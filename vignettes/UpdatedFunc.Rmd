@@ -1,5 +1,5 @@
 ---
-title: "Updated Version of gs_design_xxx"
+title: "Updated gs_design_xxx and Nice Bounds Summary"
 date: "`r Sys.Date()`"
 output:
   html_document:
@@ -19,6 +19,8 @@ knitr::opts_chunk$set(
 
 ```{r, message=FALSE, warning=FALSE}
 library(dplyr)
+library(tibble)
+library(gt)
 devtools::load_all()
 ```
 
@@ -39,10 +41,10 @@ For `gs_design_combo()`, it is not updated, since it already reports the crossin
 The design parameters we use in this vignette is
 ```{r}
 # enrollment/failure rates
-enrollRates <- tibble(Stratum = "All", 
+enrollRates <- tibble::tibble(Stratum = "All", 
                       duration = 12, 
                       rate = 1)
-failRates <- tibble(Stratum = "All", duration = c(4, 100), 
+failRates <- tibble::tibble(Stratum = "All", duration = c(4, 100), 
                     failRate = log(2) / 12,
                     hr = c(1, .6), 
                     dropoutRate = .001)
@@ -57,10 +59,10 @@ alpha <- 0.025
 # Type II error (1 - power)
 beta <- .1 
 # Upper bound
-upper <- gs_spending_bound
+upper <- gsdmvn::gs_spending_bound
 upar <- list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)
 # Lower bound
-lower <- gs_spending_bound
+lower <- gsdmvn::gs_spending_bound
 lpar <- list(sf = gsDesign::sfHSD, total_spend = 0.1, param = 0, timing = NULL)
 # weight function in WLR
 wgt00 <- function(x, arm0, arm1){
@@ -74,58 +76,10 @@ fh_test <- rbind(
       )
 ```
 
-
-
-
-# `gs_power_npe`
-
-The previous outputs of `gs_power_npe` is 
-```{r}
-gsdmvn::gs_power_npe(
-  theta = c(.1, .2, .3), 
-  info = (1:3) * 40, info0 = (1:3) * 40,
-  upper = gs_b, upar = gsDesign::gsDesign(k = 3, sfu = gsDesign::sfLDOF)$upper$bound,
-  lower = gs_b, lpar = c(-1, 0, 0)) %>% 
-  gt::gt()
-```
-
-The updated outputs of `gs_power_npe2` is
-```{r}
-gs_power_npe2(
-  theta = c(.1, .2, .3), 
-  info = (1:3) * 40, info0 = (1:3) * 40,
-  upper = gs_b, upar = gsDesign::gsDesign(k = 3, sfu = gsDesign::sfLDOF)$upper$bound,
-  lower = gs_b, lpar = c(-1, 0, 0),
-  calc_h0_prob = TRUE) %>% 
-  gt::gt()
-```
-
-# `gs_design_npe`
-The previous outputs of `gs_design_npe` is 
-```{r}
-gsdmvn::gs_design_npe(
-  theta = c(.1, .2, .3), 
-  info = (1:3) * 80, info0 = (1:3) * 80, info1 = (1:3) * 80,
-  upper = gs_b, upar = gsDesign::gsDesign(k = 3,sfu = gsDesign::sfLDOF)$upper$bound,
-  lower = gs_b, lpar = c(-1, 0, 0)) %>% 
-  gt::gt()
-```
-
-The updated outputs of `gs_design_npe2` is
-```{r}
-gs_design_npe2(
-  theta = c(.1, .2, .3), 
-  info = (1:3) * 80, info0 = (1:3) * 80, info1 = (1:3) * 80,
-  upper = gs_b, upar = gsDesign::gsDesign(k = 3,sfu = gsDesign::sfLDOF)$upper$bound,
-  lower = gs_b, lpar = c(-1, 0, 0), 
-  calc_h0_prob = TRUE)  %>% 
-  gt::gt()
-```
-
 # `gs_design_ahr`
 The previous outputs of `gs_design_ahr` is 
 
-```{r}
+```{r, eval=FALSE}
 # AHR design 
 x_ahr <- gs_design_ahr(
    enrollRates = enrollRates,
@@ -155,43 +109,72 @@ The updated outputs of `gs_design_ahr2` is
 x_ahr2 <- gs_design_ahr2(
    enrollRates = enrollRates,
    failRates = failRates,
-   # Information fraction
-   IF = IF, 
-   # Analysis times in months; first 2 will be ignored as IF will not be achieved
-   analysisTimes = analysisTimes, 
-   # Experimental / Control randomization ratio
-   ratio = ratio, 
-   # 1-sided Type I error
-   alpha = alpha, 
-   # Type II error (1 - power)
-   beta = beta, 
+   IF = IF, # Information fraction
+   analysisTimes = analysisTimes, # Analysis times in months; first 2 will be ignored as IF will not be achieved
+   ratio = ratio, # Experimental / Control randomization ratio
+   alpha = alpha, # 1-sided Type I error
+   beta = beta, # Type II error (1 - power)
    upper = upper,
    upar = upar,
    lower = lower,
    lpar = lpar
 )
+```
+
+The outputs of `gs_design_ahr2()` is a list including
+
+- `enrollRates`: the enrollment rates
+- `failRates`: the failure rates
+- `bounds`: the summary of the crossing probabilities under H0 \& H1
+- `analysis`: the summary of each analysis
+
+The direct output of `x_ahr2$bounds` is
+```{r}
 x_ahr2$bounds %>% 
   gt::gt()
 ```
 
-
-Alternatively, we can output 2 tables:
-
-
+The direct output of `x_ahr2$analysis` is 
 ```{r}
-x_ahr2$bounds %>% select(Analysis, Time, N, Events, AHR) %>% unique() %>%  gt::gt()
-x_ahr2$bounds %>% select(Analysis, Bound, Probability, info, info0, hypothesis) %>% gt::gt()
+x_ahr2$analysis %>% 
+   gt::gt()
 ```
 
-The bounds can be summarized as
+There is a nicer summary of the bounds by using `summary_bound()` function.  
 ```{r}
-summary_bound(x_ahr2, method = "AHR")
+summary_bound(x_ahr2, method = "AHR", gt_style = FALSE) %>% 
+   gt::gt()
 ```
+
+One can also use `gt` to get the the above R tibble into a gt table.
+```{r}
+summary_bound(x_ahr2, method = "AHR", gt_style = TRUE)
+```
+
+If one set `gt_style = TRUE`, then one can edit the title/subtitle/spanner/footnotes of the gt table by using the arguments in `summary_bound`. 
+But one can also use functions in `gt` for cumstom design of table layout. 
+```{r}
+summary_bound(x_ahr2, method = "AHR", gt_style = TRUE,
+              gt_title = "Summary of the Crossing Probability",
+              gt_subtitle = "by Using gs_design_ahr",
+              gt_colname_spanner = "Cumulative boundary crossing probability",
+              gt_colname_spannersub = c("Alternate hypothesis", "Null hypothesis"),
+              gt_footnote = list(content = c("approximate hazard ratio to cross bound.", 
+                                             "gs_design_ahr is a function in gsdmvn.",
+                                             "AHR is average hazard ratio; IF is information fraction."),
+                                 location = c("~HR at bound",
+                                              NA, 
+                                              NA),
+                                 attr = c("colname",
+                                          "subtitle", 
+                                          "analysis")))
+```
+
 
 # `gs_design_wlr`
 
 The previous outputs of `gs_design_wlr` is 
-```{r}
+```{r, eval=FALSE}
 x_wlr <- gsdmvn::gs_design_wlr(
    enrollRates = enrollRates,
    failRates = failRates,
@@ -217,7 +200,7 @@ x_wlr$bounds %>%
 ```
 
 The updated outputs of `gs_design_wlr2` is
-```{r}
+```{r, eval=FALSE}
 x_wlr2 <- gs_design_wlr2(
    enrollRates = enrollRates,
    failRates = failRates,
@@ -243,13 +226,14 @@ x_wlr2$bounds %>%
 ```
 
 The bounds can be summarized as 
-```{r}
+```{r, eval=FALSE}
 summary_bound(x_wlr2, method = "WLR")
 ```
 
-# Max Combo 
+# `gs_design_combo`
+
 The original output of `gs_design_combo` is 
-```{r}
+```{r, eval=FALSE}
 x_combo <- gsdmvn::gs_design_combo(
   ratio = 1, 
   alpha = 0.025, 
@@ -268,7 +252,7 @@ x_combo %>% gt::gt()
 ```              
 
 The output of updated `gs_design_combo2` is
-```{r}
+```{r, eval=FALSE}
 x_combo2 <- gsdmvn::gs_design_combo2(
   ratio = 1, 
   alpha = 0.025, 
@@ -283,12 +267,56 @@ x_combo2 <- gsdmvn::gs_design_combo2(
   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.2))
 ```
 
-```{r}
+```{r, eval=FALSE}
 x_combo2 %>% gt::gt()
 ```
 
 The bounds can be summarized as 
 ```{r, eval=FALSE}
 summary_bound(x_combo2, method = "COMBO")
+```
+
+
+# `gs_power_npe`
+
+The previous outputs of `gs_power_npe` is 
+```{r, eval=FALSE}
+gsdmvn::gs_power_npe(
+  theta = c(.1, .2, .3), 
+  info = (1:3) * 40, info0 = (1:3) * 40,
+  upper = gs_b, upar = gsDesign::gsDesign(k = 3, sfu = gsDesign::sfLDOF)$upper$bound,
+  lower = gs_b, lpar = c(-1, 0, 0)) %>% 
+  gt::gt()
+```
+
+The updated outputs of `gs_power_npe2` is
+```{r, eval=FALSE}
+gs_power_npe2(
+  theta = c(.1, .2, .3), 
+  info = (1:3) * 40, info0 = (1:3) * 40,
+  upper = gs_b, upar = gsDesign::gsDesign(k = 3, sfu = gsDesign::sfLDOF)$upper$bound,
+  lower = gs_b, lpar = c(-1, 0, 0)) %>% 
+  gt::gt()
+```
+
+# `gs_design_npe`
+The previous outputs of `gs_design_npe` is 
+```{r, eval=FALSE}
+gsdmvn::gs_design_npe(
+  theta = c(.1, .2, .3), 
+  info = (1:3) * 80, info0 = (1:3) * 80, info1 = (1:3) * 80,
+  upper = gs_b, upar = gsDesign::gsDesign(k = 3,sfu = gsDesign::sfLDOF)$upper$bound,
+  lower = gs_b, lpar = c(-1, 0, 0)) %>% 
+  gt::gt()
+```
+
+The updated outputs of `gs_design_npe2` is
+```{r, eval=FALSE}
+gs_design_npe2(
+  theta = c(.1, .2, .3), 
+  info = (1:3) * 80, info0 = (1:3) * 80, info1 = (1:3) * 80,
+  upper = gs_b, upar = gsDesign::gsDesign(k = 3,sfu = gsDesign::sfLDOF)$upper$bound,
+  lower = gs_b, lpar = c(-1, 0, 0))  %>% 
+  gt::gt()
 ```
 
