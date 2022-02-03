@@ -4,7 +4,6 @@
 #' The data frame in `table_a` maps into `table_b` with the by variable `by_a`
 #' Examples show how to use with the *gt* package for printing a compact combined table.
 #'
-#' @details
 #' @param table_a A data frame with one record for each value of `byvar`.
 #' @param table_b A data frame with one or more records for each value of `byvar`.
 #' @param byvar A mapping a one-to-many relation from `table_a` to `table_b`.
