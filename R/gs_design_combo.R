@@ -107,6 +107,7 @@ gs_design_combo <- function(
   # --------------------------------------------- #
   n_analysis <- length(unique(fh_test$Analysis))
   n_test <- max(fh_test$test)
+  
   # --------------------------------------------- #
   #     obtain utilities                          #
   # --------------------------------------------- #
@@ -129,7 +130,6 @@ gs_design_combo <- function(
     info_frac <- tapply(info$info0, info$test, function(x) x / max(x))
     min_info_frac <- apply(do.call(rbind, info_frac), 2, min)
   }
-  
   
   # Function to calculate power
   foo <- function(n, beta, ...){
@@ -169,7 +169,6 @@ gs_design_combo <- function(
     
   }
   
-  
   # Probability Cross Boundary
   prob <- gs_prob_combo(upper_bound = bound$upper,
                         lower_bound = bound$lower,
@@ -199,15 +198,17 @@ gs_design_combo <- function(
       tibble::as_tibble() %>% 
       select(Analysis, Time, N, Events) %>% 
       unique()
-  )
+  ) %>% 
+    # update sample size and events
+    mutate(
+      Events = Events * n / max(N),
+      N = N * n / max(N)) #%>% 
+    # arrage the dataset by Upper bound first and then Lower bound
+    #arrange(desc(Bound))
   
-  # update sample size and events
-  db$Events <- db$Events * n / max(db$N)
-  db$N <- db$N * n / max(db$N)
   
   # db[order(db$Bound, decreasing = TRUE), c("Analysis", "Bound", "Time", "N", "Events", "Z", "Probability", "Probability_Null")]
   out <- db[order(db$Bound, decreasing = TRUE), c("Analysis", "Bound", "Time", "N", "Events", "Z", "Probability", "Probability_Null")]
-  
   out_H1 <- out[, c("Analysis", "Bound", "Time", "N", "Events", "Z", "Probability")]
   out_H1$hypothesis <- rep("H1", n_analysis)
   out_H1$`Nominal p` <- pnorm(out_H1$Z * (-1))
@@ -218,7 +219,10 @@ gs_design_combo <- function(
   out_H0$hypothesis <- rep("H0", n_analysis)
   out_H0$`Nominal p` <- pnorm(out_H0$Z * (-1))
   
-  allout1 <- tibble::tibble(
+  # --------------------------------------------- #
+  #     get bounds to output                      #
+  # --------------------------------------------- #
+  bounds <- tibble::tibble(
     Analysis = c(out_H1$Analysis, out_H0$Analysis),
     Bound = c(out_H1$Bound, out_H0$Bound),
     Time = c(out_H1$Time, out_H0$Time),
@@ -227,35 +231,58 @@ gs_design_combo <- function(
     Z = c(out_H1$Z, out_H0$Z),
     Probability = c(out_H1$Probability, out_H0$Probability),
     hypothesis = c(out_H1$hypothesis, out_H0$hypothesis),
-    `Nominal p` = c(out_H1$`Nominal p`, out_H0$`Nominal p`)) 
-  
-  allout2 <- rbind(
-    utility$info_all %>% select(Analysis, test, Time, N, Events, AHR), 
-    utility$info_all %>% select(Analysis, test, Time, N, Events, AHR)) %>% 
-    
-    mutate(hypothesis = rep(c("H1", "H0"), each = n_analysis * n_test),
-           theta = c(utility$info_all$theta, rep(0, n_analysis * n_test)),
-           info = c(utility$info_all$info, utility$info_all$info0),
-           EF = Events/N
-           # IF = c(tapply(utility$info_all$info, utility$info_all$test, function(x) x / max(x)) %>% unlist() %>% as.numeric(),
-           #        tapply(utility$info_all$info0, utility$info_all$test, function(x) x / max(x)) %>% unlist() %>% as.numeric())
-           ) %>% 
-    unique()
-  
-  # --------------------------------------------- #
-  #     get bounds to output                      #
-  # --------------------------------------------- #
-  bounds <- allout1 %>% 
-    select(all_of(c("Analysis", "Bound", "Probability", "hypothesis", "Z",
-                    "Nominal p")))
+    `Nominal p` = c(out_H1$`Nominal p`, out_H0$`Nominal p`)
+    )  %>% 
+    select(all_of(c("Analysis", "Bound", "Probability", "hypothesis", "Z", "Nominal p")))
   
   # --------------------------------------------- #
   #     get analysis summary to output            #
   # --------------------------------------------- #
-  analysis <- allout2 %>% 
-    select(Analysis, Time, N, Events, AHR, theta, info, EF, hypothesis) %>% 
+  # check if rho, gamma = 0 is included in fh_test
+  tmp <- fh_test %>% 
+    filter(rho == 0 & gamma == 0) %>% 
+    select(test) %>% 
+    unlist() %>% 
+    as.numeric() %>% 
     unique()
+  if(length(tmp) != 0){
+    AHR_dis <- utility$info_all %>% 
+      filter(test == tmp) %>% 
+      select(AHR) %>% 
+      unlist() %>% 
+      as.numeric()
+  }else{
+    AHR_dis <- gs_info_wlr(
+      enrollRates, 
+      failRates, 
+      ratio, 
+      events = unique(utility$info_all$Events), 
+      analysisTimes = unique(utility$info_all$Time), 
+      weight = eval(parse(text = get_combo_weight(rho = 0, gamma = 0, tau = -1))))$AHR
+  }
   
-  return(list(bounds = bounds, 
-              analysis = analysis))
+  analysis <- rbind(
+    utility$info_all %>% select(Analysis, test, Time, N, Events), 
+    utility$info_all %>% select(Analysis, test, Time, N, Events)) %>% 
+    
+    mutate(hypothesis = rep(c("H1", "H0"), each = n_analysis * n_test),
+           theta = c(utility$info_all$theta, rep(0, n_analysis * n_test)),
+           # info = c(utility$info_all$info, utility$info_all$info0),
+           EF = Events/tapply(Events, test, function(x) max(x)) %>% unlist() %>% as.numeric()
+           # IF = c(tapply(utility$info_all$info, utility$info_all$test, function(x) x / max(x)) %>% unlist() %>% as.numeric(),
+           #        tapply(utility$info_all$info0, utility$info_all$test, function(x) x / max(x)) %>% unlist() %>% as.numeric())
+    ) %>% 
+    select(Analysis, Time, N, Events, # AHR, 
+           # theta, info, 
+           EF, hypothesis) %>% 
+    unique() %>% 
+    mutate(AHR = rep(AHR_dis, 2))
+  
+  # --------------------------------------------- #
+  #     output                                    #
+  # --------------------------------------------- #
+  message("The AHR reported in the `analysis` table is under the log-rank test.")
+  output <- list(bounds = bounds, analysis = analysis)
+  class(output) <- c("combo", class(output))
+  return(output)
 }

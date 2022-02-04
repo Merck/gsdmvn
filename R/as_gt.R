@@ -18,7 +18,6 @@
 #' This is the function to format the bounds summary table into gt style.
 #'
 #' @param output an object returned by \code{summary_bound}
-#' @param method he method used to generate x. It should be one of \code{c("AHR", "WLR", "COMBO")}
 #' @param title a string to specify the title of the gt table
 #' @param subtitle a string to specify the subtitle of the gt table
 #' @param colname_spanner a string to specify the spanner of the gt table
@@ -46,19 +45,18 @@
 #'   lower = gsdmvn::gs_spending_combo,
 #'   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.2))
 #'   summary_bound(x_combo2, method = "COMBO") %>% 
-#' gt_format(method = "COMBO", 
-#'           title = "Summary of the Crossing Probability",
-#'           subtitle = "by Using gs_design_wlr",
-#'           colname_spanner = "Cumulative boundary crossing probability",
-#'           colname_spannersub = c("Alternate hypothesis", "Null hypothesis"),
-#'           footnote = list(content = c("gs_design_wlr is a function in gsdmvn.",
-#'                                       "EF is the events fraction, i.e., Events/N."),
-#'                           location = c(NA, NA),
-#'                           attr = c("subtitle", "analysis")))
+#' as_gt(
+#'   title = "Summary of the Crossing Probability",
+#'   subtitle = "by Using gs_design_wlr",
+#'   colname_spanner = "Cumulative boundary crossing probability",
+#'   colname_spannersub = c("Alternate hypothesis", "Null hypothesis"),
+#'   footnote = list(content = c("gs_design_wlr is a function in gsdmvn.",
+#'                               "EF is the events fraction, i.e., Events/N."),
+#'                   location = c(NA, NA),
+#'                   attr = c("subtitle", "analysis")))
 #'                           
-gt_format <- function(
+as_gt <- function(
   output,
-  method = c("AHR", "WLR", "COMBO"),
   title = NULL,
   subtitle = NULL,
   colname_spanner = "Cumulative boundary crossing probability",
@@ -70,47 +68,47 @@ gt_format <- function(
   #     set defaults                              #
   # --------------------------------------------- #
   # set different default title to different methods
-  method <- match.arg(method)
-  if(method == "AHR" && is.null(title)){
+  method <- class(output)[class(output) %in% c("ahr", "wlr", "combo")]
+  if(method == "ahr" && is.null(title)){
     title <- "Bound summary for gs_design_ahr"
   }
-  if(method == "WLR" && is.null(title)){
+  if(method == "wlr" && is.null(title)){
     title <- "Bound summary for gs_design_wlr"
   }
-  if(method == "COMBO" && is.null(title)){
+  if(method == "combo" && is.null(title)){
     title <- "Bound summary for gs_design_combo"
   }
   
   # set different default subtitle to different methods
-  if(method == "AHR" && is.null(subtitle)){
+  if(method == "ahr" && is.null(subtitle)){
     subtitle <- "AHR approximations of ~HR at bound"
   }
-  if(method == "WLR" && is.null(subtitle)){
+  if(method == "wlr" && is.null(subtitle)){
     subtitle <- "WLR approximation of ~wHR at bound"
   }
-  if(method == "COMBO" && is.null(subtitle)){
+  if(method == "combo" && is.null(subtitle)){
     subtitle <- "COMBO approximations of XXX at bound"
   }
   
   # set different default footnotes to different methods
-  if(method == "AHR" && is.null(footnote)){
+  if(method == "ahr" && is.null(footnote)){
     footnote <- list(content = "approximate hazard ratio to cross bound.",
                      location = "~HR at bound",
                      attr = "colname")
   }
-  if(method == "WLR" && is.null(footnote)){
+  if(method == "wlr" && is.null(footnote)){
     footnote <- list(content = "approximate weighted hazard ratio to cross bound.",
                      location = "~wHR at bound",
                      attr = "colname")
   }
-  if(method == "COMBO" && is.null(footnote)){
+  if(method == "combo" && is.null(footnote)){
     footnote <- list(content = "XXX",
                      location = "Analysis",
                      attr = "colname")
   }
   
   # add spanner  -- TO BE IMPROVED
-  if(method %in% c("AHR", "WLR")){
+  if(method %in% c("ahr", "wlr")){
     tmp <- 3:6
   }else{
     tmp <- 3:5

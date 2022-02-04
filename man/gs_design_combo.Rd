@@ -85,7 +85,7 @@ x <- gsDesign::gsSurv(
   T = 36 , minfup = 24 , ratio = 1 )
 
 # User defined boundary
-gs_design_combo2(
+gs_design_combo(
   enrollRates,
   failRates,
   fh_test,
@@ -97,7 +97,7 @@ gs_design_combo2(
 )
 
 # Boundary derived by spending function
-gs_design_combo2(
+gs_design_combo(
   enrollRates,
   failRates,
   fh_test,

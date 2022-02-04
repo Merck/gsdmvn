@@ -14,7 +14,6 @@
 #' `aname` and a character string concatenating variables from `table_a` (appropriately rounded).
 #' The columns of `table_b` are also included. This is intended for use with gt() grouping by
 #' rows in a.
-#' @export
 #'
 #' @examples
 #' library(dplyr)

@@ -20,7 +20,6 @@
 #' \code{gs_design_ahr} or \code{gs_design_wlr} or \code{gs_design_combo}.
 #'
 #' @param x an object returned by  \code{gs_design_ahr} or \code{gs_design_wlr} or \code{gs_design_combo} 
-#' @param method the method used to generate x. It should be one of \code{c("AHR", "WLR", "COMBO")}
 #' @param analysis_vars the variables to be put at the summary header of each analysis
 #' @param analysis_decimals the displayed number of digits of \code{analysis_vars}
 #' @param bound_names names for bounds; default = c("Efficacy", "Futility").
@@ -82,7 +81,7 @@
 #'   lower = lower,
 #'   lpar = lpar
 #'   )
-#' summary_bound(x_ahr, method = "AHR")
+#' summary_bound(x_ahr)
 #' # ---------------------------- #
 #' #         wlr                  #
 #' # ---------------------------- #
@@ -100,7 +99,7 @@
 #'   lower = lower,
 #'   lpar = lpar
 #'   )
-#'   summary_bound(x_wlr, method = "WLR")
+#' summary_bound(x_wlr)
 #' # ---------------------------- #
 #' #         max combo            #
 #' # ---------------------------- #
@@ -116,11 +115,10 @@
 #'   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
 #'   lower = gsdmvn::gs_spending_combo,
 #'   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.2))
-#' summary_bound(x_combo, method = "COMBO")
+#' summary_bound(x_combo)
 #' 
 summary_bound <- function(
   x,
-  method = c("AHR", "WLR", "COMBO"),
   analysis_vars = NULL,
   analysis_decimals = NULL,
   bound_names = c("Efficacy", "Futility")
@@ -131,11 +129,11 @@ summary_bound <- function(
   # (2) analysis summary table, 
   # (3) analysis variables to be displayed on the header
   # (4) decimals to be displayed for the analysis variables in (3)
-  method <- match.arg(method)
+  method <- class(x)[1]
   x_bounds <- x$bounds
   x_analysis <- x$analysis
   K <- max(x_analysis$Analysis)
-  if(method == "AHR" || method == "WLR"){
+  if(method == "ahr" || method == "wlr"){
     if(is.null(analysis_vars)){
       analysis_vars <- c("Time", "N", "Events", "AHR", "IF")
     }
@@ -144,7 +142,7 @@ summary_bound <- function(
     }
     temp <- c("Analysis", "Bound", "Nominal p", "~HR at bound", "Alternate hypothesis")
   }
-  if(method == "COMBO"){
+  if(method == "combo"){
     if(is.null(analysis_vars)){
       analysis_vars <- c("Time", "N", "Events")  # TO BE IMPROVED
     }
@@ -184,7 +182,7 @@ summary_bound <- function(
   
   # Merge 3 tables: 1 line per analysis, alternate hypothesis table, null hypothesis table
   # if the method is AHR
-  if(method == "AHR"){
+  if(method == "ahr"){
     # header
     analysis_summary_header <- analyses %>%
       select(all_of(c("Analysis", analysis_vars)))
@@ -194,7 +192,7 @@ summary_bound <- function(
                       "Nominal p", "Alternate hypothesis", "Null hypothesis")))
   }
   # if the method is WLR, change AHR to wAHR
-  if(method == "WLR"){
+  if(method == "wlr"){
     # header
     analysis_summary_header <- analyses %>%
       select(all_of(c("Analysis", analysis_vars)))
@@ -208,7 +206,7 @@ summary_bound <- function(
       rename("~wHR at bound" = "~HR at bound")
   }
   # if the method is COMBO, remove the column of "~HR at bound", and remove AHR from header 
-  if(method == "COMBO"){
+  if(method == "combo"){
     # header
     analysis_summary_header <- analyses %>%
       select(all_of(c("Analysis", analysis_vars)))
@@ -228,5 +226,6 @@ summary_bound <- function(
     decimals = c(0, analysis_decimals),
     byvar = "Analysis")
   
+  class(output) <- c(class(output), method)
   return(output)
 }

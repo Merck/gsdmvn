@@ -286,11 +286,12 @@ gs_design_ahr <- function(
   # --------------------------------------------- #
   #     return the output                         #
   # --------------------------------------------- #
-  return(
-    list(enrollRates = enrollRates %>% mutate(rate = rate * allout$info[K] / y$info[K]),
-         failRates = failRates,
-         bounds = bounds,
-         analysis = analysis)
-  )
+  output <- list(
+    enrollRates = enrollRates %>% mutate(rate = rate * allout$info[K] / y$info[K]),
+    failRates = failRates,
+    bounds = bounds,
+    analysis = analysis)
+  class(output) <- c("ahr", class(output))
+  return(output)
   
 }

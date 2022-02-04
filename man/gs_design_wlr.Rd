@@ -113,14 +113,19 @@ failRates <- tibble::tibble(Stratum = "All",
                             hr = c(1, .6),
                             dropoutRate = 0.001)
 
-x <- gsDesign::gsSurv( k = 3 , test.type = 4 , alpha = 0.025 ,
-                       beta = 0.2 , astar = 0 , timing = c( 1 ) ,
-                       sfu = sfLDOF , sfupar = c( 0 ) , sfl = sfLDOF ,
-                       sflpar = c( 0 ) , lambdaC = c( 0.1 ) ,
-                       hr = 0.6 , hr0 = 1 , eta = 0.01 ,
-                       gamma = c( 10 ) ,
-                       R = c( 12 ) , S = NULL ,
-                       T = 36 , minfup = 24 , ratio = 1 )
+x <- gsDesign::gsSurv(
+  k = 3, 
+  test.type = 4, 
+  alpha = 0.025, beta = 0.2, 
+  astar = 0, timing = 1,
+  sfu = sfLDOF, sfupar = 0, 
+  sfl = sfLDOF, sflpar = 0, 
+  lambdaC = 0.1, 
+  hr = 0.6, hr0 = 1, 
+  eta = 0.01, gamma = 10,
+  R = 12, S = NULL,
+  T = 36, minfup = 24, 
+  ratio = 1)
 
 # User defined boundary
 gs_design_wlr(

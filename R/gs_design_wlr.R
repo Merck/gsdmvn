@@ -224,12 +224,15 @@ gs_design_wlr <- function(
            IF, hypothesis) %>% 
     unique()
   
-  
-  return(
-    list(enrollRates = enrollRates %>% mutate(rate = rate * allout$info[K] / y$info[K]),
-         failRates = failRates,
-         bounds = bounds,
-         analysis = analysis))
-
+  # --------------------------------------------- #
+  #     return the output                         #
+  # --------------------------------------------- #
+  output <- list(
+    enrollRates = enrollRates %>% mutate(rate = rate * allout$info[K] / y$info[K]),
+    failRates = failRates,
+    bounds = bounds,
+    analysis = analysis)
+  class(output) <- c("wlr", class(output))
+  return(output)
   
 }

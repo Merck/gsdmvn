@@ -127,7 +127,7 @@ info0 <- 1 / (p0 * (1 - p0) * 4)
 info1 <- 1 / (pc * (1 - pc) * 2 + pe * (1 - pe) * 2)
 # Result should round up to next even number = 652
 # Divide information needed under H1 by information per patient added
-gs_design_npe2(
+gs_design_npe(
   theta = pe - pc, 
   info = info1, 
   info0 = info0) \%>\% 
@@ -137,7 +137,7 @@ gs_design_npe2(
   as.numeric() / info1
 
 # Fixed bound
-x <- gs_design_npe2(
+x <- gs_design_npe(
   theta = c(.1, .2, .3), 
   info = (1:3) * 80,
   info0 = (1:3) * 80, 
@@ -149,7 +149,7 @@ x <- gs_design_npe2(
 x
 
 # Same upper bound; this represents non-binding Type I error and will total 0.025
-gs_power_npe2(
+gs_power_npe(
   theta = rep(0, 3), 
   info = x \%>\% filter(hypothesis == "H1" & Bound == "Upper") \%>\% select(info0) \%>\% unlist() \%>\% as.numeric(),
   upar = x \%>\% filter(hypothesis == "H1" & Bound == "Upper") \%>\% select(Z) \%>\% unlist() \%>\% as.numeric(), 
@@ -161,7 +161,7 @@ gs_power_npe2(
 # Spending bound for efficacy; fixed bound for futility
 # NOTE: test_upper and test_lower DO NOT WORK with gs_b; must explicitly make bounds infinite
 # test_upper and test_lower DO WORK with gs_spending_bound
-gs_design_npe2(
+gs_design_npe(
   theta = c(.1, .2, .3), 
   info = (1:3) * 40, 
   info0 = (1:3) * 40,
@@ -173,7 +173,7 @@ gs_design_npe2(
 # Spending function bounds
 # 2-sided asymmetric bounds
 # Lower spending based on non-zero effect
-gs_design_npe2(
+gs_design_npe(
   theta = c(.1, .2, .3), 
   info = (1:3) * 40,
   upper = gs_spending_bound,
@@ -183,7 +183,7 @@ gs_design_npe2(
 
 # Two-sided symmetric spend, O'Brien-Fleming spending
 # Typically, 2-sided bounds are binding
-xx <- gs_design_npe2(
+xx <- gs_design_npe(
   theta = c(.1, .2, .3), 
   theta1 = rep(0, 3), 
   info = (1:3) * 40,
@@ -197,7 +197,7 @@ xx
 # Re-use these bounds under alternate hypothesis
 # Always use binding = TRUE for power calculations
 upar <- (xx \%>\% filter(Bound == "Upper" & hypothesis == "H1"))$Z
-gs_power_npe2(
+gs_power_npe(
   theta = c(.1, .2, .3), 
   info = (1:3) * 40,
   binding = TRUE,
