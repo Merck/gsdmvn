@@ -1,17 +1,14 @@
 ---
-title: "Tutorial to Summarize Bounds Tables in gsdmvn"
+title: "Summarize Bounds Tables"
 output:
-  html_document:
+  rmarkdown::html_vignette:
+    css: "custom.css"
+    df_print: paged
     toc: true
     toc_depth: 2
-    toc_float: true
-    theme: flatly
-    highlight: tango
-    code_folding: hide
-    number_sections: true
 bibliography: gsDesign.bib
 vignette: |
-  %\VignetteIndexEntry{Tutorial to Summarize Bounds Tables in gsdmvn}
+  %\VignetteIndexEntry{Summarize Bounds Tables}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 ---
@@ -28,12 +25,12 @@ knitr::opts_chunk$set(
 library(dplyr)
 library(tibble)
 library(gt)
-devtools::load_all()
+library(gsdmvn)
 ```
 
 This vignette introduce the tutorial to summarize the bounds table in the group sequential design by using `gsdmvn`.  
 The function used to generate bounds tables is `gsdmvn::summary_bound()`. 
-Then users can use `gsdmvn::gt_formate()` to format the above R table into a gt table. 
+Then users can use `gsdmvn::gt_format()` to format the above R table into a gt table. 
 
 In this vignette, we introduce how to summarize the bounds table by
 
@@ -197,7 +194,7 @@ summary_bound(x_wlr, method = "WLR") %>%
    gt::gt()
 ```
 
-The above table can also be format by `gt_formate()` as
+The above table can also be format by `gt_format()` as
 ```{r}
 summary_bound(x_wlr, method = "WLR") %>% 
    gt_format(method = "WLR")
@@ -236,11 +233,11 @@ summary_bound(x_combo, method = "COMBO") %>%
 ```
 
 ```{r}
-x_combo$bounds
+x_combo$bounds %>% gt::gt()
 ```
 
 
 ```{r}
-x_combo$analysis
+x_combo$analysis %>% gt::gt()
 ```
 

@@ -29,7 +29,7 @@
 #'                 the \code{attr} is a vector of string to specify the attributes of the footnotes, e.g., c("colname", "title", "subtitle", "analysis", "spanner");
 #'                 users can use the functions in the \code{gt} package to custom themselves.
 #'
-#' @return
+#' @return a gt table summarizing the bounds table in group sequential designs
 #' @export
 #'
 #' @examples 
@@ -58,7 +58,7 @@
 #'                           
 gt_format <- function(
   output,
-  method,
+  method = c("AHR", "WLR", "COMBO"),
   title = NULL,
   subtitle = NULL,
   colname_spanner = "Cumulative boundary crossing probability",
@@ -70,6 +70,7 @@ gt_format <- function(
   #     set defaults                              #
   # --------------------------------------------- #
   # set different default title to different methods
+  method <- match.arg(method)
   if(method == "AHR" && is.null(title)){
     title <- "Bound summary for gs_design_ahr"
   }

@@ -56,5 +56,5 @@
 #        select(-!!byvar) %>%
         rename(!!aname := !!"_alab")
   return(ab)
-  return(ab %>% group_by(!!aname)) # This grouping is not working
+  # return(ab %>% group_by(!!aname)) # This grouping is not working
 }

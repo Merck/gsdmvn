@@ -120,7 +120,7 @@
 #' 
 summary_bound <- function(
   x,
-  method = NULL,
+  method = c("AHR", "WLR", "COMBO"),
   analysis_vars = NULL,
   analysis_decimals = NULL,
   bound_names = c("Efficacy", "Futility")
@@ -131,6 +131,7 @@ summary_bound <- function(
   # (2) analysis summary table, 
   # (3) analysis variables to be displayed on the header
   # (4) decimals to be displayed for the analysis variables in (3)
+  method <- match.arg(method)
   x_bounds <- x$bounds
   x_analysis <- x$analysis
   K <- max(x_analysis$Analysis)
