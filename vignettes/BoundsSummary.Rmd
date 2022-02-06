@@ -1,0 +1,235 @@
+---
+title: "Summarize Bounds Tables"
+output:
+  rmarkdown::html_vignette:
+    css: "custom.css"
+    df_print: paged
+    toc: true
+    toc_depth: 2
+bibliography: gsDesign.bib
+vignette: |
+  %\VignetteIndexEntry{Summarize Bounds Tables}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r, message=FALSE, warning=FALSE}
+library(dplyr)
+library(tibble)
+library(gt)
+library(gsdmvn)
+```
+
+This vignette introduce the tutorial to summarize the bounds table in the group sequential design by using `gsdmvn`.  
+The function used to generate bounds tables is `gsdmvn::summary_bound()`. 
+Then users can use `gsdmvn::as_gt()` to format the above R table into a gt table. 
+
+In this vignette, we introduce how to summarize the bounds table by
+
+- average hazard ratio (AHR) method, where `gsdmvn::gs_design_ahr()` is used;
+- weighted logrank (WLR) method, where `gsdmvn::gs_design_wlr()` is used;
+- max combo (COMBO) method, where `gsdmvn::gs_design_combo()` is used.
+
+The design parameters we use in this vignette is
+```{r}
+# enrollment/failure rates
+enrollRates <- tibble::tibble(Stratum = "All", 
+                      duration = 12, 
+                      rate = 1)
+failRates <- tibble::tibble(Stratum = "All", duration = c(4, 100), 
+                    failRate = log(2) / 12,
+                    hr = c(1, .6), 
+                    dropoutRate = .001)
+# Information fraction
+IF <- (1:3)/3 
+# Analysis times in months; first 2 will be ignored as IF will not be achieved
+analysisTimes <- c(.01, .02, 36)  
+# Experimental / Control randomization ratio
+ratio <- 1 
+# 1-sided Type I error
+alpha <- 0.025 
+# Type II error (1 - power)
+beta <- .1 
+# Upper bound
+upper <- gsdmvn::gs_spending_bound
+upar <- list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)
+# Lower bound
+lower <- gsdmvn::gs_spending_bound
+lpar <- list(sf = gsDesign::sfHSD, total_spend = 0.1, param = 0, timing = NULL)
+# weight function in WLR
+wgt00 <- function(x, arm0, arm1){
+                 gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0)}
+wgt05 <- function(x, arm0, arm1){
+                 gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = .5)}
+# test in COMBO
+fh_test <- rbind(
+      data.frame(rho = 0, gamma = 0, tau = -1, test = 1, Analysis = 1:3, analysisTimes = c(12, 24, 36)), 
+      data.frame(rho = c(0, 0.5), gamma = 0.5, tau = -1, test = 2:3, Analysis = 3, analysisTimes = 36)
+      )
+```
+
+# AHR method 
+
+By using the design parameters above, one can generate an AHR model by `gs_design_ahr2` as
+```{r}
+x_ahr <- gs_design_ahr(
+   enrollRates = enrollRates,
+   failRates = failRates,
+   IF = IF, 
+   analysisTimes = analysisTimes, 
+   ratio = ratio, 
+   alpha = alpha, 
+   beta = beta, 
+   upper = upper,
+   upar = upar,
+   lower = lower,
+   lpar = lpar
+)
+```
+
+The outputs of `x_ahr` is a list including
+
+- `enrollRates`: the enrollment rates
+- `failRates`: the failure rates
+- `bounds`: the summary of the crossing probabilities under H0 \& H1
+- `analysis`: the summary of each analysis
+
+The direct output of `x_ahr$bounds` is
+```{r}
+x_ahr$bounds %>% 
+  gt::gt()
+```
+
+The direct output of `x_ahr$analysis` is 
+```{r}
+x_ahr$analysis %>% 
+   gt::gt()
+```
+
+To summarize the bounds table of `x_ahr`, one can use `summary_bound()`. 
+The default output of `summary_bound()` for the AHR method is
+```{r}
+summary_bound(x_ahr) %>% 
+   gt::gt()
+```
+
+In the above default table, the variables used to summarize each analysis includes `Analysis`, `Time`, `N`(sample size), `Events`, `AHR`, and `IF` (information fraction). 
+But users can custom these variables (and their decimals) displayed as the analysis summary by using the arguments `analysis_vars = ...` and `analysis_decimals = ...`. 
+For example
+```{r}
+summary_bound(
+   x_ahr,
+   analysis_vars = c("N", "Events"),
+   analysis_decimals = c(1, 1)) %>% 
+   gt::gt()
+```
+Please note that there is no need to input `"Analysis"` into `analysis_vars = ...`.
+
+Besides, users can also custom the bound names. 
+In the default output, the bound name is `c("Efficacy", "Futility")`, which can be changed into 
+`c("A is better", "B is better")` for a 2-sided design by using the argument `bound_names = ...`.
+For example,
+```{r}
+summary_bound(
+   x_ahr,
+   bound_names = c("A is better", "B is better")) %>% 
+   gt::gt()
+```
+
+Finally, users can also use `as_gt()` to get the the above R table into a gt table.
+Furthermore, they can edit the title/subtitle/spanner/footnotes of the gt table by using the arguments in `summary_bound`. 
+```{r}
+summary_bound(x_ahr) %>% 
+   as_gt(title = "Summary of the Crossing Probability",
+         subtitle = "by Using gs_design_ahr",
+         colname_spanner = "Cumulative boundary crossing probability",
+         colname_spannersub = c("Alternate hypothesis", "Null hypothesis"),
+         footnote = list(content = c("approximate hazard ratio to cross bound.", 
+                                     "gs_design_ahr is a function in gsdmvn.",
+                                     "AHR is average hazard ratio; IF is information fraction."),
+                         location = c("~HR at bound", NA, NA),
+                         attr = c("colname", "subtitle", "analysis")))
+```
+
+The above objective can also be realized by using functions in the R package`gt` for custom design of table layout. 
+In the future, if we want to develop rtf, then we can use `rtf_format()`.
+
+# WLR method 
+
+In this section, we discuss the procedure to generate a bound table under the frame work of WLR method.
+
+```{r}
+x_wlr <- gs_design_wlr(
+   enrollRates = enrollRates,
+   failRates = failRates,
+   weight = wgt05, 
+   # Information fraction
+   IF = NULL, 
+   # Analysis times in months; first 2 will be ignored as IF will not be achieved
+   analysisTimes = sort(unique(x_ahr$analysis$Time)), 
+   # Experimental / Control randomization ratio
+   ratio = ratio, 
+   # 1-sided Type I error
+   alpha = alpha, 
+   # Type II error (1 - power)
+   beta = beta,   
+   upper = upper,
+   upar = upar,
+   lower = lower,
+   lpar = lpar
+)
+```
+
+One can use `x_wlr$bounds`/`x_wlr$analysis` to get a simplified bounds/analysis table, which is similar to that by `x_ahr`.
+To get a comprehensive bounds summary table, one can use 
+```{r}
+summary_bound(x_wlr) %>% 
+   gt::gt()
+```
+
+The above table can also be format by `as_gt()` as
+```{r}
+summary_bound(x_wlr) %>% 
+   as_gt()
+```
+
+# MAX COMBO method 
+
+In this section, we discuss the procedure to generate a bound table under the frame work of MAX COMBO method.
+
+```{r}
+x_combo <- gsdmvn::gs_design_combo(
+  ratio = 1, 
+  alpha = 0.025, 
+  beta = 0.2, 
+  enrollRates = tibble::tibble(Stratum = "All", duration = 12, rate = 500/12),
+  failRates = tibble::tibble(Stratum = "All", duration = c(4, 100), 
+                             failRate = log(2) / 15, hr = c(1, .6), dropoutRate = .001), 
+  fh_test = fh_test,
+  upper = gsdmvn::gs_spending_combo,
+  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+  lower = gsdmvn::gs_spending_combo,
+  lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.2))
+```
+
+One can use `x_combo$bounds`/`x_combo$analysis` to get a simplified bounds/analysis table, which is similar to that by `x_ahr`.
+To get a comprehensive bounds summary table, one can use 
+
+```{r}
+summary_bound(x_combo)
+```
+
+One can also use `as_gt()` to custom the gt style of the bounds table.
+```{r}
+summary_bound(x_combo) %>% 
+   as_gt()
+```
+

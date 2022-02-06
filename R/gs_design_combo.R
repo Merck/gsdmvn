@@ -22,106 +22,107 @@
 #' @param fh_test a data frame to summarize the test in each analysis.
 #'                Refer examples for its data structure.
 #' @param n_upper_bound a numeric value of upper limit of sample size
-#'
-#'
+#' @importFrom mvtnorm GenzBretz
+#' 
+#' @export
+#' 
 #' @examples
-#' \dontrun{
-#'
-#' # The example is slow to run
-#'
+#' The example is slow to run
 #' library(dplyr)
 #' library(mvtnorm)
 #' library(gsDesign)
-#' 
 #' enrollRates <- tibble::tibble(Stratum = "All", duration = 12, rate = 500/12)
-#'
 #' failRates <- tibble::tibble(Stratum = "All",
 #'                             duration = c(4, 100),
 #'                             failRate = log(2) / 15,  # median survival 15 month
 #'                             hr = c(1, .6),
 #'                             dropoutRate = 0.001)
-#'
-#' fh_test <- rbind( data.frame(rho = 0, gamma = 0, tau = -1,
-#'                              test = 1,
-#'                              Analysis = 1:3,
-#'                              analysisTimes = c(12, 24, 36)),
-#'                   data.frame(rho = c(0, 0.5), gamma = 0.5, tau = -1,
-#'                              test = 2:3,
-#'                              Analysis = 3, analysisTimes = 36)
-#' )
-#'
-#' x <- gsDesign::gsSurv( k = 3 , test.type = 4 , alpha = 0.025 ,
-#'                        beta = 0.2 , astar = 0 , timing = c( 1 ) ,
-#'                        sfu = sfLDOF , sfupar = c( 0 ) , sfl = sfLDOF ,
-#'                        sflpar = c( 0 ) , lambdaC = c( 0.1 ) ,
-#'                        hr = 0.6 , hr0 = 1 , eta = 0.01 ,
-#'                        gamma = c( 10 ) ,
-#'                        R = c( 12 ) , S = NULL ,
-#'                        T = 36 , minfup = 24 , ratio = 1 )
-#'
+#' fh_test <- rbind( 
+#'   data.frame(rho = 0, gamma = 0, tau = -1,
+#'              test = 1, Analysis = 1:3, analysisTimes = c(12, 24, 36)),
+#'   data.frame(rho = c(0, 0.5), gamma = 0.5, tau = -1,
+#'              test = 2:3, Analysis = 3, analysisTimes = 36))
+#' 
+#' x <- gsDesign::gsSurv( 
+#'   k = 3 , test.type = 4 , alpha = 0.025 ,
+#'   beta = 0.2 , astar = 0 , timing = c( 1 ) ,
+#'   sfu = sfLDOF , sfupar = c( 0 ) , sfl = sfLDOF ,
+#'   sflpar = c( 0 ) , lambdaC = c( 0.1 ) ,
+#'   hr = 0.6 , hr0 = 1 , eta = 0.01 ,
+#'   gamma = c( 10 ) ,
+#'   R = c( 12 ) , S = NULL ,
+#'   T = 36 , minfup = 24 , ratio = 1 )
+#' 
 #' # User defined boundary
-#' gs_design_combo(enrollRates,
-#'                 failRates,
-#'                 fh_test,
-#'                 alpha = 0.025,
-#'                 beta = 0.2,
-#'                 ratio = 1,
-#'                 binding = FALSE,                 # test.type = 4 non-binding futility bound
-#'                 upar = x$upper$bound,
-#'                 lpar = x$lower$bound)
-#'
-#' # Boundary derived by spending function
-#' gs_design_combo(enrollRates,
-#'                 failRates,
-#'                 fh_test,
-#'                 alpha = 0.025,
-#'                 beta = 0.2,
-#'                 ratio = 1,
-#'                 binding = FALSE,                 # test.type = 4 non-binding futility bound
-#'                 upper = gs_spending_combo,
-#'                 upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),   # alpha spending
-#'                 lower = gs_spending_combo,
-#'                 lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.2),     # beta spending
+#' gs_design_combo(
+#'   enrollRates,
+#'   failRates,
+#'   fh_test,
+#'   alpha = 0.025, beta = 0.2,
+#'   ratio = 1,
+#'   binding = FALSE,                 # test.type = 4 non-binding futility bound
+#'   upar = x$upper$bound,
+#'   lpar = x$lower$bound
 #' )
-#' }
-#'
-#'
-#' @importFrom mvtnorm GenzBretz
-#'
-#' @export
-gs_design_combo <- function(enrollRates,
-                            failRates,
-                            fh_test,
-                            ratio = 1,
-                            alpha = 0.025,
-                            beta = 0.2,
-                            binding = FALSE,
-                            upper = gs_b,
-                            upar = c(3,2,1),
-                            lower = gs_b,
-                            lpar = c(-1, 0, 1),
-                            algorithm = GenzBretz(maxpts= 1e5, abseps= 1e-5),
-                            n_upper_bound = 1e3,
-                            ...){
+#' 
+#' # Boundary derived by spending function
+#' gs_design_combo(
+#'   enrollRates,
+#'   failRates,
+#'   fh_test,
+#'   alpha = 0.025, beta = 0.2,
+#'   ratio = 1,
+#'   binding = FALSE,                 # test.type = 4 non-binding futility bound
+#'   upper = gs_spending_combo,
+#'   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),   # alpha spending
+#'   lower = gs_spending_combo,
+#'   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.2),     # beta spending
+#' )
 
+gs_design_combo <- function(
+  enrollRates,
+  failRates,
+  fh_test,
+  ratio = 1,
+  alpha = 0.025,
+  beta = 0.2,
+  binding = FALSE,
+  upper = gs_b,
+  upar = c(3,2,1),
+  lower = gs_b,
+  lpar = c(-1, 0, 1),
+  algorithm = mvtnorm::GenzBretz(maxpts = 1e5, abseps = 1e-5),
+  n_upper_bound = 1e3,
+  ...){
+  
+  # --------------------------------------------- #
+  #     check input values                        #
+  # --------------------------------------------- #
   # Currently only support user defined lower and upper bound
   stopifnot( identical(upper, gs_b) | identical(upper, gs_spending_combo) )
   stopifnot( identical(lower, gs_b) | identical(lower, gs_spending_combo) )
-
+  
+  # --------------------------------------------- #
+  #     get the number of analysis                #
+  # --------------------------------------------- #
   n_analysis <- length(unique(fh_test$Analysis))
-
-  # Obtain utilities
+  n_test <- max(fh_test$test)
+  
+  # --------------------------------------------- #
+  #     obtain utilities                          #
+  # --------------------------------------------- #
   utility <- gs_utility_combo(enrollRates = enrollRates,
                               failRates = failRates,
                               fh_test = fh_test,
                               ratio = ratio,
-                              algorithm = algorithm, ...)
-
+                              algorithm = algorithm, 
+                              ...)
+  
   info     <- utility$info_all
   info_fh  <- utility$info
   theta_fh <- utility$theta
   corr_fh  <- utility$corr
-
+  
   # Information Fraction
   if(n_analysis == 1){
     min_info_frac <- 1
@@ -129,11 +130,10 @@ gs_design_combo <- function(enrollRates,
     info_frac <- tapply(info$info0, info$test, function(x) x / max(x))
     min_info_frac <- apply(do.call(rbind, info_frac), 2, min)
   }
-
-
+  
   # Function to calculate power
   foo <- function(n, beta, ...){
-
+    
     # Probability Cross Boundary
     prob <- gs_prob_combo(upper_bound = bound$upper,
                           lower_bound = bound$lower,
@@ -141,17 +141,17 @@ gs_design_combo <- function(enrollRates,
                           theta = theta_fh * sqrt(n),
                           corr = corr_fh,
                           algorithm = algorithm, ...)
-
+    
     max(subset(prob, Bound == "Upper")$Probability) - (1 - beta)
   }
-
+  
   # Find sample isze and bound
   n <- max(info$N)
   n0 <- 0
   while( (abs(n - n0)) > 1e-2){
     # print(n)
     n0 <- n
-
+    
     # Obtain spending function
     bound <- gs_bound(alpha = upper(upar, min_info_frac),
                       beta = lower(lpar, min_info_frac),
@@ -163,13 +163,12 @@ gs_design_combo <- function(enrollRates,
                       alpha_bound = identical(upper, gs_b),
                       beta_bound = identical(lower, gs_b),
                       ...)
-
-
+    
+    
     n <- uniroot(foo, c(1, n_upper_bound), extendInt = "yes", beta = beta, ...)$root
-
+    
   }
-
-
+  
   # Probability Cross Boundary
   prob <- gs_prob_combo(upper_bound = bound$upper,
                         lower_bound = bound$lower,
@@ -177,7 +176,7 @@ gs_design_combo <- function(enrollRates,
                         theta = theta_fh * sqrt(n),
                         corr = corr_fh,
                         algorithm = algorithm, ...)
-
+  
   # Probability Cross Boundary under Null
   prob_null <- gs_prob_combo(upper_bound = bound$upper,
                              lower_bound = if(binding){bound$lower}else{rep(-Inf, nrow(bound))},
@@ -185,23 +184,105 @@ gs_design_combo <- function(enrollRates,
                              theta = rep(0, nrow(info_fh)),
                              corr = corr_fh,
                              algorithm = algorithm, ...)
-
+  
   if(binding == FALSE){
     prob_null$Probability[prob_null$Bound == "Lower"] <- NA
   }
-
+  
   prob$Probability_Null <- prob_null$Probability
-
+  
   # Prepare output
-  db <- merge(data.frame(Analysis = 1:(nrow(prob)/2), prob, Z = unlist(bound)),
-              unique(info_fh[, c("Analysis", "Time", "N", "Events")])
-  )
-
-
-  # update sample size and events
-  db$Events <- db$Events * n / max(db$N)
-  db$N <- db$N * n / max(db$N)
-
-  db[order(db$Bound, decreasing = TRUE), c("Analysis", "Bound", "Time", "N", "Events", "Z", "Probability", "Probability_Null")]
-
+  db <- merge(
+    data.frame(Analysis = 1:(nrow(prob)/2), prob, Z = unlist(bound)),
+    info_fh %>% # unique(info_fh[, c("Analysis", "Time", "N", "Events")])
+      tibble::as_tibble() %>% 
+      select(Analysis, Time, N, Events) %>% 
+      unique()
+  ) %>% 
+    # update sample size and events
+    mutate(
+      Events = Events * n / max(N),
+      N = N * n / max(N)) #%>% 
+    # arrage the dataset by Upper bound first and then Lower bound
+    #arrange(desc(Bound))
+  
+  
+  # db[order(db$Bound, decreasing = TRUE), c("Analysis", "Bound", "Time", "N", "Events", "Z", "Probability", "Probability_Null")]
+  out <- db[order(db$Bound, decreasing = TRUE), c("Analysis", "Bound", "Time", "N", "Events", "Z", "Probability", "Probability_Null")]
+  out_H1 <- out[, c("Analysis", "Bound", "Time", "N", "Events", "Z", "Probability")]
+  out_H1$hypothesis <- rep("H1", n_analysis)
+  out_H1$`Nominal p` <- pnorm(out_H1$Z * (-1))
+  
+  out_H0 <- out[, c("Analysis", "Bound", "Time", "N", "Events", "Z", "Probability_Null")]
+  out_H0$Probability <- out_H0$Probability_Null
+  out_H0 <- out_H0[, c("Analysis", "Bound", "Time", "N", "Events", "Z", "Probability")]
+  out_H0$hypothesis <- rep("H0", n_analysis)
+  out_H0$`Nominal p` <- pnorm(out_H0$Z * (-1))
+  
+  # --------------------------------------------- #
+  #     get bounds to output                      #
+  # --------------------------------------------- #
+  bounds <- tibble::tibble(
+    Analysis = c(out_H1$Analysis, out_H0$Analysis),
+    Bound = c(out_H1$Bound, out_H0$Bound),
+    Time = c(out_H1$Time, out_H0$Time),
+    N = c(out_H1$N, out_H0$N),
+    Events = c(out_H1$Events, out_H0$Events),
+    Z = c(out_H1$Z, out_H0$Z),
+    Probability = c(out_H1$Probability, out_H0$Probability),
+    hypothesis = c(out_H1$hypothesis, out_H0$hypothesis),
+    `Nominal p` = c(out_H1$`Nominal p`, out_H0$`Nominal p`)
+    )  %>% 
+    select(all_of(c("Analysis", "Bound", "Probability", "hypothesis", "Z", "Nominal p")))
+  
+  # --------------------------------------------- #
+  #     get analysis summary to output            #
+  # --------------------------------------------- #
+  # check if rho, gamma = 0 is included in fh_test
+  tmp <- fh_test %>% 
+    filter(rho == 0 & gamma == 0) %>% 
+    select(test) %>% 
+    unlist() %>% 
+    as.numeric() %>% 
+    unique()
+  if(length(tmp) != 0){
+    AHR_dis <- utility$info_all %>% 
+      filter(test == tmp) %>% 
+      select(AHR) %>% 
+      unlist() %>% 
+      as.numeric()
+  }else{
+    AHR_dis <- gs_info_wlr(
+      enrollRates, 
+      failRates, 
+      ratio, 
+      events = unique(utility$info_all$Events), 
+      analysisTimes = unique(utility$info_all$Time), 
+      weight = eval(parse(text = get_combo_weight(rho = 0, gamma = 0, tau = -1))))$AHR
+  }
+  
+  analysis <- rbind(
+    utility$info_all %>% select(Analysis, test, Time, N, Events), 
+    utility$info_all %>% select(Analysis, test, Time, N, Events)) %>% 
+    
+    mutate(hypothesis = rep(c("H1", "H0"), each = n_analysis * n_test),
+           theta = c(utility$info_all$theta, rep(0, n_analysis * n_test)),
+           # info = c(utility$info_all$info, utility$info_all$info0),
+           EF = Events/tapply(Events, test, function(x) max(x)) %>% unlist() %>% as.numeric()
+           # IF = c(tapply(utility$info_all$info, utility$info_all$test, function(x) x / max(x)) %>% unlist() %>% as.numeric(),
+           #        tapply(utility$info_all$info0, utility$info_all$test, function(x) x / max(x)) %>% unlist() %>% as.numeric())
+    ) %>% 
+    select(Analysis, Time, N, Events, # AHR, 
+           # theta, info, 
+           EF, hypothesis) %>% 
+    unique() %>% 
+    mutate(AHR = rep(AHR_dis, 2))
+  
+  # --------------------------------------------- #
+  #     output                                    #
+  # --------------------------------------------- #
+  message("The AHR reported in the `analysis` table is under the log-rank test.")
+  output <- list(bounds = bounds, analysis = analysis)
+  class(output) <- c("combo", class(output))
+  return(output)
 }
