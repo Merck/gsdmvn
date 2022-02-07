@@ -129,7 +129,7 @@ summary_bound <- function(
   # (2) analysis summary table, 
   # (3) analysis variables to be displayed on the header
   # (4) decimals to be displayed for the analysis variables in (3)
-  method <- class(x)[1]
+  method <- class(x)[class(x) %in% c("ahr", "wlr", "combo")]
   x_bounds <- x$bounds
   x_analysis <- x$analysis
   K <- max(x_analysis$Analysis)

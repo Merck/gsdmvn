@@ -63,7 +63,7 @@ as_gt <- function(
   colname_spannersub = c("Alternate hypothesis", "Null hypothesis"),
   footnote = NULL
 ){
-  
+  method <- class(output)[class(output) %in% c("ahr", "wlr", "combo")]
   # --------------------------------------------- #
   #     set defaults                              #
   # --------------------------------------------- #
