@@ -63,12 +63,12 @@ as_gt <- function(
   colname_spannersub = c("Alternate hypothesis", "Null hypothesis"),
   footnote = NULL
 ){
-  
+  method <- class(output)[class(output) %in% c("ahr", "wlr", "combo")]
   # --------------------------------------------- #
   #     set defaults                              #
   # --------------------------------------------- #
   # set different default title to different methods
-  method <- class(output)[class(output) %in% c("ahr", "wlr", "combo")]
+  method <- class(output)[1]
   if(method == "ahr" && is.null(title)){
     title <- "Bound summary for gs_design_ahr"
   }
@@ -87,7 +87,7 @@ as_gt <- function(
     subtitle <- "WLR approximation of ~wHR at bound"
   }
   if(method == "combo" && is.null(subtitle)){
-    subtitle <- "COMBO approximations of XXX at bound"
+    subtitle <- "COMBO approximation"
   }
   
   # set different default footnotes to different methods
@@ -102,17 +102,12 @@ as_gt <- function(
                      attr = "colname")
   }
   if(method == "combo" && is.null(footnote)){
-    footnote <- list(content = "XXX",
-                     location = "Analysis",
-                     attr = "colname")
+    footnote <- list(content = "The values of AHR/theta varies under different test, so we omit reporting them here. ",
+                     location = NA,
+                     attr = "analysis")
   }
   
-  # add spanner  -- TO BE IMPROVED
-  if(method %in% c("ahr", "wlr")){
-    tmp <- 3:6
-  }else{
-    tmp <- 3:5
-  }
+  # add spanner 
   output <- output %>% 
     dplyr::group_by(Analysis) %>%
     gt::gt() %>%
@@ -120,7 +115,7 @@ as_gt <- function(
       columns = all_of(colname_spannersub),
       label = colname_spanner) %>%
     gt::fmt_number(
-      columns = all_of(tmp), #3:6
+      columns = all_of(seq(3, ifelse(method %in% c("ahr", "wlr"), 6, 5), by = 1)), #3:6
       decimals = 4) %>%
     gt::tab_header(
       title = title,
@@ -148,7 +143,7 @@ as_gt <- function(
         output <- output %>% 
           gt::tab_footnote(
             footnote = footnote$content[i],
-            locations = gt::cells_row_groups(groups = starts_with("Analysis")))
+            locations = gt::cells_row_groups(groups = dplyr::starts_with("Analysis")))
       }
       # if the footnotes is added on the column spanner
       if(footnote$attr[i] == "spanner"){

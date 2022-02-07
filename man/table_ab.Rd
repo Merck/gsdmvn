@@ -39,10 +39,10 @@ b <- data.frame(Index = c(1, 2, 2),
                 b3 = (10:8) / 3
                )
 table_ab(a, b, byvar = "Index", decimals = c(0, 2, 0, 1), aname = "Index") \%>\%
-group_by(Index) \%>\% gt() \%>\% fmt_number(b3, decimals = 2) \%>\%
-tab_header(title = "Grouped data table") \%>\%
-tab_footnote("The table a variables have been concatenated into a text string, rounded appropriately.",
-              cells_row_groups(groups = 1)) \%>\%
-tab_footnote("Note that footnotes cannot be made for individual variables in the row groups generated using table a.",
-              cells_row_groups(groups = 2))
+  group_by(Index) \%>\% gt() \%>\% fmt_number(b3, decimals = 2) \%>\%
+  tab_header(title = "Grouped data table") \%>\%
+  tab_footnote("The table a variables have been concatenated into a text string, rounded appropriately.",
+               cells_row_groups(groups = 1)) \%>\%
+  tab_footnote("Note that footnotes cannot be made for individual variables in the row groups generated using table a.",
+               cells_row_groups(groups = 2))
 }

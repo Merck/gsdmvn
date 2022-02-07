@@ -13,7 +13,6 @@ delta <- .2
 alpha <- .02
 beta <- .15
 
-
 test_that("One-sided design fails to reproduce gsDesign package bounds", {
   gsd <- gsDesign(
     test.type = 1, k = K, sfu = sfu, sfupar = sfupar, sfl = sfl, sflpar = sflpar, timing = timing,
