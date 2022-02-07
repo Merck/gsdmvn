@@ -154,29 +154,28 @@ summary_bound <- function(
   
   # set the analysis summary header
   analyses <- x_analysis %>%
-    group_by(Analysis) %>%
-    filter(row_number() == 1) %>%
-    select(all_of(c("Analysis", analysis_vars)))
+    dplyr::group_by(Analysis) %>%
+    dplyr::filter(dplyr::row_number() == 1) %>%
+    dplyr::select(all_of(c("Analysis", analysis_vars)))
   
   # Merge 3 tables: analyses (one to many), alternate hypothesis table, null hypothesis table
   xy <- full_join(
     # a table under alternative hypothesis
     x_bounds %>% 
-      filter(hypothesis == "H1") %>% 
-      rename("Alternate hypothesis" = Probability) %>%
-      mutate(Bound = recode(Bound, "Upper" = bound_names[1], "Lower" = bound_names[2])
-            # change Upper -> bound_names[1], e.g., Efficacy
-            # change Lower -> bound_names[2], e.g., Futility
-            ) %>%
-      select(all_of(temp)), 
+      dplyr::filter(hypothesis == "H1") %>% 
+      dplyr::rename("Alternate hypothesis" = Probability) %>%
+      # change Upper -> bound_names[1], e.g., Efficacy
+      # change Lower -> bound_names[2], e.g., Futility
+      dplyr::mutate(Bound = dplyr::recode(Bound, "Upper" = bound_names[1], "Lower" = bound_names[2])) %>%
+      dplyr::select(all_of(temp)), 
       #select(all_of(c("Analysis", "Bound", "Nominal p", "~HR at bound", "Alternate hypothesis"))),
     
     # a table under null hypothesis
     x_bounds %>% 
-      filter(hypothesis == "H0") %>%
-      mutate("Null hypothesis" = Probability,
-             Bound = recode(Bound, "Upper" = bound_names[1], "Lower" = bound_names[2])) %>%
-      select(all_of(c("Analysis", "Bound", "Null hypothesis"))),
+      dplyr::filter(hypothesis == "H0") %>%
+      dplyr::mutate("Null hypothesis" = Probability,
+             Bound = dplyr::recode(Bound, "Upper" = bound_names[1], "Lower" = bound_names[2])) %>%
+      dplyr::select(all_of(c("Analysis", "Bound", "Null hypothesis"))),
     
     by = c("Analysis", "Bound"))
   
@@ -185,35 +184,37 @@ summary_bound <- function(
   if(method == "ahr"){
     # header
     analysis_summary_header <- analyses %>%
-      select(all_of(c("Analysis", analysis_vars)))
+      dplyr::select(all_of(c("Analysis", analysis_vars)))
     # bound details
     bound_summary_detail <- xy %>%
-      select(all_of(c("Analysis", "Bound", "~HR at bound", 
+      dplyr::select(all_of(c("Analysis", "Bound", "~HR at bound", 
                       "Nominal p", "Alternate hypothesis", "Null hypothesis")))
   }
+  
   # if the method is WLR, change AHR to wAHR
   if(method == "wlr"){
     # header
     analysis_summary_header <- analyses %>%
-      select(all_of(c("Analysis", analysis_vars)))
+      dplyr::select(all_of(c("Analysis", analysis_vars)))
     if("AHR" %in% analysis_vars){
-      analysis_summary_header <- analysis_summary_header %>% rename(wAHR = AHR)
+      analysis_summary_header <- analysis_summary_header %>% dplyr::rename(wAHR = AHR)
     }
     # bound details
     bound_summary_detail <- xy %>%
-      select(all_of(c("Analysis", "Bound", "~HR at bound", 
-                      "Nominal p", "Alternate hypothesis", "Null hypothesis"))) %>% 
-      rename("~wHR at bound" = "~HR at bound")
+      dplyr::select(all_of(c("Analysis", "Bound", "~HR at bound", 
+                             "Nominal p", "Alternate hypothesis", "Null hypothesis"))) %>% 
+      dplyr::rename("~wHR at bound" = "~HR at bound")
   }
+  
   # if the method is COMBO, remove the column of "~HR at bound", and remove AHR from header 
   if(method == "combo"){
     # header
     analysis_summary_header <- analyses %>%
-      select(all_of(c("Analysis", analysis_vars)))
+      dplyr::select(all_of(c("Analysis", analysis_vars)))
     # bound details
     bound_summary_detail <- xy %>%
-      select(all_of(c("Analysis", "Bound", 
-                      "Nominal p", "Alternate hypothesis", "Null hypothesis"))) 
+      dplyr::select(all_of(c("Analysis", "Bound", #"~HR at bound",
+                             "Nominal p", "Alternate hypothesis", "Null hypothesis"))) 
   }
   
   output <- table_ab(
@@ -226,6 +227,6 @@ summary_bound <- function(
     decimals = c(0, analysis_decimals),
     byvar = "Analysis")
   
-  class(output) <- c(class(output), method)
+  class(output) <- c(method, class(output))
   return(output)
 }

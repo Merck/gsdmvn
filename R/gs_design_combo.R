@@ -202,38 +202,32 @@ gs_design_combo <- function(
     # update sample size and events
     mutate(
       Events = Events * n / max(N),
-      N = N * n / max(N)) #%>% 
+      N = N * n / max(N)) %>% 
     # arrage the dataset by Upper bound first and then Lower bound
-    #arrange(desc(Bound))
+    arrange(desc(Bound))
   
   
-  # db[order(db$Bound, decreasing = TRUE), c("Analysis", "Bound", "Time", "N", "Events", "Z", "Probability", "Probability_Null")]
-  out <- db[order(db$Bound, decreasing = TRUE), c("Analysis", "Bound", "Time", "N", "Events", "Z", "Probability", "Probability_Null")]
-  out_H1 <- out[, c("Analysis", "Bound", "Time", "N", "Events", "Z", "Probability")]
-  out_H1$hypothesis <- rep("H1", n_analysis)
-  out_H1$`Nominal p` <- pnorm(out_H1$Z * (-1))
+  # out <- db[order(db$Bound, decreasing = TRUE), c("Analysis", "Bound", "Time", "N", "Events", "Z", "Probability", "Probability_Null")]
+  out <- db %>% 
+    dplyr::select(Analysis, Bound, Time, N, Events, Z, Probability, Probability_Null)
   
-  out_H0 <- out[, c("Analysis", "Bound", "Time", "N", "Events", "Z", "Probability_Null")]
-  out_H0$Probability <- out_H0$Probability_Null
-  out_H0 <- out_H0[, c("Analysis", "Bound", "Time", "N", "Events", "Z", "Probability")]
-  out_H0$hypothesis <- rep("H0", n_analysis)
-  out_H0$`Nominal p` <- pnorm(out_H0$Z * (-1))
+  out_H1 <- out %>% 
+    dplyr::select(Analysis, Bound, Time, N, Events, Z, Probability) %>% 
+    dplyr::mutate(hypothesis = "H1",
+                  `Nominal p` = pnorm(Z * (-1)))
+  
+  out_H0 <- out %>% 
+    dplyr::select(Analysis, Bound, Time, N, Events, Z, Probability_Null) %>% 
+    dplyr::rename(Probability = Probability_Null) %>% 
+    dplyr::mutate(hypothesis = "H0",
+                  `Nominal p` = pnorm(Z * (-1)))
+  
   
   # --------------------------------------------- #
   #     get bounds to output                      #
   # --------------------------------------------- #
-  bounds <- tibble::tibble(
-    Analysis = c(out_H1$Analysis, out_H0$Analysis),
-    Bound = c(out_H1$Bound, out_H0$Bound),
-    Time = c(out_H1$Time, out_H0$Time),
-    N = c(out_H1$N, out_H0$N),
-    Events = c(out_H1$Events, out_H0$Events),
-    Z = c(out_H1$Z, out_H0$Z),
-    Probability = c(out_H1$Probability, out_H0$Probability),
-    hypothesis = c(out_H1$hypothesis, out_H0$hypothesis),
-    `Nominal p` = c(out_H1$`Nominal p`, out_H0$`Nominal p`)
-    )  %>% 
-    select(all_of(c("Analysis", "Bound", "Probability", "hypothesis", "Z", "Nominal p")))
+  bounds <- rbind(out_H1, out_H0) %>% 
+    select(Analysis, Bound, Probability, hypothesis, Z, `Nominal p`)
   
   # --------------------------------------------- #
   #     get analysis summary to output            #
@@ -272,8 +266,7 @@ gs_design_combo <- function(
            # IF = c(tapply(utility$info_all$info, utility$info_all$test, function(x) x / max(x)) %>% unlist() %>% as.numeric(),
            #        tapply(utility$info_all$info0, utility$info_all$test, function(x) x / max(x)) %>% unlist() %>% as.numeric())
     ) %>% 
-    select(Analysis, Time, N, Events, # AHR, 
-           # theta, info, 
+    select(Analysis, Time, N, Events, # AHR, theta, info, 
            EF, hypothesis) %>% 
     unique() %>% 
     mutate(AHR = rep(AHR_dis, 2))

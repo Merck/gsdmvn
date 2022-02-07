@@ -160,7 +160,7 @@ summary_bound(x_ahr) %>%
 ```
 
 The above objective can also be realized by using functions in the R package`gt` for custom design of table layout. 
-In the future, if we want to develop rtf, then we can use `rtf_format()`.
+In the future, if we want to develop rtf, then we can use `as_rtf()`.
 
 # WLR method 
 
