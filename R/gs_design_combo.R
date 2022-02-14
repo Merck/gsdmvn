@@ -103,7 +103,7 @@ gs_design_combo <- function(
   stopifnot( identical(lower, gs_b) | identical(lower, gs_spending_combo) )
   
   # --------------------------------------------- #
-  #     get the number of analysis                #
+  #     get the number of analysis/test           #
   # --------------------------------------------- #
   n_analysis <- length(unique(fh_test$Analysis))
   n_test <- max(fh_test$test)
@@ -145,7 +145,7 @@ gs_design_combo <- function(
     max(subset(prob, Bound == "Upper")$Probability) - (1 - beta)
   }
   
-  # Find sample isze and bound
+  # Find sample size and bound
   n <- max(info$N)
   n0 <- 0
   while( (abs(n - n0)) > 1e-2){
@@ -197,8 +197,7 @@ gs_design_combo <- function(
     info_fh %>% # unique(info_fh[, c("Analysis", "Time", "N", "Events")])
       tibble::as_tibble() %>% 
       select(Analysis, Time, N, Events) %>% 
-      unique()
-  ) %>% 
+      unique()) %>% 
     # update sample size and events
     mutate(
       Events = Events * n / max(N),
@@ -275,7 +274,11 @@ gs_design_combo <- function(
   #     output                                    #
   # --------------------------------------------- #
   message("The AHR reported in the `analysis` table is under the log-rank test.")
-  output <- list(bounds = bounds, analysis = analysis)
+  output <- list(
+    enrollRates = enrollRates %>% mutate(rate = max(analysis$N) * (duration/ sum(duration)) / duration ),
+    failRates = failRates,
+    bounds = bounds, 
+    analysis = analysis)
   class(output) <- c("combo", class(output))
   return(output)
 }
