@@ -123,7 +123,6 @@ summary_bound <- function(
   analysis_decimals = NULL,
   bound_names = c("Efficacy", "Futility")
 ){
-  
   # get the 
   # (1) bounds table,
   # (2) analysis summary table, 
@@ -133,25 +132,10 @@ summary_bound <- function(
   x_bounds <- x$bounds
   x_analysis <- x$analysis
   K <- max(x_analysis$Analysis)
-  if(method == "ahr" || method == "wlr"){
-    if(is.null(analysis_vars)){
-      analysis_vars <- c("Time", "N", "Events", "AHR", "IF")
-    }
-    if(is.null(analysis_decimals)){
-      analysis_decimals <- c(1, 1, 1, 2, 2)
-    }
-    temp <- c("Analysis", "Bound", "Nominal p", "~HR at bound", "Alternate hypothesis")
-  }
-  if(method == "combo"){
-    if(is.null(analysis_vars)){
-      analysis_vars <- c("Time", "N", "Events")  # TO BE IMPROVED
-    }
-    if(is.null(analysis_decimals)){
-      analysis_decimals <-  c(1, 1, 1)
-    }
-    temp <- c("Analysis", "Bound", "Nominal p", "Alternate hypothesis")
-  }
-  
+  analysis_vars <- c("Time", "N", "Events", "AHR", ifelse(method == "ahr" || method == "wlr", "IF", "EF"))
+  analysis_decimals <- c(1, 1, 1, 2, 2)  
+  temp <- if(method == "ahr" || method == "wlr"){c("Analysis", "Bound", "Nominal p", "~HR at bound", "Alternate hypothesis")}else{c("Analysis", "Bound", "Nominal p", "Alternate hypothesis")}
+                
   # set the analysis summary header
   analyses <- x_analysis %>%
     dplyr::group_by(Analysis) %>%
@@ -168,8 +152,7 @@ summary_bound <- function(
       # change Lower -> bound_names[2], e.g., Futility
       dplyr::mutate(Bound = dplyr::recode(Bound, "Upper" = bound_names[1], "Lower" = bound_names[2])) %>%
       dplyr::select(all_of(temp)), 
-      #select(all_of(c("Analysis", "Bound", "Nominal p", "~HR at bound", "Alternate hypothesis"))),
-    
+      
     # a table under null hypothesis
     x_bounds %>% 
       dplyr::filter(hypothesis == "H0") %>%

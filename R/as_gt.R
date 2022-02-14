@@ -17,7 +17,7 @@
 
 #' This is the function to format the bounds summary table into gt style.
 #'
-#' @param output an object returned by \code{summary_bound}
+#' @param x an object returned by \code{summary_bound}
 #' @param title a string to specify the title of the gt table
 #' @param subtitle a string to specify the subtitle of the gt table
 #' @param colname_spanner a string to specify the spanner of the gt table
@@ -56,19 +56,18 @@
 #'                   attr = c("subtitle", "analysis")))
 #'                           
 as_gt <- function(
-  output,
+  x,
   title = NULL,
   subtitle = NULL,
   colname_spanner = "Cumulative boundary crossing probability",
   colname_spannersub = c("Alternate hypothesis", "Null hypothesis"),
   footnote = NULL
 ){
-  method <- class(output)[class(output) %in% c("ahr", "wlr", "combo")]
+  method <- class(x)[class(x) %in% c("ahr", "wlr", "combo")]
   # --------------------------------------------- #
   #     set defaults                              #
   # --------------------------------------------- #
   # set different default title to different methods
-  method <- class(output)[1]
   if(method == "ahr" && is.null(title)){
     title <- "Bound summary for gs_design_ahr"
   }
@@ -102,13 +101,13 @@ as_gt <- function(
                      attr = "colname")
   }
   if(method == "combo" && is.null(footnote)){
-    footnote <- list(content = "The values of AHR/theta varies under different test, so we omit reporting them here. ",
+    footnote <- list(content = "EF prefers to event fraction. The values of AHR reported is under the regular weighted log rank test given the combo-AHR varies under different test.",
                      location = NA,
                      attr = "analysis")
   }
   
   # add spanner 
-  output <- output %>% 
+  x <- x %>% 
     dplyr::group_by(Analysis) %>%
     gt::gt() %>%
     gt::tab_spanner(
@@ -126,28 +125,28 @@ as_gt <- function(
     for (i in 1:length(footnote$content)) {
       # if the footnotes is added on the colnames
       if(footnote$attr[i] == "colname"){
-        output <- output %>% 
+        x <- x %>% 
           gt::tab_footnote(
             footnote = footnote$content[i],
             locations = gt::cells_column_labels(columns = footnote$location[i]))
       }
       # if the footnotes is added on the title/subtitle
       if(footnote$attr[i] == "title" || footnote$attr[i] == "subtitle"){
-        output <- output %>% 
+        x <- x %>% 
           gt::tab_footnote(
             footnote = footnote$content[i],
             locations = gt::cells_title(group = footnote$attr[i]))
       }
       # if the footnotes is added on the analysis summary row, which is a grouping variable, i.e., Analysis
       if(footnote$attr[i] == "analysis"){
-        output <- output %>% 
+        x <- x %>% 
           gt::tab_footnote(
             footnote = footnote$content[i],
             locations = gt::cells_row_groups(groups = dplyr::starts_with("Analysis")))
       }
       # if the footnotes is added on the column spanner
       if(footnote$attr[i] == "spanner"){
-        output <- output %>% 
+        x <- x %>% 
           gt::tab_footnote(
             footnote = footnote$content[i],
             locations = gt::cells_column_spanners(spanners = colname_spanner)
@@ -155,5 +154,5 @@ as_gt <- function(
       }
     }
   }
-  return(output)
+  return(x)
 }

@@ -88,7 +88,7 @@ gs_design_combo <- function(
   beta = 0.2,
   binding = FALSE,
   upper = gs_b,
-  upar = c(3,2,1),
+  upar = c(3, 2, 1),
   lower = gs_b,
   lpar = c(-1, 0, 1),
   algorithm = mvtnorm::GenzBretz(maxpts = 1e5, abseps = 1e-5),
