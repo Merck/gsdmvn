@@ -3,7 +3,7 @@ title: "Group Sequential Design for Binary Outcomes"
 output:
   html_document:
     toc: true
-    toc_depth: 2
+    toc_depth: 3
     toc_float: true
     theme: flatly
     highlight: tango
@@ -51,7 +51,7 @@ We assume for control and experimental groups, respectively:
 - Randomization between two treatment groups with sample sizes $N_C$ and $N_E$; the randomization ratio planned is $r=N_E/N_C$.
 - Independent observations with a binary outcome that is observed with probability $p_C$ and $p_E$.
 - Random variables $X_C\sim\hbox{Binomial}(N_C, p_C), X_E\sim\hbox{Binomial}(N_E,p_E)$ with observed outcomes $x_C, x_E$ and observed rates of $\bar p_C=x_C/N_C, \bar p_E=x_E/N_E$.  
-- The constant $d=\pm 1$ indicating whether is an outcome is bad (failure; $d=1$) or good (response; $d=-1).
+- The constant $d=\pm 1$ indicating whether is an outcome is bad (failure; $d=1$) or good (response; $d=-1$).
 - The natural parameter risk difference is denoted by $\theta = d\times (p_C - p_E)$. Thus, whether $d=1$ or $d=-1$, $\theta > 0$ indicates a more favorable outcome distribution in the experimental group than in the control group.
 - Estimation of risk difference with $\hat\theta=d\times(\bar p_C - \bar p_E).$
 
@@ -78,7 +78,8 @@ $$Z=\frac{d\times(\bar p_C - \bar p_E)}{\hat\sigma_0}$$
 and $\hat\sigma^2_0$ is the maximum likelihood estimate of the variance $\sigma^2$ under $H_0$.
 Letting $\bar p=(x_C+x_E)/(N_C+N_E)$ we have 
 $$\hat\sigma^2_0 = \bar p (1-\bar p)\times \left(\frac{1}{N_C}+\frac{1}{N_E}\right)= \bar p (1-\bar p)\frac{r+1}{N}\left(1 + \frac{1}{r}\right).$$
-Note that when we have equal randomization, this has the perhaps more recognizable $\hat\sigma^2_0 = \bar p (1-\bar p)\frac{4}{N}.$
+Note that when we have equal randomization, this has the perhaps more recognizable 
+$$\hat\sigma^2_0 = \frac{4}{N}\bar p (1-\bar p).$$
 
 We do a quick 20,000 simulations and compare the density histogram of outcomes to the standard normal density.
 Assume $r=1, d = 1, p_C=p_E=0.125, N=200$.
@@ -112,11 +113,22 @@ y <- data.frame(Z = x, Density = dnorm(x = x, mean = 0, sd = 1))
 ggplot() + 
   geom_histogram(data = data.frame(Z), aes(x = Z, y = ..density..), color = 1, fill = "white") +
     ylab("Density") +
-  geom_line(data = y, aes(x=Z, y = Density))
+  geom_line(data = y, aes(x=Z, y = Density)) +
+  ggtitle("Binomial outcomes by simulation vs. asymptotic normal density",
+          subtitle = "Histogram for 20,000 simulations")
 ```
 
-Now we extend the compuation of $\hat\sigma^2_0$ to $\theta_0\neq 0$ using the restriction that rate estimates $\bar p_{C0}, \bar p_{E0}$ under the null hypothesis satisfy $\bar p_{C0}=\bar p_{E0}+d\theta_0$.
-Once solved, we will have
+Now we extend the computation of $\hat\sigma^2_0$ to $\theta_0\neq 0$ using the restrictions that rate estimates $\bar p_{C0}, \bar p_{E0}$ under the null hypothesis satisfies $\bar p_{C0}=\bar p_{E0}+d\theta_0$ and 
+$p_{C0} + rp_{E0} = p_C + rp_C $.
+Simple algebra for 2 equations with 2 unknowns yields
+
+$$
+\begin{aligned}
+p_{E0} = &\frac{p_C+rp_E - d\theta_0}{r+1}\\
+p_{C0} = & p_{E0}+ d\theta_0.
+\end{aligned}
+$$
+Now we have
 $$\hat\sigma^2_0= \frac{\bar p_{C0}(1- \bar p_{C0})}{N_C}+\frac{\bar p_{E0}(1- \bar p_{E0})}{N_E}= \frac{r+1}{N}\left(\bar p_{C0}(1- \bar p_{C0})+\frac{\bar p_{E0}(1- \bar p_{E0})}{r}\right).
 $$
 
@@ -125,8 +137,9 @@ Assuming $0 < x_C<N_C$ and $0<x_E<N_E$ we will estimate the above variance with:
 
 $$\hat\sigma^2=\widehat{\hbox{Var}}(\hat\theta)=\frac{\bar p_C(1- \bar p_C)}{N_C}+\frac{\bar p_E(1- \bar p_E)}{N_E}.$$
 We will use the asymptotic approximation $Z=\hat\theta/\hat\sigma\sim\hbox{Normal}(\delta, 1)$ where $\delta=d\times(p_C-p_E)/\sigma$ is the standardized effect size.
-Squaring this and applying a continuity correction is a typical two-sided testing approach. Using the normally distributed $Z$ enables one-sided testing. 
-The continuity correction is unneeded as shown below.
+Squaring this and applying a continuity correction is a typical two-sided testing approach, but we will not use the continuity correction here . 
+Using the normally distributed $Z$ enables one-sided testing. 
+The continuity correction is generally unneeded (@CCmyth) and as demonstrated below and from .
 
 ### Sample size and power
 
