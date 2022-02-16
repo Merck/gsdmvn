@@ -1,5 +1,5 @@
 ---
-title: "Summarize Bounds Tables"
+title: "Group Sequential Bound Tables"
 output:
   rmarkdown::html_vignette:
     css: "custom.css"
@@ -8,7 +8,7 @@ output:
     toc_depth: 2
 bibliography: gsDesign.bib
 vignette: |
-  %\VignetteIndexEntry{Summarize Bounds Tables}
+  %\VignetteIndexEntry{Group Sequential Bound Tables}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 ---
@@ -28,17 +28,18 @@ library(gt)
 library(gsdmvn)
 ```
 
-This vignette introduce the tutorial to summarize the bounds table in the group sequential design by using `gsdmvn`.  
+This vignette introduces bounds tables for group sequential designs in the **gsdmvn** package.  
 The function used to generate bounds tables is `gsdmvn::summary_bound()`. 
-Then users can use `gsdmvn::as_gt()` to format the above R table into a gt table. 
+Users can use `gsdmvn::as_gt()` to format the above table using the **gt** package. 
 
-In this vignette, we introduce how to summarize the bounds table by
+In this vignette, we introduce a general approach to bound summaries by examples using different design approaches for a time-to-event outcome:
 
-- average hazard ratio (AHR) method, where `gsdmvn::gs_design_ahr()` is used;
-- weighted logrank (WLR) method, where `gsdmvn::gs_design_wlr()` is used;
-- max combo (COMBO) method, where `gsdmvn::gs_design_combo()` is used.
+- the average hazard ratio (AHR) method extended from @Mukhopadhyay2020 using `gsdmvn::gs_design_ahr()`;
+- the weighted logrank (WLR) method of @Yung2019Bcs using `gsdmvn::gs_design_wlr()`;
+- The MaxCombo method of @NPHWG2021Design using `gsdmvn::gs_design_combo()`.
 
-The design parameters we use in this vignette is
+The design parameters we use in this vignette are
+
 ```{r}
 # enrollment/failure rates
 enrollRates <- tibble::tibble(Stratum = "All", 
@@ -59,26 +60,30 @@ alpha <- 0.025
 # Type II error (1 - power)
 beta <- .1 
 # Upper bound
-upper <- gsdmvn::gs_spending_bound
+upper <- gsdmvn::gs_spending_bound # alpha-spending bound
+# Lan-DeMets spending to approximate O'Brien-Fleming bound
 upar <- list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)
 # Lower bound
-lower <- gsdmvn::gs_spending_bound
+lower <- gsdmvn::gs_spending_bound # beta-spending bound
+# Lan-DeMets spending to approximate O'Brien-Fleming bound
 lpar <- list(sf = gsDesign::sfHSD, total_spend = 0.1, param = 0, timing = NULL)
-# weight function in WLR
-wgt00 <- function(x, arm0, arm1){
+# Fleming-Harrington (FH) weight functions for weighted logrank (WLR)
+wgt00 <- function(x, arm0, arm1){ # Equal weighting for logrank
                  gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0)}
-wgt05 <- function(x, arm0, arm1){
+wgt05 <- function(x, arm0, arm1){ # Early downweighting with FH(0,.5) 
                  gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = .5)}
-# test in COMBO
+# Both of above tests for MaxCombo: logrank and FH(0,.5)
 fh_test <- rbind(
+      # Include logrank for all 3 analyses
       data.frame(rho = 0, gamma = 0, tau = -1, test = 1, Analysis = 1:3, analysisTimes = c(12, 24, 36)), 
+      # Only include FH(0,.5) for analyses 2 and 3
       data.frame(rho = c(0, 0.5), gamma = 0.5, tau = -1, test = 2:3, Analysis = 3, analysisTimes = 36)
       )
 ```
 
 # AHR method 
 
-By using the design parameters above, one can generate an AHR model by `gs_design_ahr2` as
+By using the design parameters above, the AHR design is derived as follows:
 ```{r}
 x_ahr <- gs_design_ahr(
    enrollRates = enrollRates,
@@ -95,26 +100,25 @@ x_ahr <- gs_design_ahr(
 )
 ```
 
-The outputs of `x_ahr` is a list including
+The output of `x_ahr` is a list including
 
 - `enrollRates`: the enrollment rates
 - `failRates`: the failure rates
 - `bounds`: the summary of the crossing probabilities under H0 \& H1
 - `analysis`: the summary of each analysis
 
-The direct output of `x_ahr$bounds` is
+The direct output of `bounds` and `analysis` tables is useful for understanding commonalities in how designs are summarized for different models:
 ```{r}
 x_ahr$bounds %>% 
   gt::gt()
 ```
 
-The direct output of `x_ahr$analysis` is 
 ```{r}
 x_ahr$analysis %>% 
    gt::gt()
 ```
 
-To summarize the bounds table of `x_ahr`, one can use `summary_bound()`. 
+The `summary_bound()` function produces an overall summary table for bounds for publication in a protocol. 
 The default output of `summary_bound()` for the AHR method is
 ```{r}
 summary_bound(x_ahr) %>% 
@@ -122,7 +126,7 @@ summary_bound(x_ahr) %>%
 ```
 
 In the above default table, the variables used to summarize each analysis includes `Analysis`, `Time`, `N`(sample size), `Events`, `AHR`, and `IF` (information fraction). 
-But users can custom these variables (and their decimals) displayed as the analysis summary by using the arguments `analysis_vars = ...` and `analysis_decimals = ...`. 
+But users can customize these variables chosen using `analysis_vars = ...` and the corresponding decimals displayed using the argument `analysis_decimals = ...`. 
 For example
 ```{r}
 summary_bound(
@@ -131,9 +135,9 @@ summary_bound(
    analysis_decimals = c(1, 1)) %>% 
    gt::gt()
 ```
-Please note that there is no need to input `"Analysis"` into `analysis_vars = ...`.
+Please note that there is no need to input `"Analysis"` into `analysis_vars = ...` as it will always appear.
 
-Besides, users can also custom the bound names. 
+Besides, users can also customize the bound names. 
 In the default output, the bound name is `c("Efficacy", "Futility")`, which can be changed into 
 `c("A is better", "B is better")` for a 2-sided design by using the argument `bound_names = ...`.
 For example,
@@ -159,7 +163,7 @@ summary_bound(x_ahr) %>%
                          attr = c("colname", "subtitle", "analysis")))
 ```
 
-The above objective can also be realized by using functions in the R package`gt` for custom design of table layout. 
+We note that `as_gt()` always produces a `gt` object and, thus, can be further customized with **gt** package formatting functions.
 In the future, if we want to develop rtf, then we can use `as_rtf()`.
 
 # WLR method 
@@ -233,3 +237,4 @@ summary_bound(x_combo) %>%
    as_gt()
 ```
 
+# References
