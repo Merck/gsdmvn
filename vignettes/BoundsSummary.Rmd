@@ -28,7 +28,19 @@ library(gt)
 library(gsdmvn)
 ```
 
-This vignette introduces bounds tables for group sequential designs in the **gsdmvn** package.  
+# Overview
+
+This vignette introduces publication quality table production for group sequential designs in the **gsdmvn** package.  
+It also demonstrates designs for an example scenario using multiple design approaches.
+We divide the document into 3 parts:
+
+- Design specification and derivation
+- Printing design summary tables
+- Details of output from design functions
+- Details on table output options
+
+The reader can decide which of these sections is of interest to them.
+
 The function used to generate bounds tables is `gsdmvn::summary_bound()`. 
 Users can use `gsdmvn::as_gt()` to format the above table using the **gt** package. 
 
@@ -38,7 +50,11 @@ In this vignette, we introduce a general approach to bound summaries by examples
 - the weighted logrank (WLR) method of @Yung2019Bcs using `gsdmvn::gs_design_wlr()`;
 - The MaxCombo method of @NPHWG2021Design using `gsdmvn::gs_design_combo()`.
 
-The design parameters we use in this vignette are
+# Design specification and derivation
+
+## Design parameters
+
+The design parameters we use across the different designs derived are: 
 
 ```{r}
 # enrollment/failure rates
@@ -81,13 +97,12 @@ fh_test <- rbind(
       )
 ```
 
-# AHR method 
+# Deriving designs
 
-<<<<<<< HEAD
-By using the design parameters above, one can generate an AHR model by `gs_design_ahr` as
-=======
-By using the design parameters above, the AHR design is derived as follows:
->>>>>>> 5ca8f1dfb3137942927b8511310f04406d997d4a
+## AHR design derivation 
+
+Using the design parameters above, the AHR design is derived as follows:
+
 ```{r}
 x_ahr <- gs_design_ahr(
    enrollRates = enrollRates,
@@ -104,12 +119,45 @@ x_ahr <- gs_design_ahr(
 )
 ```
 
+## WLR design derivation
+
+## MaxCombo design derivation
+
+# Default summary table production
+
+(This will only have 4 tables, one from each design)
+
+# Details of output from design functions
+
+## Failure rates
+(same for all designs)
+
+## Enrollment
+
+Same table structure, same enrollment period durations for each rate, rates differ between designs only by a multiplicative constant.
+
+## Analysis
+
+One row per analysis per hypothesis. Columns can vary with different defaults for each design option.
+
+## Bounds
+
+One row per analysis per bound per hypothesis. Columns can vary with different defaults for each design option.
+
+
 The output of `x_ahr` is a list including
 
 - `enrollRates`: the enrollment rates
 - `failRates`: the failure rates
 - `bounds`: the summary of the crossing probabilities under H0 \& H1
 - `analysis`: the summary of each analysis
+
+
+
+# Detailed summary table formatting
+
+Here we demonstrate options for formatting analysis rows, bound rows as well as other table parameters such as titles, labels and footnotes.
+
 
 The direct output of `bounds` and `analysis` tables is useful for understanding commonalities in how designs are summarized for different models:
 ```{r}
@@ -164,12 +212,9 @@ summary_bound(x_ahr) %>%
                          attr = c("colname", "subtitle", "analysis")))
 ```
 
-<<<<<<< HEAD
 The above objective can also be realized by using functions in the R package `gt` for custom design of table layout. 
-=======
 We note that `as_gt()` always produces a `gt` object and, thus, can be further customized with **gt** package formatting functions.
->>>>>>> 5ca8f1dfb3137942927b8511310f04406d997d4a
-In the future, if we want to develop rtf, then we can use `as_rtf()`.
+In the future, we to support rich text format using a function `as_rtf()` in a fashion similar to `as_gt()`.
 
 # WLR method 
 
