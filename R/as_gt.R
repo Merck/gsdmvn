@@ -86,7 +86,7 @@ as_gt <- function(
     subtitle <- "WLR approximation of ~wHR at bound"
   }
   if(method == "combo" && is.null(subtitle)){
-    subtitle <- "COMBO approximation"
+    subtitle <- "Max Combo approximation"
   }
   
   # set different default footnotes to different methods
@@ -96,9 +96,9 @@ as_gt <- function(
                      attr = "colname")
   }
   if(method == "wlr" && is.null(footnote)){
-    footnote <- list(content = "approximate weighted hazard ratio to cross bound.",
-                     location = "~wHR at bound",
-                     attr = "colname")
+    footnote <- list(content = c("approximate weighted hazard ratio to cross bound.", "wAHR is the weighted AHR."),
+                     location = c("~wHR at bound", NA),
+                     attr = c("colname", analysis))
   }
   if(method == "combo" && is.null(footnote)){
     footnote <- list(content = "EF prefers to event fraction. The values of AHR reported is under the regular weighted log rank test given the combo-AHR varies under different test.",

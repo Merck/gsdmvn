@@ -83,11 +83,8 @@ fh_test <- rbind(
 
 # AHR method 
 
-<<<<<<< HEAD
 By using the design parameters above, one can generate an AHR model by `gs_design_ahr` as
-=======
-By using the design parameters above, the AHR design is derived as follows:
->>>>>>> 5ca8f1dfb3137942927b8511310f04406d997d4a
+
 ```{r}
 x_ahr <- gs_design_ahr(
    enrollRates = enrollRates,
@@ -164,11 +161,7 @@ summary_bound(x_ahr) %>%
                          attr = c("colname", "subtitle", "analysis")))
 ```
 
-<<<<<<< HEAD
 The above objective can also be realized by using functions in the R package `gt` for custom design of table layout. 
-=======
-We note that `as_gt()` always produces a `gt` object and, thus, can be further customized with **gt** package formatting functions.
->>>>>>> 5ca8f1dfb3137942927b8511310f04406d997d4a
 In the future, if we want to develop rtf, then we can use `as_rtf()`.
 
 # WLR method 
