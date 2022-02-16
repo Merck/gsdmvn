@@ -98,10 +98,10 @@ as_gt <- function(
   if(method == "wlr" && is.null(footnote)){
     footnote <- list(content = c("approximate weighted hazard ratio to cross bound.", "wAHR is the weighted AHR."),
                      location = c("~wHR at bound", NA),
-                     attr = c("colname", analysis))
+                     attr = c("colname", "analysis"))
   }
   if(method == "combo" && is.null(footnote)){
-    footnote <- list(content = "EF prefers to event fraction. The values of AHR reported is under the regular weighted log rank test given the combo-AHR varies under different test.",
+    footnote <- list(content = "EF is event fraction. AHR  is under regular weighted log rank test.",
                      location = NA,
                      attr = "analysis")
   }

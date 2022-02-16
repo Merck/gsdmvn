@@ -268,8 +268,9 @@ gs_design_combo <- function(
     select(Analysis, Time, N, Events, # AHR, theta, info, 
            EF, hypothesis) %>% 
     unique() %>% 
-    mutate(AHR = rep(AHR_dis, 2))
-  
+    mutate(AHR = rep(AHR_dis, 2)) %>% 
+    mutate(N = N *n / max(info_fh$N),
+           Events = Events * n / max(info_fh$N))
   # --------------------------------------------- #
   #     output                                    #
   # --------------------------------------------- #
