@@ -275,7 +275,7 @@ gs_design_combo <- function(
   # --------------------------------------------- #
   message("The AHR reported in the `analysis` table is under the log-rank test.")
   output <- list(
-    enrollRates = enrollRates %>% mutate(rate = max(analysis$N) * (duration/ sum(duration)) / duration ),
+    enrollRates = enrollRates %>% mutate(rate = rate * max(analysis$N) / sum(rate * duration) ),
     failRates = failRates,
     bounds = bounds, 
     analysis = analysis)

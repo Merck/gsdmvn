@@ -220,7 +220,7 @@ x_combo <- gsdmvn::gs_design_combo(
   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.2))
 ```
 
-One can use `x_combo$bounds`/`x_combo$analysis` to get a simplified bounds/analysis table, which is similar to that by `x_ahr`.
+One can use `x_combo$enrollRates`, `x_combo$failRates`, `x_combo$bounds`/`x_combo$analysis` to get a simplified enrollment rates/failure rates/bounds/analysis table, which is similar to that by `x_ahr`.
 To get a comprehensive bounds summary table, one can use 
 
 ```{r}
