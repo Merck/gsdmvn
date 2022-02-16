@@ -78,7 +78,7 @@ fh_test <- rbind(
 
 # AHR method 
 
-By using the design parameters above, one can generate an AHR model by `gs_design_ahr2` as
+By using the design parameters above, one can generate an AHR model by `gs_design_ahr` as
 ```{r}
 x_ahr <- gs_design_ahr(
    enrollRates = enrollRates,
