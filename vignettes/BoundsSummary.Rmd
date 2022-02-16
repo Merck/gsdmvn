@@ -104,21 +104,18 @@ The outputs of `x_ahr` is a list including
 
 The direct output of `x_ahr$bounds` is
 ```{r}
-x_ahr$bounds %>% 
-  gt::gt()
+x_ahr$bounds %>% gt::gt()
 ```
 
 The direct output of `x_ahr$analysis` is 
 ```{r}
-x_ahr$analysis %>% 
-   gt::gt()
+x_ahr$analysis %>% gt::gt()
 ```
 
 To summarize the bounds table of `x_ahr`, one can use `summary_bound()`. 
 The default output of `summary_bound()` for the AHR method is
 ```{r}
-summary_bound(x_ahr) %>% 
-   gt::gt()
+summary_bound(x_ahr) %>% gt::gt()
 ```
 
 In the above default table, the variables used to summarize each analysis includes `Analysis`, `Time`, `N`(sample size), `Events`, `AHR`, and `IF` (information fraction). 
@@ -159,7 +156,7 @@ summary_bound(x_ahr) %>%
                          attr = c("colname", "subtitle", "analysis")))
 ```
 
-The above objective can also be realized by using functions in the R package`gt` for custom design of table layout. 
+The above objective can also be realized by using functions in the R package `gt` for custom design of table layout. 
 In the future, if we want to develop rtf, then we can use `as_rtf()`.
 
 # WLR method 
@@ -191,14 +188,12 @@ x_wlr <- gs_design_wlr(
 One can use `x_wlr$bounds`/`x_wlr$analysis` to get a simplified bounds/analysis table, which is similar to that by `x_ahr`.
 To get a comprehensive bounds summary table, one can use 
 ```{r}
-summary_bound(x_wlr) %>% 
-   gt::gt()
+summary_bound(x_wlr) %>% gt::gt()
 ```
 
 The above table can also be format by `as_gt()` as
 ```{r}
-summary_bound(x_wlr) %>% 
-   as_gt()
+summary_bound(x_wlr) %>% as_gt()
 ```
 
 # MAX COMBO method 
@@ -224,12 +219,11 @@ One can use `x_combo$enrollRates`, `x_combo$failRates`, `x_combo$bounds`/`x_comb
 To get a comprehensive bounds summary table, one can use 
 
 ```{r}
-summary_bound(x_combo)
+summary_bound(x_combo) %>% gt::gt()
 ```
 
 One can also use `as_gt()` to custom the gt style of the bounds table.
 ```{r}
-summary_bound(x_combo) %>% 
-   as_gt()
+summary_bound(x_combo) %>% as_gt()
 ```
 
