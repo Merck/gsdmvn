@@ -37,15 +37,31 @@ There are several issues to consider:
 - Stratified populations.
 - Fixed and group sequential designs.
 
-The focus here is for sample sizes that are large enough so that asymptotic theory works well without continuity corrections.
-Simulation is used throughout to demonstrate how to check this assumption as well as to check the examples presented.
+For single stratum designs, we focus on sample size or power using the method of
+@FarringtonManning for a trial to test the difference between two
+binomial event rates.  
+The routine can be used for a test of superiority, non-inferiority or super-superiority. 
+For a design that tests for superiority, the methods are consistent with those of @FTU, but without the
+continuity correction; this is consistent with the **Hmisc** R package routines `bsamsize() and
+`bpower` for superiority designs.
+
+For trials with multiple strata, testing for a risk difference is often done by weighting each stratum according to the inverse of the variance @MantelHaenszel.
+Since risk differences may also be assumed to be different for different strata, we will also explore weighting by strata size as in @Mehrotra2000.
+
+
+The focus here is for sample sizes that are large enough for asymptotic theory to work well without continuity corrections.
+Simulation is used throughout to check the examples presented.
+
+
+
 
 ## Single analysis unstratified
 
-### Notation and asymptotic distribution
+
+### Assumptions and notation
 
 Throughout we assume a control group and a single experimental group indexed by $C$ and $E$, respectively.
-We also focus on pairwise comparisons.
+We focus on pairwise comparisons.
 We assume for control and experimental groups, respectively:
 
 - Randomization between two treatment groups with sample sizes $N_C$ and $N_E$; the randomization ratio planned is $r=N_E/N_C$.
@@ -65,20 +81,20 @@ $$
 \end{aligned}
 $$
 
-
-
 ### Testing
 
-We will formulate hypothesis testing with two fixed real values $\theta_0 < \theta_1$, a null hypothesis $H_0: \theta=\theta_0$ and alternate hypothesis $H_a: \theta=theta_1$.
-Testing will be one-sided at level $\alpha, 0<\alpha<1$, with the null hypothesis being rejected if 
-$$Z-\theta_0\ge \Phi^{-1}(1-\alpha).$$
-where 
 
-$$Z=\frac{d\times(\bar p_C - \bar p_E)}{\hat\sigma_0}$$
-and $\hat\sigma^2_0$ is the maximum likelihood estimate of the variance $\sigma^2$ under $H_0$.
-Letting $\bar p=(x_C+x_E)/(N_C+N_E)$ we have 
+We test a null hypothesis $H_0: \theta=\theta_0$ where $\theta_0$ is in $(-1, 1)$ using the test statistic
+
+
+$$Z=\frac{d\times(\bar p_C - \bar p_E) - \theta_0}{\hat\sigma_0}$$
+where $\hat\sigma^2_0$, defined below, is the null hypothesis estimate of the $\hbox{Var}(\bar p_C -\bar p_E).$
+Testing will be one-sided at level $\alpha\in (0,1)$ and the null hypothesis will be rejected if 
+$$Z\ge \Phi^{-1}(1-\alpha).$$
+We define $\bar p=(x_C+x_E)/(N_C+N_E)$.
+Under the null hypothesis $\theta_0=0$ we have 
 $$\hat\sigma^2_0 = \bar p (1-\bar p)\times \left(\frac{1}{N_C}+\frac{1}{N_E}\right)= \bar p (1-\bar p)\frac{r+1}{N}\left(1 + \frac{1}{r}\right).$$
-Note that when we have equal randomization, this has the perhaps more recognizable 
+Note that when we have equal randomization, this has the perhaps more recognizable form 
 $$\hat\sigma^2_0 = \frac{4}{N}\bar p (1-\bar p).$$
 
 We do a quick 20,000 simulations and compare the density histogram of outcomes to the standard normal density.
@@ -115,35 +131,42 @@ ggplot() +
     ylab("Density") +
   geom_line(data = y, aes(x=Z, y = Density)) +
   ggtitle("Binomial outcomes by simulation vs. asymptotic normal density",
-          subtitle = "Histogram for 20,000 simulations")
+          subtitle = "Histogram of 20,000 simulations")
 ```
 
-Now we extend the computation of $\hat\sigma^2_0$ to $\theta_0\neq 0$ using the restrictions that rate estimates $\bar p_{C0}, \bar p_{E0}$ under the null hypothesis satisfies $\bar p_{C0}=\bar p_{E0}+d\theta_0$ and 
-$p_{C0} + rp_{E0} = p_C + rp_C $.
-Simple algebra for 2 equations with 2 unknowns yields
+Now we extend the computation of $\hat\sigma^2_0$ to $\theta_0\neq 0$ using the restriction that rate estimates $\bar p_{C0}, \bar p_{E0}$ under the null hypothesis satisfy 
+$$\bar p_{C0}=\bar p_{E0}+d\theta_0\\
+\bar p_{C0} + r\bar p_{E0} = \bar p_C + r\bar p_E .$$
+Solving these 2 equations with 2 unknowns yields
 
 $$
 \begin{aligned}
-p_{E0} = &\frac{p_C+rp_E - d\theta_0}{r+1}\\
-p_{C0} = & p_{E0}+ d\theta_0.
+\bar p_{E0} &= \frac{\bar p_C+r\bar p_E - d\theta_0}{r+1}\\
+\bar p_{C0} &=  \bar p_{E0}+ d\theta_0.
 \end{aligned}
 $$
-Now we have
-$$\hat\sigma^2_0= \frac{\bar p_{C0}(1- \bar p_{C0})}{N_C}+\frac{\bar p_{E0}(1- \bar p_{E0})}{N_E}= \frac{r+1}{N}\left(\bar p_{C0}(1- \bar p_{C0})+\frac{\bar p_{E0}(1- \bar p_{E0})}{r}\right).
+We estimate the above variance with:
+$$\hat\sigma^2_0= \frac{\bar p_{C0}(1- \bar p_{C0})}{N_C}+\frac{ \bar p_{E0}(1- \bar p_{E0})}{N_E}= \frac{r+1}{N}\left( \bar p_{C0}(1- \bar p_{C0})+\frac{\bar p_{E0}(1 -\bar p_{E0})}{r}\right).
 $$
 
 
-Assuming $0 < x_C<N_C$ and $0<x_E<N_E$ we will estimate the above variance with:
 
-$$\hat\sigma^2=\widehat{\hbox{Var}}(\hat\theta)=\frac{\bar p_C(1- \bar p_C)}{N_C}+\frac{\bar p_E(1- \bar p_E)}{N_E}.$$
-We will use the asymptotic approximation $Z=\hat\theta/\hat\sigma\sim\hbox{Normal}(\delta, 1)$ where $\delta=d\times(p_C-p_E)/\sigma$ is the standardized effect size.
-Squaring this and applying a continuity correction is a typical two-sided testing approach, but we will not use the continuity correction here . 
+We will use the asymptotic approximation $Z=\hat\theta/\hat\sigma\sim\hbox{Normal}(0, 1)$.
+Squaring this and applying a continuity correction is a typical two-sided testing approach, but we will not use the continuity correction here. 
 Using the normally distributed $Z$ enables one-sided testing. 
-The continuity correction is generally unneeded (@CCmyth) and as demonstrated below and from .
+The continuity correction is generally unneeded (@CCmyth).
 
 ### Sample size and power
 
 Same; include simulation for both Type I error and power.
+
+
+
+The corresponding maximum likelihood estimator of variance is 
+
+$$
+\hat\sigma^2 = \frac{r+1}{N}\left(\bar p_C(1- \bar p_C)+\frac{\bar p_E(1- \bar p_E)}{r}\right).
+$$
 
 ## Stratified population
 
