@@ -39,24 +39,28 @@ There are several issues to consider:
 
 For single stratum designs, we focus on sample size or power using the method of
 @FarringtonManning for a trial to test the difference between two
-binomial event rates.  
+binomial event rates.
 The routine can be used for a test of superiority, non-inferiority or super-superiority. 
 For a design that tests for superiority, the methods are consistent with those of @FTU, but without the
-continuity correction; this is consistent with the **Hmisc** R package routines `bsamsize() and
-`bpower` for superiority designs.
+continuity correction. 
+Methods for sample size and power are the same as `gsDesign::nBinomial()` when testing on the risk-difference scale for a single stratum. 
+This is also consistent with the **Hmisc** R package routines `bsamsize()` and
+`bpower()` for superiority designs.
 
 For trials with multiple strata, testing for a risk difference is often done by weighting each stratum according to the inverse of the variance @MantelHaenszel.
-Since risk differences may also be assumed to be different for different strata, we will also explore weighting by strata size as in @Mehrotra2000.
-
+Since risk differences may also be assumed to be different for different strata, we will also explore weighting by strata sample sizes as in @Mehrotra2000.
 
 The focus here is for sample sizes that are large enough for asymptotic theory to work well without continuity corrections.
+The concepts are incorporated in the following functions intended for use in fixed and group sequentials designs:
+
+- `gs_info_rd()` to support asymptotic variance and statistical information calculation.
+- `gs_power_rd()` to support power calculations.
+- `gs_design_rd()` to support sample size calculations.
+
 Simulation is used throughout to check the examples presented.
 
 
-
-
 ## Single analysis unstratified
-
 
 ### Assumptions and notation
 
@@ -151,28 +155,52 @@ $$
 
 
 
-We will use the asymptotic approximation $Z=\hat\theta/\hat\sigma\sim\hbox{Normal}(0, 1)$.
+For testing, we will use $Z=\hat\theta/\hat\sigma_0\sim\hbox{Normal}(0, 1)$
 Squaring this and applying a continuity correction is a typical two-sided testing approach, but we will not use the continuity correction here. 
 Using the normally distributed $Z$ enables one-sided testing. 
 The continuity correction is generally unneeded (@CCmyth).
 
 ### Sample size and power
 
-Same; include simulation for both Type I error and power.
-
-
-
-The corresponding maximum likelihood estimator of variance is 
+We follow the general approach of @LachinBook here.
+As shown in the histogram example above, under H$_0$ the proposed statistic $Z\sim \hbox{Normal}(0,1)$.
+Letting $\sigma_1^2$ denote the variance under the alternate hypothesis H$_1$ that $Z = \hat\theta/\hat\sigma_0\sim \hbox{Normal}(0,\hbox{Variance} = \sigma^2_0/\sigma^2_1)$.
+Thus, there is a role of both $\sigma_0^2$ and $\sigma_1^2$ in power calculations as has been built in to the current package.
+The general power calculation under the alternate hypothesis using Type II error notation $1-\beta=$Power:
 
 $$
-\hat\sigma^2 = \frac{r+1}{N}\left(\bar p_C(1- \bar p_C)+\frac{\bar p_E(1- \bar p_E)}{r}\right).
+\begin{aligned}
+1-\beta &= P_1\left(Z=(\hat\theta+d\theta_0)/\hat\sigma_0\ge \Phi^{-1}(1-\alpha)\right)\\
+ &\approx P_1\left(Z=(\hat\theta+d\theta_1)/\sigma_1\ge \Phi^{-1}(1-\alpha)\right)\\
+ &=1 -\Phi\left(\frac{\Phi^{-1}(1-\alpha)\sigma_0+d(\theta_1-\theta_0)}{\sigma_1}\right)
+
+\end{aligned}
 $$
+
+
+Applying the formulas for $\sigma_0$ and $\sigma_1$ makes the final line power calculation a function of $\alpha, N, r, p_E, p_C, d,\theta_0$ which we do not expand further. Inverting that formula gives a sample size formula.
+Consistent with other sample size and power calculation problems in the package, we use the null and alternate hypothesis variance formulas and compute statistical information in `gs_info_rd()` and apply this with the standard approach for the package to compute power with `gs_power_rd()` and sample size with `gs_design_rd()`.
 
 ## Stratified population
 
 ### Assumptions
 
+We will consider $m>1$ strata with $d, \theta_0, r$ as before, but allow $\theta_{1j}, j=1,\cdots,m$ to vary by stratum.
+The full alternate hypothesis is specified by $p_{Ej}, p_{Cj}=p_{Ej}+\theta_{1j}, j=1,\cdots, m$ as well as
+positive weights $w_j, j=1,\cdots m$.
+Our test is now
+
+$$
+\begin{aligned}
+Z&=\frac{\sum_{j=1}^m w_j\left(\hat\theta_j + d\theta_0\right)}{\left(\sum_{j=1}^mw_j^2\hat\sigma_{0j}^2\right)^{1/2}}.
+\end{aligned}
+$$
+Overall variance calculations $\sigma_0^2$ and $\sigma_1^2$ are a straightforward extension of the single stratum versions.
+
+
 ### Weighting options
+
+As previously noted, we will consider weighting based on either inverse-variance weights (@MantelHaenszel) or strata sample size weights (Mehrotra2000).
 
 ## Group sequential design
 
