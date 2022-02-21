@@ -180,6 +180,7 @@ $$
 
 Applying the formulas for $\sigma_0$ and $\sigma_1$ makes the final line power calculation a function of $\alpha, N, r, p_E, p_C, d,\theta_0$ which we do not expand further. Inverting that formula gives a sample size formula.
 Consistent with other sample size and power calculation problems in the package, we use the null and alternate hypothesis variance formulas and compute statistical information in `gs_info_rd()` and apply this with the standard approach for the package to compute power with `gs_power_rd()` and sample size with `gs_design_rd()`.
+The general theory for this is as summarized by @JTBook which will not be repeated here. 
 
 ## Stratified population
 
@@ -204,6 +205,5 @@ As previously noted, we will consider weighting based on either inverse-variance
 
 ## Group sequential design
 
-## Information-based design
-
+Given the above 
 ## References
