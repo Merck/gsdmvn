@@ -28,9 +28,9 @@ NULL
 #' Method matches Fleiss, Tytun and Ury for superiority and Farrington and Manning for 
 #' non-inferiority or super-superiority evaluations of a single stratum.
 #' Extends these methods by allowing stratified population and alternate weighting approaches to strata.
-#' @param p_control probability of an event in the control group under alternate hypothesis; between 0 and 1; 
+#' @param p_ctl probability of an event in the control group under alternate hypothesis; between 0 and 1; 
 #' can be a vector with different strata. 
-#' @param p_experimental probability of an event in the experimental group under alternate hypothesis; between 0 and 1; 
+#' @param p_exp probability of an event in the experimental group under alternate hypothesis; between 0 and 1; 
 #' can be a vector with different strata.
 #' @param theta0 real value between xx and xx; null hypothesis for `p_control - p_experimental`; natural parameter with default = 0.
 #' While one or both of `p_control` and `theta0` can vary between strata; can be a single value or one per stratum. 
@@ -68,67 +68,46 @@ NULL
 #' @export
 #'
 #' @examples
-#' library(gsDesign)
-#' library(gsDesign2)
 #' 
-#' # Only put in targeted events
-#' gs_info_ahr(events = c(30, 40, 50))
-#' # Only put in targeted analysis times
-#' gs_info_ahr(analysisTimes = c(18, 27, 36))
-#' # Some analysis times after time at which targeted events accrue
-#' # Check that both Time >= input analysisTime and Events >= input events
-#' gs_info_ahr(events = c(30, 40, 50), analysisTimes = c(16, 19, 26))
-#' gs_info_ahr(events = c(30, 40, 50), analysisTimes = c(14, 20, 24))
-gs_info_ahr <- function(enrollRates=tibble::tibble(Stratum="All",
-                                                  duration=c(2,2,10),
-                                                  rate=c(3,6,9)),
-                       failRates=tibble::tibble(Stratum="All",
-                                                duration=c(3,100),
-                                                failRate=log(2)/c(9,18),
-                                                hr=c(.9,.6),
-                                                dropoutRate=rep(.001,2)),
-                       ratio=1,               # Experimental:Control randomization ratio
-                       events = NULL,         # Events at analyses
-                       analysisTimes = NULL   # Times of analyses
+gs_info_rd <- function(
+  p_ctl, 
+  p_exp,
+  theta0, 
+  ratio = 1,  
+  N,
+  alpha, 
+  beta,
+  enrollRates = tibble::tibble(Stratum = "All",
+                               duration = c(2, 2, 10),
+                               rate = c(3, 6, 9)),
+  failRates = tibble::tibble(Stratum = "All",
+                             duration = c(3, 100),
+                             failRate = log(2)/c(9, 18),
+                             hr = c(.9, .6),
+                             dropoutRate = rep(.001, 2)),
+  events = NULL,         # Events at analyses
+  analysisTimes = NULL   # Times of analyses
 ){
-  ################################################################################
-  # Check input values
-  K <- 0
-  if (is.null(analysisTimes) && is.null(events)) stop("gs_info_ahr(): One of
-                                                      events and analysisTimes must be a
-                                                      numeric value or vector with increasing values")
-  if (!is.null(analysisTimes)){
-    if (!is.numeric(analysisTimes) || !is.vector(analysisTimes) || min(analysisTimes - dplyr::lag(analysisTimes, def=0))<=0
-       )stop("gs_info_ahr(): analysisTimes must be NULL a numeric vector with positive increasing values")
-    K <- length(analysisTimes)
+  # get the number of analysis
+  K <- length(N)
+  out <- list()
+  
+  # if it is an unstratified fixed design 
+  if(K == 1 & length(p_ctl) == 1 & length(p_exp) == 1){
+    unstratified_fix_design <- gsDesign::nBinomial(
+      p1 = p_ctl, p2 = p_exp, n = N, ratio = 1,
+      alpha = 0.025, beta = 0.1,
+      delta0 = 0,
+      sided = 1,
+      outtype = 3)
+    out$total_sample_size <- unstratified_fix_design$n
+    out$group_sample_size <- unstratified_fix_design %>% select(n1, n2) %>% rename(n_ctl = n1, n_exp = n2)
+    out$power <- unstratified_fix_design$Power
+    out$sd <- unstratified_fix_design %>% select(sigma0, sigma1) %>% rename(sd_H0 = sigma0, sd_H1 = sigma1)
+    out$p <- unstratified_fix_design %>% select(p1, p2, p10, p20) %>% rename(p_ctl_H1 = p1, p)
   }
-  if (!is.null(events)){
-    if (!is.numeric(events) || !is.vector(events) || min(events - dplyr::lag(events, default=0))<=0
-    )stop("gs_info_ahr(): events must be NULL or a numeric vector with positive increasing values")
-    if(K==0){
-      K <- length(events)
-    }else if (K != length(events)) stop("gs_info_ahr(): If both events and analysisTimes specified, must have same length")
-  }
-  # end check input values
-  ################################################################################
-  avehr <- NULL
-  if(!is.null(analysisTimes)){
-    avehr <- gsDesign2::AHR(enrollRates = enrollRates, failRates = failRates, ratio = ratio,
-                            totalDuration = analysisTimes)
-    for(i in seq_along(events)){
-      if (avehr$Events[i] < events[i]){
-        avehr[i,] <- gsDesign2::tEvents(enrollRates = enrollRates, failRates = failRates, ratio = ratio,
-                                 targetEvents = events[i])
-      }
-    }
-  }else{
-     for(i in seq_along(events)){
-        avehr <- rbind(avehr,
-                   gsDesign2::tEvents(enrollRates = enrollRates, failRates = failRates, ratio = ratio,
-                                      targetEvents = events[i]))
-     }
-  }
-  avehr$Analysis <- 1:nrow(avehr)
-  avehr$theta = -log(avehr$AHR)
-  return(avehr %>% dplyr::transmute(Analysis, Time, Events, AHR, theta, info, info0))
+  
+  return(out)
+  
+  
 }
