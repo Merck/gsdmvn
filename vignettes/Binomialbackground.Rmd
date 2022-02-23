@@ -81,9 +81,11 @@ We have $E(\hat\theta)=\theta$ and
 $$
 \begin{aligned}
 \sigma^2 &= \hbox{Var}(\hat\theta)= \frac{p_C(1- p_C)}{N_C}+\frac{p_E(1- p_E)}{N_E}\\
- &= \frac{r+1}{N}\left(p_C(1- p_C)+\frac{p_E(1- p_E)}{r}\right).
+ &= \frac{r+1}{N}\left(p_C(1- p_C)+\frac{p_E(1- p_E)}{r}\right)\\
+ &= \psi^2/N
 \end{aligned}
 $$
+where $$\psi^2=(r+1)\left(p_C(1- p_C)+\frac{p_E(1- p_E)}{r}\right).$$
 
 ### Testing
 
@@ -160,28 +162,6 @@ Squaring this and applying a continuity correction is a typical two-sided testin
 Using the normally distributed $Z$ enables one-sided testing. 
 The continuity correction is generally unneeded (@CCmyth).
 
-### Sample size and power
-
-We follow the general approach of @LachinBook here.
-As shown in the histogram example above, under H$_0$ the proposed statistic $Z\sim \hbox{Normal}(0,1)$.
-Letting $\sigma_1^2$ denote the variance under the alternate hypothesis H$_1$ that $Z = \hat\theta/\hat\sigma_0\sim \hbox{Normal}(0,\hbox{Variance} = \sigma^2_0/\sigma^2_1)$.
-Thus, there is a role of both $\sigma_0^2$ and $\sigma_1^2$ in power calculations as has been built in to the current package.
-The general power calculation under the alternate hypothesis using Type II error notation $1-\beta=$Power:
-
-$$
-\begin{aligned}
-1-\beta &= P_1\left(Z=(\hat\theta+d\theta_0)/\hat\sigma_0\ge \Phi^{-1}(1-\alpha)\right)\\
- &\approx P_1\left(Z=(\hat\theta+d\theta_1)/\sigma_1\ge \Phi^{-1}(1-\alpha)\right)\\
- &=1 -\Phi\left(\frac{\Phi^{-1}(1-\alpha)\sigma_0+d(\theta_1-\theta_0)}{\sigma_1}\right)
-
-\end{aligned}
-$$
-
-
-Applying the formulas for $\sigma_0$ and $\sigma_1$ makes the final line power calculation a function of $\alpha, N, r, p_E, p_C, d,\theta_0$ which we do not expand further. Inverting that formula gives a sample size formula.
-Consistent with other sample size and power calculation problems in the package, we use the null and alternate hypothesis variance formulas and compute statistical information in `gs_info_rd()` and apply this with the standard approach for the package to compute power with `gs_power_rd()` and sample size with `gs_design_rd()`.
-The general theory for this is as summarized by @JTBook which will not be repeated here. 
-
 ## Stratified population
 
 ### Assumptions
@@ -196,14 +176,21 @@ $$
 Z&=\frac{\sum_{j=1}^m w_j\left(\hat\theta_j + d\theta_0\right)}{\left(\sum_{j=1}^mw_j^2\hat\sigma_{0j}^2\right)^{1/2}}.
 \end{aligned}
 $$
-Overall variance calculations $\sigma_0^2$ and $\sigma_1^2$ are a straightforward extension of the single stratum versions.
-
 
 ### Weighting options
 
-As previously noted, we will consider weighting based on either inverse-variance weights (@MantelHaenszel) or strata sample size weights (Mehrotra2000).
+As previously noted, we will consider weighting based on either inverse-variance weights (@MantelHaenszel) or strata sample size weights (Mehrotra2000). [YUJIE]
 
-## Group sequential design
 
-Given the above 
+
+## Statistical information
+
+@LachinBook or @Lachin1981 provide fixed sample size calculations based on the values $\psi_0$ under the null hypothesis and $\psi_1$ under the alternate hypothesis. 
+Here we propose using the same variance calculations to compute statistical information for a group sequential design and apply the formulation for power and sample size calculation in the vignette _Computing Bounds Under Non-Constant Treatment Effect_.
+
+## Examples
+
+The variance derivations of previous sections provide the calculations needed for statistical information under the null and alternate hypotheses that are applicable to the approach for group sequential design applied in the package.
+These are implemented in the `gs_info_rd()`, `gs_power_rd()` and `gs_design_rd()` functions.
+ 
 ## References
