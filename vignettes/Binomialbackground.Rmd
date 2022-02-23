@@ -47,7 +47,7 @@ Methods for sample size and power are the same as `gsDesign::nBinomial()` when t
 This is also consistent with the **Hmisc** R package routines `bsamsize()` and
 `bpower()` for superiority designs.
 
-For trials with multiple strata, testing for a risk difference is often done by weighting each stratum according to the inverse of the variance @MantelHaenszel.
+For trials with multiple strata, testing for a risk difference is often done by weighting each stratum according to the inverse of the variance (@MantelHaenszel).
 Since risk differences may also be assumed to be different for different strata, we will also explore weighting by strata sample sizes as in @Mehrotra2000.
 
 The focus here is for sample sizes that are large enough for asymptotic theory to work well without continuity corrections.
@@ -58,7 +58,6 @@ The concepts are incorporated in the following functions intended for use in fix
 - `gs_design_rd()` to support sample size calculations.
 
 Simulation is used throughout to check the examples presented.
-
 
 ## Single analysis unstratified
 
