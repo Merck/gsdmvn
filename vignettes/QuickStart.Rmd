@@ -58,6 +58,7 @@ library(gsDesign2)
 library(simtrial)
 library(knitr)
 library(dplyr)
+library(gt)
 ```
 
 ## Enrollment Rates
@@ -69,7 +70,7 @@ However, the fixed enrollment rate periods will remain unchanged.
 
 ```{r}
 enrollRates <- tibble::tibble(Stratum = "All", duration = c(2, 2, 2, 6), rate = (1:4) / 4)
-enrollRates
+enrollRates %>% gt()
 ```
 
 ## Failure and Dropout Rates
@@ -95,7 +96,7 @@ failRates <- tibble::tibble(
   hr = c(1, .6),
   dropoutRate = .001
 )
-failRates
+failRates %>% gt()
 ```
 
 ## Fixed Design
@@ -122,7 +123,7 @@ design <-
   )
 ```
 
-There are three components to the resulting design.
+There are four components to the resulting design.
 
 ```{r}
 names(design)
@@ -131,7 +132,7 @@ names(design)
 First, the enrollment rates for each period have been increased proportionately to size the trial for the desired properties; the duration for each enrollment rate has not changed.
 
 ```{r}
-design$enrollRates %>% kable()
+design$enrollRates %>% gt()
 ```
 
 The output `failRates` are the same as input. 
@@ -143,13 +144,13 @@ The power is in the `Probability` column on the row with the `Upper` bound. The 
 The variables `info` and `info0` are statistical information at each analysis under the alternate and null hypothesis, respectively.
 
 ```{r,message=FALSE,warning=FALSE}
-design$bounds
+design$bounds %>% gt()
 ```
 
 We note that the targeted `Events` are approximately what would be proposed with the @Schoenfeld1981 formula:
 
 ```{r}
-gsDesign::nEvents(hr = design$bounds$AHR)
+gsDesign::nEvents(hr = design$analysis$AHR)
 ```
 
 The difference is that `gs_design_ahr()` accounts for both a null and alternate hypothesis variance estimate for `theta=log(AHR)` at each analysis to yield a slightly more conservative event target due to slower accumulation of statistical information under the alternate hypothesis. See @LachinBook for this approach for fixed design; to our knowledge, this has not previously been extended to group sequential design. Due to simplicity, there may be reasons to allow approaches with a single variance estimate in future releases.
@@ -166,7 +167,9 @@ gs_design_ahr(
   IF = 1, # single analysis at information-fraction of 1
   upar = qnorm(1 - alpha), # Final analysis bound
   lpar = -Inf # No futility bound
-)$bounds %>% kable(digits = c(0, 0, 1, 0, 0, 3, 4, 3, 3, 2, 2))
+)$analysis %>% 
+  gt() %>% 
+  fmt_number(columns = 5:7, decimals = 4)
 ```
 
 ## Group Sequential Design
@@ -203,7 +206,12 @@ Suppose $K=3$ and $t_1=0.5$, $t_2 = 0.75$, $t_3 = 1$.
 We can define bounds with the **gsDesign** group sequential design function `gsDesign()` and Lan-DeMets O'Brien-Fleming spending function for $\alpha = 0.025$.
 
 ```{r}
-b <- gsDesign::gsDesign(k = 3, timing = c(0.5, 0.75, 1), test.type = 1, alpha = 0.025, sfu = gsDesign::sfLDOF)$upper$bound
+b <- gsDesign::gsDesign(
+  k = 3, 
+  timing = c(0.5, 0.75, 1), 
+  test.type = 1, 
+  alpha = 0.025, 
+  sfu = gsDesign::sfLDOF)$upper$bound
 b
 ```
 
@@ -226,7 +234,7 @@ Bounds at the 3 analyses are as follows; note that expected sample size at time 
 
 ```{r}
 design1s$bounds %>%
-  filter(Bound == "Upper") %>%
+  filter(Bound == "Upper" & hypothesis == "H1") %>%
   kable(digits = c(0, 0, 1, 0, 0, 3, 4, 3, 3, 2, 2))
 ```
 
@@ -241,7 +249,7 @@ gs_power_ahr(
   upper = gs_spending_bound,
   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
   lpar = rep(-Inf, 3), # No futility bound
-  events = design1s$bound$Events[1:3]
+  events = (design1s$analysis %>% subset(hypothesis == "H1"))$Events[1:3]
 ) %>%
   filter(Bound == "Upper") %>%
   kable(digits = c(0, 0, 1, 0, 0, 3, 4, 3, 3, 2, 2))
@@ -257,7 +265,11 @@ For a symmetric design, we can again define a bound using `gsDesign::gsDesign()`
 For this example, the bound is identical to `b` above to the digits calculated.
 
 ```{r}
-b2 <- gsDesign::gsDesign(test.type = 2, sfu = sfLDOF, alpha = 0.025, timing = c(.5, .75, 1))$upper$bound
+b2 <- gsDesign::gsDesign(
+  test.type = 2, 
+  sfu = sfLDOF, 
+  alpha = 0.025, 
+  timing = c(.5, .75, 1))$upper$bound
 b2
 ```
 
@@ -281,13 +293,17 @@ design2ss <- gs_design_ahr(
 Design bounds are confirmed with: 
 
 ```{r, message=FALSE}
-design2ss$bounds %>% kable(digits = c(0, 0, 1, 0, 0, 3, 4, 3, 3, 2, 2))
+design2ss$bounds %>% kable(digits = c(0, 0, 4, 0, 4, 4, 4))
 ```
 
 The bounds can be plotted easily:
 
 ```{r,fig.width=6.5}
-ggplot(data = design2ss$bound, aes(x = Events, y = Z, group = Bound)) +
+ggplot(
+  data = design2ss$analysis %>% 
+    subset(hypothesis == "H1") %>% 
+    left_join(design2ss$bounds %>% subset(hypothesis == "H1")), 
+  aes(x = Events, y = Z, group = Bound)) +
   geom_line(aes(linetype = Bound)) +
   geom_point() +
   ggtitle("2-sided symmetric bounds with O'Brien-Fleming-like spending")
@@ -349,7 +365,7 @@ gs_power_nph(
   maxEvents = max(events)
 ) %>%
   # filter eliminates bounds that are infinite
-  filter(abs(Z) < Inf) %>% kable(digits = c(0, 0, 2, 4, 1, 1, 2, 2, 1, 1))
+  filter(abs(Z) < Inf) %>% kable(digits = c(0, 0, 4, 4, 1, 1, 2, 2, 1, 1))
 ```
 
 ## Confirmation by Simulation
