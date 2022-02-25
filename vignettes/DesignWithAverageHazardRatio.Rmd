@@ -154,20 +154,25 @@ We power a fixed design at 90% with 2.5% one-sided Type I error under the differ
 ```{r}
 ss_ahr_fixed <- NULL
 for(g in c("PH", "Delayed effect 1","Delayed effect 2", "Crossing")){
-    ss_ahr_fixed <- 
-      rbind(ss_ahr_fixed,
-      gs_design_ahr(enrollRates = enrollRates %>% filter(Scenario == g),
-                    failRates = failRates %>% filter(Scenario == g),
-                    analysisTimes = 36,
-                    upper = gs_b, upar = qnorm(.975),
-                    lower = gs_b, lpar = -Inf,
-                    alpha = .025,
-                    beta = .1
-                    )$bounds %>% mutate(Scenario = g)
+    ss_ahr_fixed <- rbind(
+      ss_ahr_fixed,
+      gs_design_ahr(
+        enrollRates = enrollRates %>% filter(Scenario == g),
+        failRates = failRates %>% filter(Scenario == g),
+        analysisTimes = 36,
+        upper = gs_b, upar = qnorm(.975),
+        lower = gs_b, lpar = -Inf,
+        alpha = .025,
+        beta = .1)$analysis %>% 
+        subset(hypothesis == "H1") %>% 
+        mutate(Scenario = g)
       )
 }
-ss_ahr_fixed %>% select(Time, N, Events, AHR, Scenario) %>% 
-  gt() %>% fmt_number(columns=1:3,decimals = 0) %>% fmt_number(columns = 4, decimals = 3)  %>%
+ss_ahr_fixed %>% 
+  select(Time, N, Events, AHR, Scenario) %>% 
+  gt() %>% 
+  fmt_number(columns = 1:3,decimals = 0) %>% 
+  fmt_number(columns = 4, decimals = 3)  %>%
   tab_header(title = "Sample Size and Events Required by Scenario",
              subtitle = "36 Month Trial duration, 2.5% One-sided Type 1 Error, 90% Power")
 ```
@@ -180,21 +185,26 @@ For further study, we will consider the 36 month trial duration as a reasonable 
 ```{r}
 ss_ahr_fixed <- NULL
 g <- "Delayed effect 1"
-for(trialEnd in c(24,30,36,42)){
-    ss_ahr_fixed <- 
-      rbind(ss_ahr_fixed,
-      gs_design_ahr(enrollRates = enrollRates %>% filter(Scenario == g),
-                    failRates = failRates %>% filter(Scenario == g),
-                    analysisTimes = trialEnd,
-                    upper = gs_b, upar = qnorm(.975),
-                    lower = gs_b, lpar = -Inf,
-                    alpha = .025,
-                    beta = .1
-                    )$bounds %>% mutate(Scenario = g)
+for(trialEnd in c(24, 30, 36, 42)){
+    ss_ahr_fixed <- rbind(
+      ss_ahr_fixed,
+      gs_design_ahr(
+        enrollRates = enrollRates %>% filter(Scenario == g),
+        failRates = failRates %>% filter(Scenario == g),
+        analysisTimes = trialEnd,
+        upper = gs_b, upar = qnorm(.975),
+        lower = gs_b, lpar = -Inf,
+        alpha = .025,
+        beta = .1)$analysis %>% 
+        subset(hypothesis == "H1") %>% 
+        mutate(Scenario = g)
       )
 }
-ss_ahr_fixed %>% select(Time, N, Events, AHR, Scenario) %>% 
-  gt() %>% fmt_number(columns=1:3,decimals = 0) %>% fmt_number(columns = 4, decimals = 3) %>%
+ss_ahr_fixed %>% 
+  select(Time, N, Events, AHR, Scenario) %>% 
+  gt() %>% 
+  fmt_number(columns = 1:3,decimals = 0) %>% 
+  fmt_number(columns = 4, decimals = 3) %>%
   tab_header(title = "Sample Size and Events Required by Trial Duration",
              subtitle = "Delayed Effect of 4 Months, HR = 0.6 Thereafter; 90% Power")
 ```
@@ -298,11 +308,11 @@ AHRx <- function(enrollRates=tibble::tibble(Stratum="All",
 Under the different scenarios of interest, we can examine the expected number of events in time periods of interest.
 
 
-```{r}
+```{r, message=FALSE}
 events_by_time_period <- NULL
 for(g in c("PH", "Delayed effect 1","Delayed effect 2", "Crossing")){
-    events_by_time_period <- 
-      rbind(events_by_time_period,
+    events_by_time_period <- rbind(
+      events_by_time_period,
       AHRx(enrollRates = enrollRates %>% filter(Scenario == g),
           failRates = failRates %>% filter(Scenario == g),
           totalDuration = c(12, 20, 28, 36), simple = FALSE) %>% mutate(Scenario = g)
@@ -318,18 +328,18 @@ Note also that at the time of interim analysis, the alternate hypothesis AHR can
 Note that this can be quite different than the scenario HR; e.g., for PH, we assume HR=0.7 throughout, but for the futility bound comparison, we compute blinded AHR that decreases with each analysis under the alternate hypothesis.
 
 
-```{r}
+```{r, message=FALSE}
 # Time periods for each scenario were 0-4, 4-6, and 6+
 # Thus H1 has HR as follows
 hr1 <- tibble(t = c(0, 4, 6), hr1 = c(1, .6, .6))
-ahr_by_analysis <-
-  events_by_time_period %>% 
+ahr_by_analysis <- events_by_time_period %>% 
   full_join(hr1) %>%
   group_by(Scenario, Time) %>%
   summarize(AHR1 = exp(sum(Events * log(hr1))/ sum(Events)))
 ahr_by_analysis %>% 
   pivot_wider(names_from = Scenario, values_from = AHR1) %>% 
-  gt() %>% fmt_number(columns=2:5, decimals = 3)
+  gt() %>% 
+  fmt_number(columns=2:5, decimals = 3)
 ```
 
 
@@ -354,7 +364,7 @@ NPHasymmetric <- gs_design_ahr(enrollRates = enrollRates,
                                # Spending function and parameters used
                                upar = upar, lpar = lpar
 )
-NPHasymmetric$bounds
+NPHasymmetric$bounds %>% gt()
 ```
 
 By scenario, we now wish to compute the adjusted expected futility bounds and the power implied.
@@ -400,28 +410,32 @@ g <- "Delayed effect"
                        test = list(test="rmst difference", 
                        # Milestone allow user to define RMST cutpoint
                        milestone = 44)) # 42 selected since better than 40 or 44
-    gsdmvn:::gs_design_wlr(enrollRates = enrollRates, 
-                           failRates = failRates %>% filter(Scenario == g), 
-                           weight = function(x, arm0, arm1){
-                                      gsdmvn:::wlr_weight_fh(x, arm0, arm1, 
-                                                             rho = 0, gamma = 0.5, tau = 4)},
-                           alpha = .025, beta = .1,
-                           upar = qnorm(.975),
-                           lpar = -Inf,
-                           analysisTimes = 44)$bounds %>% filter(Bound =="Upper")
+    gsdmvn::gs_design_wlr(
+      enrollRates = enrollRates, 
+      failRates = failRates %>% filter(Scenario == g), 
+      weight = function(x, arm0, arm1){
+        gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5, tau = 4)},
+      alpha = .025, beta = .1,
+      upar = qnorm(.975),
+      lpar = -Inf,
+      analysisTimes = 44)$bounds %>% 
+      subset(hypothesis == "H1") %>% 
+      filter(Bound =="Upper")
 ```
 
 ```{r, eval = FALSE}
 # Ignore tau or (tau can be -1) 
-gsdmvn:::gs_design_wlr(enrollRates = enrollRates, 
-                       failRates = failRates %>% filter(Scenario == g), 
-                       weight = function(x, arm0, arm1){
-                                  gsdmvn:::wlr_weight_fh(x, arm0, arm1, 
-                                                         rho = 0, gamma = 0.5)},
-                       alpha = .025, beta = .1,
-                       upar = qnorm(.975),
-                       lpar = -Inf,
-                       analysisTimes = 44)$bounds %>% filter(Bound =="Upper")
+gsdmvn::gs_design_wlr(
+  enrollRates = enrollRates, 
+  failRates = failRates %>% filter(Scenario == g), 
+  weight = function(x, arm0, arm1){
+    gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5)},
+  alpha = .025, beta = .1,
+  upar = qnorm(.975),
+  lpar = -Inf,
+  analysisTimes = 44)$bounds %>% 
+  subset(hypothesis == "H1") %>% 
+  filter(Bound =="Upper")
 ```
 
 
