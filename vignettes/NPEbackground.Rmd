@@ -99,12 +99,13 @@ It can be useful to think of $B_k$ as a sum of independent random variables.
 ### Summary of E-, Z- and B-processes
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
-mt <- tibble::tribble(~Statistic,    ~Example,   ~"Expected value", ~Variance,
+mt <- tibble::tribble(
+  ~Statistic,    ~Example,   ~"Expected value", ~Variance,
   "$\\hat\\theta_k$", "$\\bar X_k$", "$\\theta(t_k)$",  "$\\mathcal{I}_k^{-1}$",
   "$Z_k=\\sqrt{\\mathcal{I}_k}\\hat\\theta_k$","$\\sqrt{n_k}\\bar X_k$", "$\\sqrt{\\mathcal{I}_k}\\theta(t_k)$",  "$1$",
   "$B_k=\\sqrt{t_k}Z_k$","$\\sum_{i=1}^{n_k}X_i/\\sqrt N$", "$t_k\\sqrt{\\mathcal{I}_K}\\theta(t_k)=\\mathcal{I}_k\\theta(t_k)/\\sqrt{\\mathcal{I}_K}$",  "$t_k$"
 )
-mt %>% kable(escape=FALSE)
+mt %>% kable(escape = FALSE)
 ```
 
 ### Conditional independence, covariance and canonical form
@@ -276,15 +277,16 @@ b1 <- qnorm(alphaspend[1], lower.tail = FALSE)
 # Lower bound under alternate hypothesis
 a1 <- qnorm(betaspend[1], mean = sqrt(info[1]) * theta[1])
 # Compare probability of crossing vs target for bounds:
-cat("Upper bound =", b1, "Target spend=", alphaspend[1],
-    "Actual spend=", pnorm(b1, lower.tail=FALSE))
+cat("Upper bound =", b1, "Target spend =", alphaspend[1],
+    "Actual spend =", pnorm(b1, lower.tail=FALSE))
 ```
+
 ```{r}
 # Lower bound under alternate hypothesis
 a1 <- qnorm(betaspend[1], mean = sqrt(info[1]) * theta[1])
 # Compare probability of crossing vs target for bounds:
-cat("Lower bound =", a1, "Target spend=", betaspend[1],
-    "Actual spend=", pnorm(a1, mean = sqrt(info[1]) * theta[1]))
+cat("Lower bound =", a1, "Target spend =", betaspend[1],
+    "Actual spend =", pnorm(a1, mean = sqrt(info[1]) * theta[1]))
 ```
 
 - Set up numerical integration grid for next (final) analysis
