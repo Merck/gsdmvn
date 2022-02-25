@@ -132,8 +132,10 @@ summary_bound <- function(
   x_bounds <- x$bounds
   x_analysis <- x$analysis
   K <- max(x_analysis$Analysis)
-  analysis_vars <- c("Time", "N", "Events", "AHR", ifelse(method == "ahr" || method == "wlr", "IF", "EF"))
-  analysis_decimals <- c(1, 1, 1, 2, 2)  
+  if(is.null(analysis_vars) & is.null(analysis_decimals)){
+    analysis_vars <- c("Time", "N", "Events", "AHR", ifelse(method == "ahr" || method == "wlr", "IF", "EF"))
+    analysis_decimals <- c(1, 1, 1, 2, 2)  
+  }
   temp <- if(method == "ahr" || method == "wlr"){c("Analysis", "Bound", "Nominal p", "~HR at bound", "Alternate hypothesis")}else{c("Analysis", "Bound", "Nominal p", "Alternate hypothesis")}
                 
   # set the analysis summary header

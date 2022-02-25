@@ -73,42 +73,71 @@ NULL
 #'               lower = gs_spending_bound,
 #'               lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL))
 #'
-gs_power_ahr <- function(enrollRates=tibble::tibble(Stratum="All",
-                                                    duration=c(2,2,10),
-                                                    rate=c(3,6,9)),
-                         failRates=tibble::tibble(Stratum="All",
-                                                  duration=c(3,100),
-                                                  failRate=log(2)/c(9,18),
-                                                  hr=c(.9,.6),
-                                                  dropoutRate=rep(.001,2)),
-                         ratio=1,                 # Experimental:Control randomization ratio
-                         events = c(30, 40, 50),  # Targeted events of analysis
-                         analysisTimes = NULL,    # Targeted times of analysis
-                         binding = FALSE,
-                         upper = gs_b,
-                         # Default is Lan-DeMets approximation of
-                         upar = gsDesign(k=length(events), test.type=1,
-                                         n.I=events, maxn.IPlan = max(events),
-                                         sfu=sfLDOF, sfupar = NULL)$upper$bound,
-                         lower = gs_b,
-                         lpar = c(qnorm(.1), rep(-Inf, length(events) - 1)), # Futility only at IA1
-                         test_upper = TRUE,
-                         test_lower = TRUE,
-                         r = 18,
-                         tol = 1e-6
+gs_power_ahr <- function(
+  # enrollment rate
+  enrollRates = tibble::tibble(
+    Stratum = "All",
+    duration = c(2, 2, 10),
+    rate = c(3, 6, 9)),
+  # failure rate
+  failRates = tibble::tibble(
+    Stratum = "All",
+    duration = c(3, 100),
+    failRate = log(2)/c(9, 18),
+    hr = c(.9, .6),
+    dropoutRate = rep(.001,2)),
+  # randomization ratio (experimental:control)
+  ratio = 1,                   
+  # targeted events of analysis
+  events = c(30, 40, 50),      
+  # Targeted times of analysis
+  analysisTimes = NULL,   
+  # indicator of whether futility bound is binding
+  binding = FALSE,
+  # upper bound: default is Lan-DeMets approximation 
+  upper = gs_b,
+  upar = gsDesign(
+    k = length(events), 
+    test.type = 1,
+    n.I = events, 
+    maxn.IPlan = max(events),
+    sfu = sfLDOF, 
+    sfupar = NULL)$upper$bound,
+  test_upper = TRUE,
+  # lower bound: futility only at IA1
+  lower = gs_b,
+  lpar = c(qnorm(.1), rep(-Inf, length(events) - 1)), 
+  test_lower = TRUE,
+  # parameters for numerical calculation
+  r = 18,
+  tol = 1e-6
 ){
-  x <- gs_info_ahr(enrollRates = enrollRates,
-                  failRates = failRates,
-                  ratio = ratio,
-                  events = events,
-                  analysisTimes = analysisTimes
-                 )
-  return(gs_power_npe(theta = x$theta, info = x$info, info0 = x$info0, binding = binding,
-                      upper=upper, lower=lower, upar = upar, lpar= lpar,
-                      test_upper = test_upper, test_lower = test_lower,
-                      r = r, tol = tol) %>%
-           right_join(x %>% select(-c(info, info0, theta)), by = "Analysis") %>%
-           select(c(Analysis, Bound, Time, Events, Z, Probability, AHR, theta, info, info0)) %>%
-           arrange(desc(Bound), Analysis)
-  )
+  # calculate the asymptotic variance and statistical information
+  x <- gs_info_ahr(
+    enrollRates = enrollRates,
+    failRates = failRates,
+    ratio = ratio,
+    events = events,
+    analysisTimes = analysisTimes)
+  
+  out <- gs_power_npe(
+    theta = x$theta, 
+    info = x$info, 
+    info0 = x$info0, 
+    binding = binding,
+    upper = upper, 
+    upar = upar,
+    test_upper = test_upper,
+    lower = lower, 
+    lpar = lpar,
+    test_lower = test_lower,
+    r = r, 
+    tol = tol
+    ) %>%
+    right_join(x %>% select(-c(info, info0, theta)), by = "Analysis") %>%
+    select(c(Analysis, Bound, Time, Events, Z, Probability, AHR, theta, info, info0, hypothesis)) %>%
+    arrange(desc(Bound), Analysis)
+  
+  return(out)
+  
 }
