@@ -30,6 +30,7 @@ library(dplyr)
 library(tibble)
 library(gsDesign)
 library(gsDesign2)
+library(gt)
 ```
 
 ```{r}
@@ -64,12 +65,15 @@ Now we can examine power using `gs_power_npe()`:
 timing <- yy$info0 / max(yy$info0)
 d <- gsDesign::gsDesign(k = length(timing), test.type = 2, sfu = sfLDOF, alpha = .025, timing = timing)
 zz <- gs_power_npe(
-  theta = yy$theta, info = yy$info, info0 = yy$info0,
+  theta = yy$theta, 
+  info = yy$info, info0 = yy$info0,
   upper = gs_b, lower = gs_b,
   upar = d$upper$bound,
   lpar = d$lower$bound
 )
-zz
+zz %>% 
+  gt() %>% 
+  fmt_number(columns = 3:10, decimals = 4)
 ```
 
 ## Deriving sample size to power a trial
@@ -87,9 +91,11 @@ If we inflate the enrollment rates by `minx` and use a fixed design, we will see
 ```{r}
 gs_power_npe(
   theta = yy$theta[K], info = yy$info[K] * minx, info0 = yy$info0[K] * minx,
-  upar = qnorm(.975), lpar = -Inf
-) %>%
-  filter(Bound == "Upper")
+  upar = qnorm(.975), lpar = -Inf) %>%
+  subset(hypothesis == "H1") %>% 
+  filter(Bound == "Upper") %>%
+  gt() %>% 
+  fmt_number(columns = 3:10, decimals = 4)
 ```
 
 The power for a group sequential design with the same final sample size is a bit lower:
@@ -101,19 +107,30 @@ zz <- gs_power_npe(
   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)
 )
-zz
+zz %>% 
+  subset(hypothesis == "H1") %>% 
+  select(-hypothesis) %>% 
+  gt() %>% 
+  fmt_number(columns = 3:10, decimals = 4)
 ```
 
 If we inflate this a bit we will be overpowered.
 
 ```{r}
 zz <- gs_power_npe(
-  theta = yy$theta, info = yy$info * minx * 1.2, info0 = yy$info0 * minx * 1.2,
-  upper = gs_spending_bound, lower = gs_spending_bound,
+  theta = yy$theta, 
+  info = yy$info * minx * 1.2, 
+  info0 = yy$info0 * minx * 1.2,
+  upper = gs_spending_bound, 
+  lower = gs_spending_bound,
   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)
 )
-zz
+zz %>% 
+  subset(hypothesis == "H1") %>% 
+  select(-hypothesis) %>% 
+  gt() %>% 
+  fmt_number(columns = 3:10, decimals = 4)
 ```
 
 Now we use `gs_design_npe()` to inflate the information proportionately to power the trial.
@@ -140,5 +157,9 @@ zz <- gs_design_npe(
   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)
 )
-zz
+zz %>% 
+  subset(hypothesis == "H1") %>% 
+  select(-hypothesis) %>% 
+  gt() %>% 
+  fmt_number(columns = 3:10, decimals = 4)
 ```
