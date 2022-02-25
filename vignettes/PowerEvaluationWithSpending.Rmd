@@ -17,6 +17,14 @@ knitr::opts_chunk$set(
 )
 ```
 
+
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
+library(tibble)
+library(gt)
+library(gsdmvn)
+library(dplyr)
+```
+
 ## Overview
 
 This vignette covers how to compute power or Type I error for a design derived with a spending bound. 
@@ -39,10 +47,10 @@ as laid out in @LachinBook.
 ```{r}
 library(gsdmvn)
 
-p0 <- 0.15 # assumed failure rate in control group
-p1 <- 0.10 # assumed failure rate in experimental group
+p0 <- 0.15     # assumed failure rate in control group
+p1 <- 0.10     # assumed failure rate in experimental group
 alpha <- 0.025 # Design Type I error
-beta <- 0.2 # Design Type II error for 80% power
+beta <- 0.2    # Design Type II error for 80% power
 ```
 
 We note that had we considered a success outcome such as objective response in an oncology study, we would let $p_1$ denote the experimental group and $p_2$ the control group response rate.
@@ -109,8 +117,6 @@ Based on an input $p_1, p_2, \xi_1, \xi_2 = 1-\xi_1, n_k$ we will compute $\thet
 
 
 ```{r}
-library(tibble)
-
 gs_info_binomial <- function(p1, p2, xi1, n, delta = NULL){
   if (is.null(delta)) delta <- p1 - p2
   # Compute (constant) effect size at each analysis theta
@@ -158,8 +164,10 @@ gs_power_npe(theta = h1$theta, theta1 = h1$theta, info = h1$info,
              upper = gs_spending_bound,
              upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
              lower = gs_spending_bound,
-             lpar = list(sf = gsDesign::sfHSD, param = -2, total_spend = 0.2)
-)
+             lpar = list(sf = gsDesign::sfHSD, param = -2, total_spend = 0.2)) %>% 
+  subset(hypothesis == "H1") %>% 
+  gt() %>% 
+  fmt_number(columns = 3:10, decimals = 4)
 ```
 
 ```{r}
@@ -168,8 +176,7 @@ gs_power_npe(theta = h$theta, theta1 = h$theta1, info = h$info,
              upper = gs_spending_bound,
              upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
              lower = gs_spending_bound,
-             lpar = list(sf = gsDesign::sfHSD, param = -2, total_spend = 0.2)
-)
+             lpar = list(sf = gsDesign::sfHSD, param = -2, total_spend = 0.2))
 ```
 
 ## References
