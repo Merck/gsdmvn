@@ -1,6 +1,7 @@
 ---
 title: "Spending Time Examples"
 author: "Keaven Anderson"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   html_document:
     code_folding: hide
@@ -20,7 +21,8 @@ knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning = FALSE)
 
 
 ```{r}
-library(gsdmvn)
+#library(gsdmvn)
+devtools::load_all()
 library(gsDesign)
 library(tibble)
 library(dplyr)
@@ -65,8 +67,7 @@ Code is available to unhide for those interested in implementation.
 Rather than bog down the conceptual discussion with implementation details, we have tried to provide sufficient comments in the code to guide implementation for those who are interested in that.
 
 
-# Delayed effect scenario 
-
+# Delayed Effect Scenario 
 
 We consider an example in a single stratum where there is a possibility of a delayed treatment effect.
 The next two sections will consider both a 1) fixed design with no interim analysis, and 2) a design with interim analysis.
@@ -101,7 +102,7 @@ failRates <- tibble(
   )
 ```
 
-# Fixed design, delayed effect
+# Fixed Design, Delayed Effect
 
 The sample size and events for this design are shown below.
 We see that the average hazard ratio (AHR) under the above assumptions is 0.7026, part way between the early HR of 1 and the later HR of 0.6 assumed for experimental versus control therapy.
@@ -161,12 +162,13 @@ yy <- gs_power_ahr(
 # get the summary table of updated design
 yy %>% 
   # since we want the power, so we filter the upper bounds
-  filter(Bound == "Upper" & hypothesis == "H1") %>% 
+  filter(Bound == "Upper", hypothesis == "H1") %>% 
   mutate(
     # calculate the sample size, which is the same as the original design
     N = sum(xx$enrollRates$duration * xx$enrollRates$rate),
     # calculate the nominal p-value
-    `Nominal p` = pnorm(-Z)) %>% 
+    `Nominal p` = pnorm(-Z)
+  ) %>% 
   select(Time, N, Events, `Nominal p`, AHR, Probability) %>% 
   gt() %>% 
   fmt_number(columns = c("N", "Events"), decimals = 1) %>% 
@@ -193,7 +195,7 @@ yy <- gs_power_ahr(
 # get the summary table of updated design
 yy %>% 
   # since we want the power, so we filter the upper bounds
-  filter(Bound == "Upper" & hypothesis == "H1") %>% 
+  filter(Bound == "Upper", hypothesis == "H1") %>% 
   mutate(
     # calculate the sample size, which is the same as the original design
     N = sum(xx$enrollRates$duration * xx$enrollRates$rate),
@@ -232,7 +234,7 @@ yy <- gs_power_ahr(
 # get the summary table 
 yy %>% 
   # since we want the power, so we filter the upper bounds
-  filter(Bound == "Upper" & hypothesis == "H1") %>% 
+  filter(Bound == "Upper", hypothesis == "H1") %>% 
   mutate(
     # calculate the sample size, which is the same as the original design
     N = sum(xx$enrollRates$duration * xx$enrollRates$rate),
@@ -264,7 +266,7 @@ yy <- gs_power_ahr(
 # get the summary table 
 yy %>% 
   # since we want the power, so we filter the upper bounds
-  filter(Bound == "Upper" & hypothesis == "H1") %>% 
+  filter(Bound == "Upper", hypothesis == "H1") %>% 
   mutate(
     # calculate the sample size, which is the same as the original design
     N = sum(xx$enrollRates$duration * xx$enrollRates$rate),
@@ -284,7 +286,7 @@ Requiring both will retain both power and important treatment benefit characteri
 
 # Group Sequential Design
 
-## Alternative spending strategies
+## Alternative Spending Strategies
 
 We extend the above design to detect a delayed effect to a group sequential design with a single interim analysis after 80% of the final planned events have accrued.
 We will assume the final analysis will require both the targeted trial duration and events based on the fixed design based on the evaluations above.
@@ -352,46 +354,6 @@ upar_planned_IF$timing <- c(0.8, 1)
 # We will reset planned maximum information later
 ```
 
-Finally, we set up a function to print a table to describe characteristics of a design and its updates as it is updated for different scenarios.
-
-```{r}
-# Function to print table for group sequential design
-# Desire is to print both information fraction relative to planned with planned
-# input in maxinfo0. 
-# Input spending_time here needs to be consistent with what is given in design;
-# if NULL, information fraction will be used to compute spending time based in input max_info0.
-# Enrollment rates input are used to compute sample size.
-# This works for cases here, but N calculation will NOT work for
-# IA's before planned enrollment completion; for that gs_power_ahr needs to be fixed
-table_gs_design <- function(x, enrollRates, spending_time = NULL, max_info0 = NULL){
-  N <- sum(enrollRates$rate * enrollRates$duration)
-  if(is.null(max_info0)) stop("Must enter maximum H0 planned information in max_info0")
-  x$N <- N
-  if (is.null(spending_time)) {
-    x$spending_time <- pmin(x$info0 / max_info0, 1)
-  }else {
-    x$spending_time <- spending_time
-  }
-  x %>% 
-     transmute(
-       Time = Time, 
-       N = ceiling(N), 
-       Events = ceiling(Events), 
-       "Information fraction" = info0 / max_info0,
-       "Spending time" = spending_time,
-       "Nominal p" = pnorm(-Z), 
-       AHR = AHR, 
-       "~HR at bound" = exp(-Z / sqrt(info)), 
-       Power = Probability) %>%
-     gt() %>%
-     fmt_number(columns = c("N","Events"), decimals = 0) %>%
-     fmt_number(columns = "Time", decimals = 1) %>%
-     fmt_number(columns = c("AHR", "Power","Information fraction", "Spending time", "~HR at bound"), decimals=3) %>%
-     fmt_number(columns = "Nominal p", decimals = 4)
-}
-```
-
-
 ## Planned design
 
 We extend the design studied above to a group sequential design with a single interim analysis after 80% of the final planned events have accrued.
@@ -440,23 +402,6 @@ xx <- gs_design_ahr(
   lower = gs_b, 
   lpar = lpar)
 
-# Get upper bounds
-#planned_bounds <- xx$bounds %>% filter(Bound == "Upper" & hypothesis == "H1")
-
-# Get the planned number of analyses
-#K <- nrow(planned_bounds)
-
-# Get the planned events
-#max_events <- max((xx$analysis %>% subset(hypothesis == "H1"))$Events)
-
-# save max information planned under H0
-# This will be used for future information fraction calculations
-# when event accumulation is not same as planned
-#max_info0 <- max((xx$analysis %>% subset(hypothesis == "H0"))$info)
-
-# Planned analysis timing
-#planned_time <- (xx$analysis %>% subset(hypothesis == "H1"))$Time
-
 # get the summary table
 summary_bound(
   xx,
@@ -464,31 +409,23 @@ summary_bound(
   analysis_decimals = c(1, 1, 1, 4, 4)) %>% 
   filter(Bound == "Efficacy") %>% 
   as_gt()
-
-# xx$bounds %>% 
-#   left_join(xx$analysis) %>% 
-#   subset(hypothesis == "H1" & Bound == "Upper") %>% 
-#   mutate(spending_time = pmin((xx$analysis %>% subset(hypothesis == "H0"))$info / max_info0, 1)) %>% 
-#   select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability )
 ```
 
-## Two alternate approaches
+## Two Alternate Approaches
 
 We consider two alternate approaches to demonstrate the spending time concept that may be helpful in practice.
 However, skipping the following two subsections can be done if these are not of interest.
 The first demonstrates calendar spending as in @LanDeMets1989.
 The second is a basically the method of @FHO where a fixed incremental spend is used for a potentially variable number of interim analyses, with the final bound computed based on the unspent one-sided Type I error assigned to a hypothesis.
 
-### Calendar spending
+### Calendar Spending
 
 We use the same sample size as above, but change efficacy bound spending to calendar-based.
-The reason this spending is different than information-based spending is mainly due to the fact that the expected
-information is not linear in time.
+The reason this spending is different than information-based spending is mainly due to the fact that the expected information is not linear in time.
 In this case, the calendar fraction at interim is less than the information fraction, but exactly the opposite would be true earlier in the trial.
 We just note that if calendar-based spending is chosen, it may be worth comparing the design bounds with bounds using the same spending function, but with information-based spending to see if there are important differences to the trial team or possibly to the scientific or regulatory community.
 We note also that there is risk there will not be enough events to achieve targeted power at the final analysis under a calendar-based spending strategy.
 We will not examine calendar-based spending further in this document.
-
 
 ```{r}
 yy <- gs_power_ahr(
@@ -507,7 +444,7 @@ yy <- gs_power_ahr(
   ) 
 
 yy %>% 
-  filter(Bound == "Upper" & hypothesis == "H1") %>% 
+  filter(Bound == "Upper", hypothesis == "H1") %>% 
   mutate(
     # calculate the sample size
     N = sum(xx$enrollRates$rate * xx$enrollRates$duration),
@@ -517,9 +454,8 @@ yy %>%
     IF = info0 / max(yy$info0),
     `Nominal p` = pnorm(-Z),
     `~HR at bound` = exp(-Z / sqrt(info))) %>% 
-  select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability)
-
-#actual_IF <- NULL # yy$info0 / max(yy$info0)
+  select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
+  gt()
 
 ```
 
@@ -784,9 +720,9 @@ yz %>%
 In summary, using the minimum of planned and actual spending to adapt the design based on event-based spending adapts the interim bound to be more stringent than the final bound under different scenarios and ensures better power than event-based interim analysis and spending.
 
 
-## Testing multiple hypotheses
+# Testing Multiple hypotheses
 
-### Assumptions
+## Assumptions
 
 We consider a simple case where we use the method of @MaurerBretz2013 to test both in the overall population and in a biomarker subgroup for the same endpoint.
 We assume an exponential failure rate with a median of 12 for the control group regardless of population.
@@ -796,11 +732,24 @@ The only difference between failure rates in the two strata is the hazard ratio.
 For this case, we assume proportional hazards within negative (HR = 0.8) and positive (HR = 0.6) patients.
 
 ```{r}
-enrollRates <- tibble(Stratum=c("Positive","Negative"), duration = 12, rate=20)
+# we assume an exponential failure rate with a median of 12 
+# for the control group regardless of population. 
 m <- 12
-failRates <- tibble(Stratum = c("Positive", "Negative"), hr = c(0.6, 0.8),
-                    duration = 100,
-                    failRate = log(2) / m, dropoutRate = 0.001)
+
+# the enrollment rate of both subgroup and population is the same
+enrollRates <- tibble(
+  Stratum = c("Positive","Negative"), 
+  duration = 12, 
+  rate = 20)
+
+# the hazard ratio in the biomarker positive subgroup will be assumed to be 0.6, 
+# and in the negative population 0.8.
+failRates <- tibble(
+  Stratum = c("Positive", "Negative"), 
+  hr = c(0.6, 0.8),
+  duration = 100,
+  failRate = log(2) / m,
+  dropoutRate = 0.001)
 ```
 
 For illustrative purposes, we are choosing a strategy based on the possible feeling of much less certainty at study start as to whether there is any underlying benefit in the biomarker negative population.
@@ -808,61 +757,72 @@ We wish to ensure power for the biomarker positive group, but allow a good chanc
 If an alternative trial strategy is planned, an alternate approach to the following should be considered.
 In any case, we design first for the biomarker positive population with one-sided Type I error controlled at $\alpha = 0.0125$:
 
-### Planned design for biomarker positive population
+## Planned Design for Biomarker Positive Population
 
 ```{r}
-# Spending based on information fraction
-# At time of design, timing = NULL is used to select
-# maximum planned information for information fraction.
 # Since execution will be event-based for biomarker population,
 # there will be no need to change spending plan for different scenarios.
-# Total alpha spend is now 0.0125 
-upar_design_spend <- list(sf = gsDesign::sfLDOF, total_spend = 0.0125, param = NULL, timing = NULL)
-# No futility bound
-lpar <- rep(-Inf,2) # Z = -infinity for lower bound
-# We will base the combined hypothesis design to ensure power in the biomarker subgroup
+
+# upper bound: spending based on information fraction
+upar_design_spend <- list(
+  sf = gsDesign::sfLDOF, # spending function
+  total_spend = 0.0125,  # total alpha spend is now 0.0125 
+  timing = NULL,         # to select maximum planned information for information fraction
+  param = NULL          
+  )
+
+# lower bound: no futility bound
+lpar <- rep(-Inf, 2)     # Z = -infinity for lower bound
+
+# we will base the combined hypothesis design to ensure power in the biomarker subgroup
 positive <- gs_design_ahr(
+  # enroll/failure rates
   enrollRates = enrollRates %>% filter(Stratum == "Positive"),
   failRates = failRates %>% filter(Stratum == "Positive"),
   # Following drives information fraction for interim
   IF = c(.8, 1), 
-  # Total study duration driven by final analysisTimes value
-  # Enter small increasing values before that so information
-  # fraction in planned_IF drives timing of interims
-  analysisTimes = c(1,30),
-  upper =gs_spending_bound, upar = upar_design_spend,
-  # Fixed lower bound with Z = -infinity
-  lower = gs_b, lpar = lpar)
+  # Total study duration driven by final analysisTimes value, i.e., 30
+  # Enter small increasing values before that 
+  # so information fraction in planned_IF drives timing of interims
+  analysisTimes = c(1, 30),
+  # upper bound
+  upper = gs_spending_bound, 
+  upar = upar_design_spend,
+  # lower lower 
+  lower = gs_b, 
+  lpar = lpar)
 
-# This planned design will drive adaptation for deviations from plan
-positive_planned_bounds <- positive$bounds %>% filter(Bound == "Upper")
-# Planned timing of analysis
-positive_planned_time <- positive_planned_bounds$Time
-# Planned sample size
-positive_planned_N <- max(positive_planned_bounds$N)
-# Planned events
-positive_max_events <- max(positive_planned_bounds$Events)
-# save max information planned under H0
-positive_max_info0 <- max(positive_planned_bounds$info0)
-# positive_planned_bounds %>% 
-#   table_gs_design(enrollRates = positive$enrollRates, 
-#                   max_info0 = positive_max_info0)  
+summary_bound(positive) %>% 
+  filter(Bound == "Efficacy") %>% 
+  # calculate the spending time, which is info0 / max(info0)
+  mutate(
+    `Spending Time` = (positive$analysis %>% filter(hypothesis == "H0"))$info /
+                      max((positive$analysis %>% filter(hypothesis == "H0"))$info)) %>% 
+  gt() %>% 
+  fmt_number(columns = 3:7, decimals = 4)
 ```
 
-### Planned design for overall population
+## Planned Design for Overall Population
 
 We adjust the overall study enrollment rate to match the design requirement for the biomarker positive population.
 
 ```{r}
 # Get enrollment rate inflation factor compared to originally input rate
 inflation_factor <- positive$enrollRates$rate[1] / enrollRates$rate[1]
+
 # Using this inflation factor, set planned enrollment rates
 planned_enrollRates <- enrollRates %>% mutate(rate = rate * inflation_factor)
 planned_enrollRates %>% gt()
+
 # Store overall enrollment rates for future use
 overall_enrollRates <- 
   planned_enrollRates %>% 
-  summarize(Stratum = "All", duration=first(duration), rate = sum(rate))
+  summarize(
+    Stratum = "All", 
+    duration = first(duration), 
+    rate = sum(rate))
+
+overall_enrollRates %>% gt()
 ```
 
 Now we can examine the power for the overall population based on hazard ratio assumptions in biomarker negative and biomarker positive subgroups and the just calculated enrollment assumption.
@@ -872,44 +832,68 @@ To compensate for this and to enable flexibility below as biomarker positive pre
 Thus, the interim nominal p-value bound is the same for both the biomarker positive and overall populations.
 While this does not make much difference here, we see that we have a very natural way to adapt the design if the observed biomarker positive prevalence is different than what was assumed for the design.
 
+
 ```{r}
 # Set total spend for overall population, O'Brien-Fleming spending function, and 
 # same spending time as biomarker subgroup
 upar_overall_planned_IF <- list(
-  sf = gsDesign::sfLDOF,  param = NULL,
-  total_spend = 0.0125, timing = c(.8, 1),
-  # We will use actual final information as planned initially
-  max_info = NULL)
+  sf = gsDesign::sfLDOF,  # O'Brien-Fleming spending function
+  param = NULL,
+  total_spend = 0.0125,   # alpha
+  timing = c(.8, 1),      # same spending time as biomarker subgroup
+  max_info = NULL         # we will use actual final information as planned initially
+  )
 
 overall_planned_bounds <- gs_power_ahr(
+  # enroll/failure rates
   enrollRates = planned_enrollRates,
   failRates = failRates,
-  analysisTimes = positive_planned_time,
-  # Events will be determined by expected events at planned analysis times
+  # analysis time: the planed analysis time for biomarker positive population 
+  analysisTimes = (positive$analysis %>% filter(hypothesis == "H1"))$Time,
+  # events will be determined by expected events at planned analysis times
   events = NULL, 
+  # upper bound: planned spending times are specified the same as before
   upper = gs_spending_bound,
-  # Recall planned spending times are specified the same as before 
   upar = upar_overall_planned_IF,
+  # lower bound: no futility 
   lower = gs_b,
-  lpar = lpar # fixed lower Z = -infinity
-  ) %>% filter(Bound == "Upper")
-# Planned events
-overall_max_events <- max(overall_planned_bounds$Events)
-# save max information planned under H0
-overall_max_info0 <- max(overall_planned_bounds$info0)
-# overall_planned_bounds %>% 
-#   table_gs_design(planned_enrollRates,
-#                   spending_time = planned_IF,
-#                   max_info0 = overall_max_info0)
+  lpar = lpar) 
+
+overall_planned_bounds %>% 
+  filter(Bound == "Upper", hypothesis == "H1") %>% 
+  mutate(
+    # calculate the sample size
+    # the enrollment rate is an update of the positive design with an inflation factor
+    N = ceiling(sum(planned_enrollRates$rate * planned_enrollRates$duration)),
+    # calculate the information fraction
+    IF = (overall_planned_bounds %>% filter(hypothesis == "H0", Bound == "Upper"))$info0 /
+         max((overall_planned_bounds %>% filter(hypothesis == "H0", Bound == "Upper"))$info0),
+    # calculate the spending time
+    spending_time = planned_IF,
+    # calculate the nominal p and approximated hazard ratio
+    `Nominal p` = pnorm(-Z),
+    `~HR at bound` = exp(-Z / sqrt(info))) %>% 
+  select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
+  gt() %>% 
+  fmt_number(columns = c("Events"), decimals = 0) %>%
+  fmt_number(columns = "Time", decimals = 1) %>%
+  fmt_number(columns = c("~HR at bound", "Probability", "IF", "Nominal p", "AHR", "spending_time"), decimals = 3) 
 ```
 
-### Alternate scenarios overview
 
-We divide our further evaluations into three subsections, one with a higher prevalence of biomarker positive patients than expected, one with a lower biomarker prevalence, followed by a section with differing event rate and hazard ratio assumptions.
-For each case, we will assume the total enrollment rate of `r round(sum(planned_enrollRates$rate),1)` per month as planned above.
+## Alternate Scenarios Overview
+
+We divide our further evaluations into three subsections:
+
+1. one with a higher prevalence of biomarker positive patients than expected;
+1. one with a lower biomarker prevalence;
+1. differing event rate and hazard ratio assumptions.
+
+For each case, we will assume the total enrollment rate of `r round(sum(planned_enrollRates$rate), 1)` per month as planned above.
 We also assume that we enroll until the targeted biomarker positive subgroup enrollment of 
-`r ceiling(sum(positive$enrollRates$rate*positive$enrollRates$duration))` from above is achieved, regardless of the overall enrollment.
-The specify interim analysis timing to require both 80% of the planned final analysis events in the biomarker positive population and at least 10 months of minimum follow-up; thus, for the biomarker population we will never vary events or spending here.
+`r ceiling(sum(positive$enrollRates$rate * positive$enrollRates$duration))` from above is achieved, regardless of the overall enrollment.
+
+The specify interim analysis timing to require both 80\% of the planned final analysis events in the biomarker positive population and at least 10 months of minimum follow-up; thus, for the biomarker population we will never vary events or spending here.
 The same spending time will be used for the overall population, but we will compare with event-based spending.
 The above choices are arbitrary. 
 While we think they are reasonable, the design planner should think carefully about other variations to suit their clinical trial team needs.
@@ -921,36 +905,49 @@ While we think they are reasonable, the design planner should think carefully ab
 # Set total spend for overall population, O'Brien-Fleming spending function. 
 # For design information-spending, we set timing =  NULL and max_info to plan from above
 upar_overall_planned_IF <- list(
-  sf = gsDesign::sfLDOF,  param = NULL,
-  total_spend = 0.0125, timing = planned_IF,
-  # We will use planned final information for overall population from design
-  # to compute information fraction relative to plan
-   max_info = overall_max_info0)
+  sf = gsDesign::sfLDOF,                        # O'Brien-Fleming spending function
+  total_spend = 0.0125,                         # alpha
+  max_info = max(overall_planned_bounds$info0), # we will use planned final information for 
+                                                # overall population from design to 
+                                                # compute information fraction relative to plan
+  param = NULL,
+  timing = planned_IF)
+
 # Using planned information fraction will demonstrate problems below.
 # Set total spend for overall population, O'Brien-Fleming spending function, and 
 # same spending time as biomarker subgroup
 upar_overall_actual_IF <- list(
-  sf = gsDesign::sfLDOF,  param = NULL,
-  total_spend = 0.0125, timing = NULL,
-  # We will use planned final information for overall population from design
-  max_info = overall_max_info0)
+  sf = gsDesign::sfLDOF,                        # O'Brien-Fleming spending function
+  total_spend = 0.0125,                         # alpha
+  max_info = max(overall_planned_bounds$info0), # we will use planned final information 
+                                                # for overall population from design
+  param = NULL,
+  timing = NULL)
 ```
 
-### Biomarker subgroup prevalence higher than planned
+### Biomarker Subgroup Prevalence Higher than Planned
 
-#### Biomarker subgroup power
+#### Biomarker Subgroup Power
 
-We suppose the biomarker prevalence is 60%, higher then the 50% prevalence the design anticipated.
+We suppose the biomarker prevalence is 60\%, higher then the 50\% prevalence the design anticipated.
 The enrollment rates by positive versus negative patients and expected enrollment duration are now:
 
 ```{r}
+# update the enrollment rate due to 60% prevalence
 positive_60_enrollRates <- rbind(
   overall_enrollRates %>% mutate(Stratum = "Positive", rate = 0.6 * rate),
   overall_enrollRates %>% mutate(Stratum = "Negative", rate = 0.4 * rate)
 )
-positive_60_duration <- positive_planned_N / overall_enrollRates$rate / 0.6
-positive_60_enrollRates$duration <- positive_60_duration
-positive_60_enrollRates %>% gt() %>% fmt_number(columns="rate",decimals=1)
+
+# update the enrollment duration
+positive_60_enrollRates$duration <- max((positive$analysis %>% filter(hypothesis == "H1"))$N) /
+                                    overall_enrollRates$rate / 
+                                    0.6
+
+# display the updated enrollment rate table
+positive_60_enrollRates %>% 
+  gt() %>% 
+  fmt_number(columns = "rate",decimals = 1)
 ```
 
 Now we can compute the power for the biomarker positive group with the targeted events.
@@ -958,111 +955,226 @@ Since we have a simple proportional hazards model, they only thing that is chang
 
 ```{r}
 positive_60_power <- gs_power_ahr(
+  # enrollment/failure rate
   enrollRates = positive_60_enrollRates %>% filter(Stratum == "Positive"),
   failRates = failRates %>% filter(Stratum == "Positive"),
-  events = positive$bounds$Events[1:K],
+  # number of events
+  events = (positive$analysis %>% filter(hypothesis == "H1"))$Events, # positive$bounds$Events[1:K],
+  # analysis time will be calcuated to achieve the targeted events
   analysisTimes = NULL,
+  # upper bound
   upper = gs_spending_bound,
   upar = upar_design_spend,
+  # lower bound
   lower = gs_b,
-  lpar = lpar) %>% 
-  filter(Bound == "Upper")
+  lpar = lpar) 
 
 positive_60_power %>% 
-  table_gs_design(enrollRates = positive_60_enrollRates %>% filter(Stratum == "Positive"), 
-                  max_info0 = positive_max_info0)
+  filter(Bound == "Upper", hypothesis == "H1") %>% 
+  mutate(
+    # calculate the sample size
+    # the enrollment rate is an update of the positive design with an inflation factor
+    N = ceiling((positive_60_enrollRates %>% filter(Stratum == "Positive"))$duration *
+                (positive_60_enrollRates %>% filter(Stratum == "Positive"))$rate),
+    # calculate the information fraction
+    IF = info0 /
+         max((positive$analysis %>% filter(hypothesis == "H0"))$info),
+    # calculate the spending time
+    spending_time = IF,
+    # calculate the nominal p and approximated hazard ratio
+    `Nominal p` = pnorm(-Z),
+    `~HR at bound` = exp(-Z / sqrt(info))) %>% 
+  select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
+  gt() %>% 
+  fmt_number(columns = c("Events"), decimals = 0) %>%
+  fmt_number(columns = "Time", decimals = 1) %>%
+  fmt_number(columns = c("~HR at bound", "Probability", "IF", "AHR", "spending_time"), decimals = 3) %>% 
+  fmt_number(columns = "Nominal p", decimals = 4) 
 ```
 
-#### Overall population power
+#### Overall Population Power
 
 Now we use the same spending as above for the overall population, resulting in full $\alpha$-spending at the end of the trial even though the originally targeted events are not expected to be achieved.
 We note that the information fraction computed here is based on the originally planned events for the overall population.
-Given this and the larger proportion of patients that are biomarker positive, the average hazard ratio is stronger than originally planned and the power for the overall population is still over 90%.
+Given this and the larger proportion of patients that are biomarker positive, the average hazard ratio is stronger than originally planned and the power for the overall population is still over 90\%.
 
 ```{r}
-gs_power_ahr(enrollRates = positive_60_enrollRates,
-             failRates = failRates,
-             events = 1:2,
-             analysisTimes = positive_60_power$Time[1:2],
-             upper = gs_spending_bound,
-             # use planned spending in spite of lower overall information
-             upar = upar_overall_planned_IF,
-             # Still use Z = -infinity lower bound 
-             lower = gs_b, lpar = rep(-Inf, 2)) %>% 
-  filter(Bound == "Upper") %>% 
-  table_gs_design(enrollRates = positive_60_enrollRates, spending_time = c(.8,1), max_info0 = overall_max_info0)
+gs_power_ahr(
+  # set the enrollment/failure rate
+  enrollRates = positive_60_enrollRates,
+  failRates = failRates,
+  # set evnets and analysis time
+  events = 1:2,
+  analysisTimes = (positive_60_power %>% filter(Bound == "Upper", hypothesis == "H1"))$Time,
+  # set upper bound: use planned spending in spite of lower overall information
+  upper = gs_spending_bound,
+  upar = upar_overall_planned_IF,
+  # set lower bound: no futility
+  lower = gs_b, 
+  lpar = rep(-Inf, 2)
+  ) %>% 
+  filter(Bound == "Upper", hypothesis == "H1") %>% 
+  mutate(
+    # calculate the sample size
+    # the enrollment rate is an update of the positive design with an inflation factor
+    N = ceiling((positive_60_enrollRates %>% filter(Stratum == "Positive"))$duration *
+                (positive_60_enrollRates %>% filter(Stratum == "Positive"))$rate),
+    # calculate the information fraction
+    IF = info0 /
+         max((overall_planned_bounds %>% filter(hypothesis == "H0"))$info0),
+    # calculate the spending time
+    spending_time = c(0.8, 1),
+    # calculate the nominal p and approximated hazard ratio
+    `Nominal p` = pnorm(-Z),
+    `~HR at bound` = exp(-Z / sqrt(info))) %>% 
+  select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
+  gt() %>% 
+  fmt_number(columns = c("Events"), decimals = 1) %>%
+  fmt_number(columns = "Time", decimals = 1) %>%
+  fmt_number(columns = c("~HR at bound", "Probability", "IF", "AHR", "spending_time"), decimals = 3) %>% 
+  fmt_number(columns = "Nominal p", decimals = 4) 
 ```
 
 If we had used information-based (i.e., event-based) spending, we would not have reached full spending at final analysis and thus would have lower power.
 
 ```{r}
-xz <- gs_power_ahr(
+gs_power_ahr(
+  # set the enrollment/failure rate
   enrollRates = positive_60_enrollRates,
   failRates = failRates,
+  # set evnets and analysis time
   events = 1:2,
-  analysisTimes = positive_60_power$Time[1:2],
+  analysisTimes = (positive_60_power %>% filter(Bound == "Upper", hypothesis == "H1"))$Time,
+  # upper bound: use actual spending which uses less than complete alpha
   upper = gs_spending_bound,
-  # use actual spending which uses less than complete alpha
   upar = upar_overall_actual_IF,
-  # Still use Z = -infinity lower bound 
-  lower = gs_b, lpar = lpar) %>% 
-  filter(Bound == "Upper" ) 
-xz %>% table_gs_design(enrollRates = positive_60_enrollRates, spending_time = NULL, max_info0 = overall_max_info0)
+  # lower bound: no futility 
+  lower = gs_b, 
+  lpar = lpar
+  ) %>% 
+  filter(Bound == "Upper", hypothesis == "H1") %>% 
+  mutate(
+    # calculate the sample size
+    # the enrollment rate is an update of the positive design with an inflation factor
+    N = ceiling((positive_60_enrollRates %>% filter(Stratum == "Positive"))$duration *
+                (positive_60_enrollRates %>% filter(Stratum == "Positive"))$rate),
+    # calculate the information fraction
+    IF = info0 /
+         max((overall_planned_bounds %>% filter(hypothesis == "H0"))$info0),
+    # calculate the spending time
+    spending_time = IF,
+    # calculate the nominal p and approximated hazard ratio
+    `Nominal p` = pnorm(-Z),
+    `~HR at bound` = exp(-Z / sqrt(info))) %>% 
+  select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
+  gt() %>% 
+  fmt_number(columns = c("Events"), decimals = 1) %>%
+  fmt_number(columns = "Time", decimals = 1) %>%
+  fmt_number(columns = c("~HR at bound", "Probability", "IF", "AHR", "spending_time"), decimals = 3) %>% 
+  fmt_number(columns = "Nominal p", decimals = 4) 
 ```
 
-### Biomarker subgroup prevalence lower than planned
+### Biomarker Subgroup Prevalence Lower Than Planned
 
-We suppose the biomarker prevalence is 40%, lower than the 50% prevalence the design anticipated.
+We suppose the biomarker prevalence is 40%, lower than the 50\% prevalence the design anticipated.
 The enrollment rates by positive versus negative patients and expected enrollment duration will now be:
 
 ```{r}
+# set the enrollment rate under 40% prevalence
 positive_40_enrollRates <- rbind(
   overall_enrollRates %>% mutate(Stratum = "Positive", rate = 0.4 * rate),
   overall_enrollRates %>% mutate(Stratum = "Negative", rate = 0.6 * rate)
 )
-positive_40_enrollRates$duration <- positive_planned_N / positive_40_enrollRates$rate[1]
-positive_40_enrollRates %>% gt() %>% fmt_number(columns = "rate", decimals=1)
+
+# update the duration of enrollment table
+positive_40_enrollRates$duration <- max((positive$analysis %>% filter(hypothesis == "H1"))$N) / 
+                                    positive_40_enrollRates$rate[1]
+
+# display the enrollment table
+positive_40_enrollRates %>% 
+  gt() %>% 
+  fmt_number(columns = "rate", decimals = 1)
 ```
 
-#### Biomarker positive subgroup power
+#### Biomarker Positive Subgroup Power
 
 Now we can compute the power for the biomarker positive group with the targeted events.
 
 ```{r}
 upar_actual_IF$total_spend <- 0.0125
-upar_actual_IF$max_info <- positive_max_info0
+upar_actual_IF$max_info <- max((positive$analysis %>% filter(hypothesis == "H0"))$info)
+
 positive_40_power <- gs_power_ahr(
+  # set enrollment/failure rate
   enrollRates = positive_40_enrollRates %>% filter(Stratum == "Positive"),
   failRates = failRates %>% filter(Stratum == "Positive"),
-  events = (positive$bounds %>% filter(Bound == "Upper"))$Events,
+  # set events/analysis time
+  events = (positive$analysis %>% filter(hypothesis == "H1"))$Events,
   analysisTimes = NULL,
+  # set upper bound
   upper = gs_spending_bound,
   upar = upar_actual_IF, 
-  lpar = rep(-Inf, 2)
-)
+  # set lower bound
+  lower = gs_b,
+  lpar = rep(-Inf, 2))
+
 positive_40_power %>% 
-  filter(Bound == "Upper") %>% 
-  table_gs_design(enrollRates = positive_40_enrollRates %>% filter(Stratum == "Positive"), 
-                  max_info0 = positive_max_info0)
+  filter(Bound == "Upper", hypothesis == "H1") %>% 
+  mutate(
+    # calculate the sample size
+    # the enrollment rate is an update of the positive design with an inflation factor
+    N = ceiling((positive_40_enrollRates %>% filter(Stratum == "Positive"))$duration *
+                (positive_40_enrollRates %>% filter(Stratum == "Positive"))$rate),
+    # calculate the information fraction
+    IF = info0 /
+          max((positive$analysis %>% filter(hypothesis == "H0"))$info),
+    # calculate the spending time
+    spending_time = IF,
+    # calculate the nominal p and approximated hazard ratio
+    `Nominal p` = pnorm(-Z),
+    `~HR at bound` = exp(-Z / sqrt(info))) %>% 
+  select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
+  gt() %>% 
+  fmt_number(columns = c("Events"), decimals = 1) %>%
+  fmt_number(columns = "Time", decimals = 1) %>%
+  fmt_number(columns = c("~HR at bound", "Probability", "IF", "AHR", "spending_time"), decimals = 3) %>% 
+  fmt_number(columns = "Nominal p", decimals = 4) 
 ```
 
-#### Overall population power
+#### Overall Population Power
 
-We see that by adapting the overall sample size and spending according to the biomarker subgroup, we retain 90% power.
-\In spite of the lower overall effect size, the larger adapted sample size ensures power retention.
+We see that by adapting the overall sample size and spending according to the biomarker subgroup, we retain 90\% power.
+In spite of the lower overall effect size, the larger adapted sample size ensures power retention.
 
 ```{r}
-gs_power_ahr(enrollRates = positive_40_enrollRates,
-             failRates = failRates,
-             events = 1:2,
-             analysisTimes = positive_40_power$Time[1:2],
-             upper = gs_spending_bound,
-             upar = upar_overall_planned_IF,
-             lpar = rep(-Inf,2)) %>% 
-  filter(Bound == "Upper") %>% 
-  table_gs_design(enrollRates = positive_60_enrollRates, 
-                  spending_time = c(.8, 1),
-                  max_info0 = overall_max_info0)
+gs_power_ahr(
+  enrollRates = positive_40_enrollRates,
+  failRates = failRates,
+  events = 1:2,
+  analysisTimes = (positive_40_power %>% filter(hypothesis == "H1", Bound == "Upper"))$Time,
+  upper = gs_spending_bound,
+  upar = upar_overall_planned_IF,
+  lower = gs_b,
+  lpar = rep(-Inf,2)) %>% 
+  filter(Bound == "Upper", hypothesis == "H1") %>% 
+  mutate(
+    # calculate the sample size
+    # the enrollment rate is an update of the positive design with an inflation factor
+    N = ceiling(sum(positive_60_enrollRates$duration * positive_60_enrollRates$rate)),
+    # calculate the information fraction
+    IF = info0 /
+          max((overall_planned_bounds %>% filter(hypothesis == "H0"))$info0),
+    # calculate the spending time
+    spending_time = c(0.8, 1),
+    # calculate the nominal p and approximated hazard ratio
+    `Nominal p` = pnorm(-Z),
+    `~HR at bound` = exp(-Z / sqrt(info))) %>% 
+  select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
+  gt() %>% 
+  fmt_number(columns = c("Events"), decimals = 1) %>%
+  fmt_number(columns = "Time", decimals = 1) %>%
+  fmt_number(columns = c("~HR at bound", "Probability", "IF", "AHR", "spending_time"), decimals = 3) %>% 
+  fmt_number(columns = "Nominal p", decimals = 4) 
 ```
 
 ## Summary of findings
