@@ -1,12 +1,13 @@
 ---
 title: "Design Using Average Hazard Ratio"
 author: "Keaven M. Anderson"
-date: "12/21/2020"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   html_document:
     code_folding: hide
     toc: true
     toc_depth: 2
+    number_sections: true
 bibliography: gsDesign.bib
 vignette: >
   %\VignetteIndexEntry{Design Using Average Hazard Ratio}
@@ -22,48 +23,53 @@ knitr::opts_chunk$set(echo = TRUE)
 # packages used
 library(gsDesign)
 library(gsDesign2)
-library(gsdmvn)
+#library(gsdmvn)
+devtools::load_all()
 library(ggplot2)
 library(dplyr)
 library(knitr)
 library(kableExtra)
 library(gt)
 library(tidyr)
+library(tibble)
 ```
 
-## Introduction
+# Introduction
 
 @JTBook
 
-## Scenarios
+# Scenarios
 
 Expected enrollment duration is 24 months with piecewise constant enrollment rates escalating every 2 months until month 6 where enrollment is assumed to have reached steady state.
 For alternate scenarios, enrollment will occur at a faster than planned rate.
 For both scenarios, we assume for initial illustrations that the total enrollment is 100 subjects.
 
 ```{r}
-# 6 month ramp-up of enrollment, 24 months enrollment time target
-enroll24 <- tibble::tibble(Stratum = rep("All",4), 
-                           duration = c(rep(2,3), 18),
-                           rate = 1:4)
-# Set rates to enroll 100 subjects
-N <- sum(enroll24$duration * enroll24$rate)
-enroll24$rate <- enroll24$rate * 100 / N
+# Set the enrollment table of totally 24 month 
+enroll24 <- tibble(
+  Stratum = rep("All", 4),     # un-stratified
+  duration = c(rep(2, 3), 18), # 6 month ramp-up of enrollment, 24 months enrollment time target
+  rate = 1:4                   # ratio of the enrollment rate
+  )
+# Adjust enrollment rates to enroll 100 subjects
+enroll24$rate <- enroll24$rate * 100 / sum(enroll24$duration * enroll24$rate)
 
-# Enroll in 16 months, same ramp-up
-enroll16 <- tibble::tibble(Stratum = rep("All",4), 
-                           duration = c(rep(2,3), 12),
-                           rate = 1:4)
-# Set rates to enroll 100 subjects
-N <- sum(enroll16$duration * enroll16$rate)
-enroll16$rate <- enroll16$rate * 100 / N
+# Set the enrollment table of totally 18 month  
+enroll16 <- tibble(
+  Stratum = rep("All", 4),     # un-stratified
+  duration = c(rep(2, 3), 12), # 6 month ramp-up of enrollment, 18 months enrollment time target
+  rate = 1:4                   # ratio of the enrollment rate
+  )
+# Adjust enrollment rates to enroll 100 subjects
+enroll16$rate <- enroll16$rate * 100 / sum(enroll16$duration * enroll16$rate)
+
 # Put these in a single tibble by scenario
-# We will use 16 month enrollment for delayed effect and crossing hazards
-# scenarios
-enrollRates <- rbind(enroll24 %>% mutate(Scenario = "PH"),
-                     enroll24 %>% mutate(Scenario = "Delayed effect 1"),
-                     enroll16 %>% mutate(Scenario = "Delayed effect 2"),
-                     enroll16 %>% mutate(Scenario = "Crossing")
+# We will use 16 month enrollment for delayed effect and crossing hazards scenarios
+enrollRates <- rbind(
+  enroll24 %>% mutate(Scenario = "PH"),
+  enroll24 %>% mutate(Scenario = "Delayed effect 1"),
+  enroll16 %>% mutate(Scenario = "Delayed effect 2"),
+  enroll16 %>% mutate(Scenario = "Crossing")
 )
 ```
 
@@ -78,96 +84,115 @@ We will consider the following failure rate assumptions:
 - Crossing hazards
     - Control group has exponential failure rate with a median of 10 months.
     - Hazard ratio of 1.5 for 4 months followed by a hazard ratio of 0.5.
-    
-Survival curves for these 3 scenarios are shown below:
+
+The survival curves for these 3 scenarios are shown below:
 
 ```{r}
-Month <- c(0,4,6,44)
-duration <- Month - c(0,Month[1:3])
-control_rate <- log(2) / c(rep(16,4), rep(14, 4), rep(14, 4))
-s <- tibble::tibble(Scenario = c(rep("PH",4), rep("Delayed effect", 4), rep("Crossing", 4)),
-                    Treatment = rep("Control", 12),
-                    Month = rep(Month, 3),
-                    duration = rep(duration, 3),
-                    rate = control_rate,
-                    hr = c(rep(.7, 4), c(1, 1, 1, .575), c(1.5,1.5, .5, .5)),
-)
-s <- rbind(s,
-           s %>% mutate(Treatment = "Experimental",
-                        rate = rate * hr)
-) %>%
+# get 4 scenario
+Month <- c(0, 4, 6, 44)
+duration <- Month - c(0, Month[1:3])
+s <- tibble(
+  Scenario = c(rep("PH", 4), rep("Delayed effect", 4), rep("Crossing", 4)),
+  Treatment = rep("Control", 12),
+  Month = rep(Month, 3),
+  duration = rep(duration, 3),
+  rate = log(2) / c(rep(16, 4), rep(14, 4), rep(14, 4)),
+  hr = c(rep(.7, 4),             # constant hazard ratio of 0.7
+         c(1, 1, 1, .575),       # hazard ratio of 1 for 6 months followed by a hazard ratio of 0.575.
+         c(1.5, 1.5, .5, .5)     # hazard ratio of 1.5 for 4 months followed by a hazard ratio of 0.5.
+         ))
+
+# calculate the survival
+s <- rbind(s, s %>% mutate(Treatment = "Experimental", rate = rate * hr)) %>%
   group_by(Scenario, Treatment) %>%
   mutate(Survival = exp(-cumsum(duration * rate)))
-ggplot(s, aes(x = Month, y = Survival, col = Scenario, lty = Treatment)) + 
-  geom_line() +
-  scale_y_log10(breaks = (1:10) /10, lim=c(.1,1))+
-  scale_x_continuous(breaks = seq(0,42, 6))
+```
+
+```{r, out.width = "50%"}
+# plot the survival curve
+ggplot(s, aes(x = Month, y = Survival, col = Scenario, lty = Treatment, shape = Treatment)) + 
+  geom_line() + 
+  geom_point() +
+  scale_y_log10(breaks = (1:10) /10, lim = c(.1, 1)) +
+  scale_x_continuous(breaks = seq(0, 42, 6))
 ```
     
-## Average Hazard Ratio
+The average hazard ratio for these 3 scenarios are shown below:
 
 ```{r}
-# Durations to be used in common for all failure rate scenarios
-dur <- c(4,2,100)
-# Exponential failure, proportional hazards
-failRates <- rbind(tibble(Scenario = "PH", Stratum = "All", 
-                          duration = dur, failRate = log(2) / 14,
-                          hr = 0.7, dropoutRate = .001),
-                   tibble(Scenario = "Delayed effect 1", Stratum = "All", 
-                          duration = dur, failRate = log(2) / 11,
-                          hr = c(1, .6, .6), dropoutRate = .001),
-                   tibble(Scenario = "Delayed effect 2", Stratum = "All", 
-                          duration = dur, failRate = log(2) / 11,
-                          hr = c(1, 1, .7), dropoutRate = .001),
-                   tibble(Scenario = "Crossing", Stratum = "All", 
-                          duration = dur, failRate = log(2) / 11,
-                          hr = c(1.5, .6,.6), dropoutRate = .001)
-)
-hr <- NULL
-for(g in c("PH", "Delayed effect 1", "Delayed effect 2", "Crossing")){
-  hr <- 
-    rbind(hr,
-        AHR(enrollRates = enrollRates %>% filter(Scenario == g), 
-            failRates = failRates %>% filter(Scenario == g),
-            totalDuration = c(.001, seq(4, 44, 4))
-        ) %>%
-        mutate(Scenario = g)
+# Du rations to be used in common for all failure rate scenarios
+dur <- c(4, 2, 100)
+
+# Set the failure table 
+# We use exponential failure, proportional hazards
+failRates <- rbind(
+  tibble(Scenario = "PH", Stratum = "All", 
+         duration = dur, failRate = log(2) / 14,
+         hr = 0.7, dropoutRate = .001),
+  tibble(Scenario = "Delayed effect 1", Stratum = "All", 
+         duration = dur, failRate = log(2) / 11,
+         hr = c(1, .6, .6), dropoutRate = .001),
+  tibble(Scenario = "Delayed effect 2", Stratum = "All", 
+         duration = dur, failRate = log(2) / 11,
+         hr = c(1, 1, .7), dropoutRate = .001),
+  tibble(Scenario = "Crossing", Stratum = "All", 
+         duration = dur, failRate = log(2) / 11,
+         hr = c(1.5, .6, .6), dropoutRate = .001))
+
+hr <- do.call(
+  rbind,
+  lapply(
+    c("PH", "Delayed effect 1", "Delayed effect 2", "Crossing"), 
+    function(x){
+      gsDesign2::AHR(
+        enrollRates = enrollRates %>% filter(Scenario == x), 
+        failRates = failRates %>% filter(Scenario == x),
+        totalDuration = c(.001, seq(4, 44, 4))) %>% mutate(Scenario = x)
+    }))
+```
+
+```{r, out.width = "50%"} 
+ggplot(hr, aes(x = Time, y = AHR, col = Scenario)) + 
+  geom_line() + 
+  scale_x_continuous(breaks = seq(0, 42, 6))
+```
+
+The number of events for these 3 scenarios are shown below:
+
+```{r, out.width = "50%"}
+ggplot(hr, aes(x = Time, y = `Events`, col = Scenario)) + 
+  geom_line() + 
+  scale_x_continuous(breaks = seq(0, 42, 6))
+```
+
+
+# Sample Size and Events by Scenarios
+
+## Fixed Design using AHR and Logrank
+
+We power a fixed design at 90\% with 2.5\% one-sided Type I error under the different scenarios under consideration.
+
+```{r}
+ss_ahr_fixed <- do.call(
+  rbind,
+  lapply(c("PH", "Delayed effect 1","Delayed effect 2", "Crossing"), 
+         function(x) {
+           gsdmvn::gs_design_ahr(
+             enrollRates = enrollRates %>% filter(Scenario == x),
+             failRates = failRates %>% filter(Scenario == x),
+             analysisTimes = 36,
+             upper = gs_b, 
+             upar = qnorm(.975),
+             lower = gs_b, lpar = -Inf,
+             alpha = .025,
+             beta = .1
+             )$analysis %>% 
+             subset(hypothesis == "H1") %>% 
+             mutate(Scenario = x)
+           }
+         )
   )
-}
-```
 
-```{r} 
-ggplot(hr, aes(x=Time, y=AHR, col = Scenario)) + geom_line() + scale_x_continuous(breaks = seq(0, 42, 6))
-```
-
-```{r}
-ggplot(hr, aes(x=Time, y=`Events`, col = Scenario)) + geom_line() + scale_x_continuous(breaks = seq(0, 42, 6))
-```
-
-
-## Sample Size and Events by Scenario
-
-### Fixed design using AHR and logrank
-
-We power a fixed design at 90% with 2.5% one-sided Type I error under the different scenarios under consideration.
-
-```{r}
-ss_ahr_fixed <- NULL
-for(g in c("PH", "Delayed effect 1","Delayed effect 2", "Crossing")){
-    ss_ahr_fixed <- rbind(
-      ss_ahr_fixed,
-      gs_design_ahr(
-        enrollRates = enrollRates %>% filter(Scenario == g),
-        failRates = failRates %>% filter(Scenario == g),
-        analysisTimes = 36,
-        upper = gs_b, upar = qnorm(.975),
-        lower = gs_b, lpar = -Inf,
-        alpha = .025,
-        beta = .1)$analysis %>% 
-        subset(hypothesis == "H1") %>% 
-        mutate(Scenario = g)
-      )
-}
 ss_ahr_fixed %>% 
   select(Time, N, Events, AHR, Scenario) %>% 
   gt() %>% 
@@ -183,24 +208,25 @@ The counts of events required is perhaps the most interesting here in that a 24 
 For further study, we will consider the 36 month trial duration as a reasonable tradeoff between time, sample size and power under a presumed delayed effect of 4 months followed by a hazard ratio of 0.6 thereafter. 
 
 ```{r}
-ss_ahr_fixed <- NULL
-g <- "Delayed effect 1"
-for(trialEnd in c(24, 30, 36, 42)){
-    ss_ahr_fixed <- rbind(
-      ss_ahr_fixed,
-      gs_design_ahr(
-        enrollRates = enrollRates %>% filter(Scenario == g),
-        failRates = failRates %>% filter(Scenario == g),
-        analysisTimes = trialEnd,
+do.call(
+  rbind,
+  lapply(
+    c(24, 30, 36, 42), 
+    function(x){
+      gsdmvn::gs_design_ahr(
+        enrollRates = enrollRates %>% filter(Scenario == "Delayed effect 1"),
+        failRates = failRates %>% filter(Scenario == "Delayed effect 1"),
+        analysisTimes = x,
         upper = gs_b, upar = qnorm(.975),
         lower = gs_b, lpar = -Inf,
         alpha = .025,
-        beta = .1)$analysis %>% 
+        beta = .1
+        )$analysis %>% 
         subset(hypothesis == "H1") %>% 
-        mutate(Scenario = g)
-      )
-}
-ss_ahr_fixed %>% 
+        mutate(Scenario = "Delayed effect 1")
+    }
+    )
+  )%>% 
   select(Time, N, Events, AHR, Scenario) %>% 
   gt() %>% 
   fmt_number(columns = 1:3,decimals = 0) %>% 
@@ -210,50 +236,89 @@ ss_ahr_fixed %>%
 ```
 
 
-### Alternate hypothesis mapping
-
+## Alternate Hypothesis Mapping
 
 Experimental version of `AHR()`.
 
 ```{r}
-AHRx <- function(enrollRates=tibble::tibble(Stratum="All",
-                                           duration=c(2,2,10),
-                                           rate=c(3,6,9)),
-                failRates=tibble::tibble(Stratum="All",
-                                         duration=c(3,100),
-                                         failRate=log(2)/c(9,18),
-                                         hr=c(.9,.6),
-                                         dropoutRate=rep(.001,2)),
-                totalDuration=30,
-                ratio=1,
-                simple=TRUE
+AHRx <- function(
+  enrollRates = tibble(
+    Stratum = "All",
+    duration = c(2, 2, 10),
+    rate = c(3, 6, 9)),
+  failRates = tibble(
+    Stratum = "All",
+    duration = c(3,100),
+    failRate = log(2)/c(9,18),
+    hr = c(.9, .6),
+    dropoutRate = rep(.001,2)),
+  totalDuration = 30,
+  ratio = 1,
+  simple = TRUE
 ){
   # check input values
   # check input enrollment rate assumptions
-  if(max(names(enrollRates)=="Stratum") != 1){stop("gsDesign2: enrollRates column names in `AHR()` must contain stratum")}
-  if(max(names(enrollRates)=="duration") != 1){stop("gsDesign2: enrollRates column names in `AHR()` must contain duration")}
-  if(max(names(enrollRates)=="rate") != 1){stop("gsDesign2: enrollRates column names in `AHR()' must contain rate")}
-
+  if(max(names(enrollRates) == "Stratum") != 1){
+    stop("gsDesign2: enrollRates column names in `AHR()` must contain stratum")
+  }
+  
+  if(max(names(enrollRates) == "duration") != 1){
+    stop("gsDesign2: enrollRates column names in `AHR()` must contain duration")
+  }
+  
+  if(max(names(enrollRates) == "rate") != 1){
+    stop("gsDesign2: enrollRates column names in `AHR()' must contain rate")
+  }
+  
   # check input failure rate assumptions
-  if(max(names(failRates)=="Stratum") != 1){stop("gsDesign2: failRates column names in `AHR()` must contain stratum")}
-  if(max(names(failRates)=="duration") != 1){stop("gsDesign2: failRates column names in `AHR()` must contain duration")}
-  if(max(names(failRates)=="failRate") != 1){stop("gsDesign2: failRates column names in `AHR()` must contain failRate")}
-  if(max(names(failRates)=="hr") != 1){stop("gsDesign2: failRates column names in `AHR()` must contain hr")}
-  if(max(names(failRates)=="dropoutRate") != 1){stop("gsDesign2: failRates column names in `AHR()` must contain dropoutRate")}
+  if(max(names(failRates) == "Stratum") != 1){
+    stop("gsDesign2: failRates column names in `AHR()` must contain stratum")
+  }
+  
+  if(max(names(failRates) == "duration") != 1){
+    stop("gsDesign2: failRates column names in `AHR()` must contain duration")
+  }
+  
+  if(max(names(failRates) == "failRate") != 1){
+    stop("gsDesign2: failRates column names in `AHR()` must contain failRate")
+  }
+  
+  if(max(names(failRates) == "hr") != 1){
+    stop("gsDesign2: failRates column names in `AHR()` must contain hr")
+  }
+  
+  if(max(names(failRates) == "dropoutRate") != 1){
+    stop("gsDesign2: failRates column names in `AHR()` must contain dropoutRate")
+  }
 
-  # check input trial durations
-  if(!is.numeric(totalDuration)){stop("gsDesign2: totalDuration in `AHR()` must be a non-empty vector of positive numbers")}
-  if(!is.vector(totalDuration) > 0){stop("gsDesign2: totalDuration in `AHR()` must be a non-empty vector of positive numbers")}
-  if(!min(totalDuration) > 0){stop("gsDesign2: totalDuration in `AHR()` must be greater than zero")}
+  # check input trial duration
+  if(!is.numeric(totalDuration)){
+    stop("gsDesign2: totalDuration in `AHR()` must be a non-empty vector of positive numbers")
+  }
+  
+  if(!is.vector(totalDuration) > 0){
+    stop("gsDesign2: totalDuration in `AHR()` must be a non-empty vector of positive numbers")
+  }
+  
+  if(!min(totalDuration) > 0){
+    stop("gsDesign2: totalDuration in `AHR()` must be greater than zero")
+  }
+  
   strata <- names(table(enrollRates$Stratum))
   strata2 <- names(table(failRates$Stratum))
   length(strata) == length(strata2)
+  
   for(s in strata){
-    if(max(strata2==s) != 1){stop("gsDesign2: Strata in `AHR()` must be the same in enrollRates and failRates")}
+    if(max(strata2 == s) != 1){
+      stop("gsDesign2: Strata in `AHR()` must be the same in enrollRates and failRates")
+    }
   }
+  
   # check input simple is logical
-  if(!is.logical(simple)){stop("gsDesign2: simple in `AHR()` must be logical")}
-
+  if(!is.logical(simple)){
+    stop("gsDesign2: simple in `AHR()` must be logical")
+  }
+  
   # compute proportion in each group
   Qe <- ratio / (1 + ratio)
   Qc <- 1 - Qe
@@ -286,14 +351,22 @@ AHRx <- function(enrollRates=tibble::tibble(Stratum="All",
     rval <- rbind(rval,
                   events %>%
                     mutate(Time=td, lnhr = log(HR), info0 = Events * Qc * Qe) %>%
-# NEXT 2 lines are the only changes from AHR()
+                    # NEXT 2 lines are the only changes from AHR()
                     ungroup() %>% group_by(Stratum, t) %>%
-                    summarize(Time = td, Events = sum(Events), HR=first(HR), lnhr=first(lnhr), info0 = sum(info0), info = sum(info)) %>% ungroup()
+                    summarize(Time = td, Events = sum(Events), 
+                              HR = first(HR), lnhr = first(lnhr), 
+                              info0 = sum(info0), info = sum(info)
+                              ) %>% 
+                    ungroup()
     )
   }
 
-  if(!simple) return(rval %>% select(c("Time", "Stratum", "t", "HR", "Events", "info", "info0")) %>% 
-                       group_by(Time, Stratum) %>% arrange(t, .by_group = TRUE))
+  if(!simple){
+    return(rval %>% 
+             select(c("Time", "Stratum", "t", "HR", "Events", "info", "info0")) %>% 
+             group_by(Time, Stratum) %>% arrange(t, .by_group = TRUE))
+  } 
+  
   return(rval %>%
            group_by(Time) %>%
            summarize(AHR = exp(sum(log(HR)*Events)/sum(Events)),
@@ -304,9 +377,7 @@ AHRx <- function(enrollRates=tibble::tibble(Stratum="All",
 }
 ```
 
-
 Under the different scenarios of interest, we can examine the expected number of events in time periods of interest.
-
 
 ```{r, message=FALSE}
 events_by_time_period <- NULL
@@ -318,7 +389,6 @@ for(g in c("PH", "Delayed effect 1","Delayed effect 2", "Crossing")){
           totalDuration = c(12, 20, 28, 36), simple = FALSE) %>% mutate(Scenario = g)
       )
 }
-events_by_time_period %>% gt()
 ```
 
 Recall that our alternate hypothesis assumes no treatment effect (HR=1) for 4 months and then HR = 0.6 thereafter.
@@ -332,10 +402,12 @@ Note that this can be quite different than the scenario HR; e.g., for PH, we ass
 # Time periods for each scenario were 0-4, 4-6, and 6+
 # Thus H1 has HR as follows
 hr1 <- tibble(t = c(0, 4, 6), hr1 = c(1, .6, .6))
+
 ahr_by_analysis <- events_by_time_period %>% 
   full_join(hr1) %>%
   group_by(Scenario, Time) %>%
   summarize(AHR1 = exp(sum(Events * log(hr1))/ sum(Events)))
+
 ahr_by_analysis %>% 
   pivot_wider(names_from = Scenario, values_from = AHR1) %>% 
   gt() %>% 
@@ -343,121 +415,226 @@ ahr_by_analysis %>%
 ```
 
 
-## Group sequential design
+## Group Sequential Design
 
 Here we assume the design is under a delayed effect model where the delay is not too long and the long-term average hazard ratio benefit is strong.
 proportional hazards scenario, but we look at power under the alternate scenarios.
 We will plan a 36 month group sequential design under the delayed effect 1 scenario.
 Interim analyses are planned after 12, 20, and 28 months.
 
+
+### AHR method
 ```{r}
 analysisTimes <- c(12, 20, 28, 36)
-upar <- list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL, theta=0)
-lpar <- list(sf = gsDesign::sfHSD, total_spend = .1, param = -2, timing = NULL, theta=NULL)
-NPHasymmetric <- gs_design_ahr(enrollRates = enrollRates,
-                               failRates = failRates,
-                               ratio = 1, alpha = .025, beta = 0.1,
-                               # Information fraction not required (but available!)
-                               analysisTimes = analysisTimes,
-                               # Function to enable spending bound
-                               upper = gs_spending_bound, lower = gs_spending_bound,
-                               # Spending function and parameters used
-                               upar = upar, lpar = lpar
+upar <- list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL, theta = 0)
+lpar <- list(sf = gsDesign::sfHSD, total_spend = .1, param = -2, timing = NULL, theta = NULL)
+NPHasymmetric <- gs_design_ahr(
+  enrollRates = enrollRates,
+  failRates = failRates,
+  ratio = 1, 
+  alpha = .025, 
+  beta = 0.1,
+  # Information fraction not required (but available!)
+  analysisTimes = analysisTimes,
+  # Function to enable spending bound
+  upper = gs_spending_bound, 
+  lower = gs_spending_bound,
+  # Spending function and parameters used
+  upar = upar, 
+  lpar = lpar
 )
-NPHasymmetric$bounds %>% gt()
+summary_bound(NPHasymmetric) %>% 
+  gt() %>% 
+  fmt_number(columns = 3:6, decimals = 4) %>% 
+  tab_options(container.height = pct(5))
 ```
 
 By scenario, we now wish to compute the adjusted expected futility bounds and the power implied.
 
 ```{r}
-xx <- NULL
-lparx <- lpar
-for(g in c("PH", "Delayed effect 1","Delayed effect 2", "Crossing")){
-  AHR1 <- (filter(ahr_by_analysis, Scenario == g))$AHR1
-  lparx$theta1 <- -log(AHR1)
-  yy <- gs_power_ahr(enrollRates = enrollRates %>% filter(Scenario == g),
-               failRates = failRates %>% filter(Scenario == g), 
-               events = NULL,
-               analysisTimes = c(12,20,28,36),
-               upper = gs_spending_bound,
-               upar = upar,
-               lower = gs_spending_bound,
-               lpar = lparx)
-  xx <- rbind(xx, yy %>% mutate(Scenario = g))
-}
+do.call(
+  rbind,
+  lapply(
+    c("PH", "Delayed effect 1","Delayed effect 2", "Crossing"), 
+    function(x){
+      AHR1 <- (ahr_by_analysis %>% filter(Scenario == x))$AHR1
+      lparx <- lpar
+      lparx$theta1 <- -log(AHR1)
+      yy <- gs_power_ahr(
+        enrollRates = enrollRates %>% filter(Scenario == x),
+        failRates = failRates %>% filter(Scenario == x), 
+        events = NULL,
+        analysisTimes = c(12, 20, 28, 36),
+        upper = gs_spending_bound, 
+        upar = upar,
+        lower = gs_spending_bound,
+        lpar = lparx
+        ) %>% 
+        mutate(Scenario = x)
+      }
+    )
+  ) %>% 
+  gt() %>% 
+  fmt_number(columns = "Events", decimals = 1) %>% 
+  fmt_number(columns = 5:10, decimals = 4) %>% 
+  tab_options(container.height = pct(5)) 
 ```
 
+### Weighted Logrank Method
 
+We investigate two types of the weighting scheme for weight logrank method.
 
+The fixed design under the first weighting scheme for four scenario are summarized as follows.
+```{r}
+do.call(
+  rbind,
+  lapply(
+    c("PH", "Delayed effect 1","Delayed effect 2", "Crossing"), 
+    function(x){
+      gs_design_wlr(
+        enrollRates = enrollRates %>% filter(Scenario == x), 
+        failRates = failRates %>% filter(Scenario == x), 
+        weight = function(x, arm0, arm1){
+          gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5, tau = 4)},
+        alpha = .025, 
+        beta = .1,
+        upar = qnorm(.975),
+        lpar = -Inf,
+        analysisTimes = 44
+        ) %>% 
+        summary_bound() %>% 
+        mutate(Scenario = x)
+      }
+    )) %>% 
+  gt() %>% 
+  fmt_number(columns = 3:6, decimals = 4) 
 
-### Weighted logrank
-
-```{r, eval = FALSE}
-ss_FH05_fixed <- NULL
-g <- "Delayed effect"
-# for(g in c("PH", "Delayed effect", "Crossing")){
-#     ss_FH05_fixed <- 
-#       rbind(ss_FH05_fixed,
-    gs_arm <- gsdmvn:::gs_create_arm(enrollRates, failRates %>% filter(Scenario == g), 
-                                     ratio = 1,       # Randomization ratio
-                                     total_time = 44) # Total study duration
-    arm0 <- gs_arm[["arm0"]]
-    arm1 <- gs_arm[["arm1"]]
-    npsurvSS::size_two_arm(arm0, arm1, power = 0.9, alpha = 0.025, 
-                           test = list(test="weighted logrank", weight = "FH_p.5_q0"))
-    
-    npsurvSS::size_two_arm(arm0, arm1, power = 0.9, alpha = 0.025, 
-                       test = list(test="rmst difference", 
-                       # Milestone allow user to define RMST cutpoint
-                       milestone = 44)) # 42 selected since better than 40 or 44
-    gsdmvn::gs_design_wlr(
-      enrollRates = enrollRates, 
-      failRates = failRates %>% filter(Scenario == g), 
-      weight = function(x, arm0, arm1){
-        gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5, tau = 4)},
-      alpha = .025, beta = .1,
-      upar = qnorm(.975),
-      lpar = -Inf,
-      analysisTimes = 44)$bounds %>% 
-      subset(hypothesis == "H1") %>% 
-      filter(Bound =="Upper")
+# ss_FH05_fixed <- NULL
+# g <- "Delayed effect"
+# # for(g in c("PH", "Delayed effect", "Crossing")){
+# #     ss_FH05_fixed <- 
+# #       rbind(ss_FH05_fixed,
+#     gs_arm <- gsdmvn:::gs_create_arm(enrollRates, failRates %>% filter(Scenario == g), 
+#                                      ratio = 1,       # Randomization ratio
+#                                      total_time = 44) # Total study duration
+#     arm0 <- gs_arm[["arm0"]]
+#     arm1 <- gs_arm[["arm1"]]
+#     npsurvSS::size_two_arm(arm0, arm1, power = 0.9, alpha = 0.025, 
+#                            test = list(test="weighted logrank", weight = "FH_p.5_q0"))
+#     
+#     npsurvSS::size_two_arm(arm0, arm1, power = 0.9, alpha = 0.025, 
+#                        test = list(test="rmst difference", 
+#                        # Milestone allow user to define RMST cutpoint
+#                        milestone = 44)) # 42 selected since better than 40 or 44
+#     gsdmvn::gs_design_wlr(
+#       enrollRates = enrollRates, 
+#       failRates = failRates %>% filter(Scenario == g), 
+#       weight = function(x, arm0, arm1){
+#         gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5, tau = 4)},
+#       alpha = .025, beta = .1,
+#       upar = qnorm(.975),
+#       lpar = -Inf,
+#       analysisTimes = 44)$bounds %>% 
+#       subset(hypothesis == "H1") %>% 
+#       filter(Bound =="Upper")
 ```
 
-```{r, eval = FALSE}
+The fixed design under the second weighting scheme for four scenario are summarized as follows.
+```{r}
 # Ignore tau or (tau can be -1) 
-gsdmvn::gs_design_wlr(
-  enrollRates = enrollRates, 
-  failRates = failRates %>% filter(Scenario == g), 
-  weight = function(x, arm0, arm1){
-    gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5)},
-  alpha = .025, beta = .1,
-  upar = qnorm(.975),
-  lpar = -Inf,
-  analysisTimes = 44)$bounds %>% 
-  subset(hypothesis == "H1") %>% 
-  filter(Bound =="Upper")
+do.call(
+  rbind,
+  lapply(
+    c("PH", "Delayed effect 1","Delayed effect 2", "Crossing"), 
+    function(x){
+      gs_design_wlr(
+        enrollRates = enrollRates %>% filter(Scenario == x), 
+        failRates = failRates %>% filter(Scenario == x), 
+        weight = function(x, arm0, arm1){
+          gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5)},
+        alpha = .025, 
+        beta = .1,
+        upar = qnorm(.975),
+        lpar = -Inf,
+        analysisTimes = 44
+        ) %>% 
+        summary_bound() %>% 
+        mutate(Scenario = x)
+      }
+    )) %>% 
+  gt() %>% 
+  fmt_number(columns = 3:6, decimals = 4) 
+
+# Ignore tau or (tau can be -1) 
+# gsdmvn::gs_design_wlr(
+#   enrollRates = enrollRates, 
+#   failRates = failRates %>% filter(Scenario == g), 
+#   weight = function(x, arm0, arm1){
+#     gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5)},
+#   alpha = .025, beta = .1,
+#   upar = qnorm(.975),
+#   lpar = -Inf,
+#   analysisTimes = 44)$bounds %>% 
+#   subset(hypothesis == "H1") %>% 
+#   filter(Bound =="Upper")
 ```
 
+### Max Combo Method
 
-```{r, eval = FALSE}
-# MaxCombo
-   MC_test <- data.frame(rho = c(0, 0, .5), gamma = c(0, .5, .5), tau = -1,
-                      test = 1:3,
-                      Analysis = 1,
-                      analysisTimes = 44)
-   gs_design_combo(enrollRates,
-               failRates %>% filter(Scenario == g),
-               MC_test,
-               alpha = 0.025,
-               beta = 0.1,
-               ratio = 1,
-               binding = FALSE,
-               upper = gs_spending_combo,
-               upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
-               lower = gs_spending_combo,
-               lpar = list(sf = gsDesign::sfLDOF, total_spend = .1)
-               )
-}
+For the following fixed design, we use a Max Combo test $Z_{1,1}: FH(0, 0)$, $Z_{2,1}: FH(0, 0.5)$, $Z_{3,1}: FH(0.5, 0.5)$, where $Z_{i,1}$ is the Z-statistics under the $i$-th test and first analysis. 
+```{r}
+# set the test type of the max combo 
+MC_test <- data.frame(
+  rho = c(0, 0, .5), 
+  gamma = c(0, .5, .5), 
+  tau = -1,
+  test = 1:3,
+  Analysis = 1,
+  analysisTimes = 44)
+
+MC_test %>% gt()
+```
+
+Under the above Max Combo test, the fixed design under four scenarios are summaried as follows. 
+```{r}
+do.call(
+  rbind,
+  lapply(
+    c("PH", "Delayed effect 1","Delayed effect 2", "Crossing"), 
+    function(x){
+      gs_design_combo(
+        enrollRates %>% filter(Scenario == x),
+        failRates %>% filter(Scenario == x),
+        MC_test,
+        alpha = 0.025,
+        beta = 0.1,
+        ratio = 1,
+        binding = FALSE,
+        upper = gs_spending_combo,
+        upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+        lower = gs_spending_combo,
+        lpar = list(sf = gsDesign::sfLDOF, total_spend = .1)
+        ) %>% 
+        summary_bound() %>% 
+        mutate(Scenario = x)
+      }
+    )
+  ) %>% 
+  gt() %>% 
+  fmt_number(columns = 3:5, decimals = 4) 
+# gs_design_combo(enrollRates,
+#                failRates %>% filter(Scenario == g),
+#                MC_test,
+#                alpha = 0.025,
+#                beta = 0.1,
+#                ratio = 1,
+#                binding = FALSE,
+#                upper = gs_spending_combo,
+#                upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+#                lower = gs_spending_combo,
+#                lpar = list(sf = gsDesign::sfLDOF, total_spend = .1)
+#                )
+#}
 ```
 
 ## References
