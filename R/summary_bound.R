@@ -68,7 +68,7 @@
 #' # ---------------------------- #
 #' #          ahr                 #
 #' # ---------------------------- #
-#' x_ahr <- gs_design_ahr2(
+#' x_ahr <- gs_design_ahr(
 #'   enrollRates = enrollRates,
 #'   failRates = failRates,
 #'   IF = IF, # Information fraction
@@ -85,7 +85,7 @@
 #' # ---------------------------- #
 #' #         wlr                  #
 #' # ---------------------------- #
-#' x_wlr2 <- gs_design_wlr2(
+#' x_wlr2 <- gs_design_wlr(
 #'   enrollRates = enrollRates,
 #'   failRates = failRates,
 #'   weight = wgt05, 
@@ -103,7 +103,7 @@
 #' # ---------------------------- #
 #' #         max combo            #
 #' # ---------------------------- #
-#' x_combo <- gsdmvn::gs_design_combo2(
+#' x_combo <- gsdmvn::gs_design_combo(
 #'   ratio = 1, 
 #'   alpha = 0.025, 
 #'   beta = 0.2, 
@@ -210,7 +210,8 @@ summary_bound <- function(
     # It has >= 1 records for each value of `byvar`
     table_b = bound_summary_detail,
     decimals = c(0, analysis_decimals),
-    byvar = "Analysis")
+    byvar = "Analysis") %>% 
+    group_by(Analysis)
   
   class(output) <- c(method, class(output))
   return(output)
