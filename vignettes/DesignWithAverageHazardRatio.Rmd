@@ -19,24 +19,25 @@ vignette: >
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Introduction
+
+We consider design under non-proportional hazards for 
+@JTBook
+
+# Packages used
+
 ```{r packages, message=FALSE, warning=FALSE}
 # packages used
 library(gsDesign)
 library(gsDesign2)
-#library(gsdmvn)
-devtools::load_all()
+devtools::load_all() # ?? what is this for?
 library(ggplot2)
 library(dplyr)
-library(knitr)
-library(kableExtra)
 library(gt)
 library(tidyr)
 library(tibble)
 ```
 
-# Introduction
-
-@JTBook
 
 # Scenarios
 
@@ -85,42 +86,45 @@ We will consider the following failure rate assumptions:
     - Control group has exponential failure rate with a median of 10 months.
     - Hazard ratio of 1.5 for 4 months followed by a hazard ratio of 0.5.
 
-The survival curves for these 3 scenarios are shown below:
+The survival curves for these 4 scenarios are shown below:
 
 ```{r}
-# get 4 scenario
+# get 4 scenarios
 Month <- c(0, 4, 6, 44)
 duration <- Month - c(0, Month[1:3])
 s <- tibble(
-  Scenario = c(rep("PH", 4), rep("Delayed effect", 4), rep("Crossing", 4)),
-  Treatment = rep("Control", 12),
-  Month = rep(Month, 3),
-  duration = rep(duration, 3),
-  rate = log(2) / c(rep(16, 4), rep(14, 4), rep(14, 4)),
-  hr = c(rep(.7, 4),             # constant hazard ratio of 0.7
-         c(1, 1, 1, .575),       # hazard ratio of 1 for 6 months followed by a hazard ratio of 0.575.
-         c(1.5, 1.5, .5, .5)     # hazard ratio of 1.5 for 4 months followed by a hazard ratio of 0.5.
-         ))
+  Scenario = c(rep("PH", 4), rep("Delayed effect 1", 4), rep("Delayed effect 2", 4), rep("Crossing", 4)),
+  Treatment = rep("Control", 16),
+  Month = rep(Month, 4),
+  duration = rep(duration, 4),
+  rate = log(2) / c(rep(14, 4), rep(11, 12)),
+  hr = c(rep(.7, 4),         # constant hazard ratio of 0.7
+         1, 1, .6, .6,       # hazard ratio of 1 for 4 months followed by a hazard ratio of 0.6.
+         1, 1, 1, .6,        # hr = 1 for 6 months followed by hr = .6
+         1.5, 1.5, .6, .6)   # hazard ratio of 1.5 for 4 months followed by a hazard ratio of 0.5.
+         )
 
 # calculate the survival
 s <- rbind(s, s %>% mutate(Treatment = "Experimental", rate = rate * hr)) %>%
-  group_by(Scenario, Treatment) %>%
-  mutate(Survival = exp(-cumsum(duration * rate)))
+     group_by(Scenario, Treatment) %>%
+     mutate(Survival = exp(-cumsum(duration * rate)))
 ```
 
 ```{r, out.width = "50%"}
 # plot the survival curve
 ggplot(s, aes(x = Month, y = Survival, col = Scenario, lty = Treatment, shape = Treatment)) + 
   geom_line() + 
-  geom_point() +
-  scale_y_log10(breaks = (1:10) /10, lim = c(.1, 1)) +
-  scale_x_continuous(breaks = seq(0, 42, 6))
+  annotate("text", x = 18, y = .1, label = "Control for scenarios other than PH have same survival") +
+  scale_y_log10(breaks = (1:10) /10, lim = c(.05, 1)) +
+  scale_x_continuous(breaks = seq(0, 42, 6)) +
+  ggtitle("Survival over time for 4 scenarios studied")
 ```
     
-The average hazard ratio for these 3 scenarios are shown below:
+The average hazard ratio for these 4 scenarios are shown below.
+We note that under the *Delayed effect 1* scenario, the average hazard ratio approaches that of the *PH* scenario after a study duration of about 36 months.
 
 ```{r}
-# Du rations to be used in common for all failure rate scenarios
+# Durations to be used in common for all failure rate scenarios
 dur <- c(4, 2, 100)
 
 # Set the failure table 
@@ -154,28 +158,36 @@ hr <- do.call(
 ```{r, out.width = "50%"} 
 ggplot(hr, aes(x = Time, y = AHR, col = Scenario)) + 
   geom_line() + 
-  scale_x_continuous(breaks = seq(0, 42, 6))
+  scale_x_continuous(breaks = seq(0, 42, 6)) +
+  ggtitle("Average hazard ratio (AHR) by study duration",
+          subtitle = "Under the 4 scenarios examined")
 ```
 
-The number of events for these 3 scenarios are shown below:
+The number of events for these 4 scenarios are shown below.
+Under the 3 NPH scenarios events accumulate faster than under the PH scenario both due to a lower control median and a delayed effect. 
 
 ```{r, out.width = "50%"}
 ggplot(hr, aes(x = Time, y = `Events`, col = Scenario)) + 
   geom_line() + 
-  scale_x_continuous(breaks = seq(0, 42, 6))
+  scale_x_continuous(breaks = seq(0, 42, 6)) +
+  ggtitle("Expected event accumulation under the 4 scenarios studied")
 ```
-
+From the above, we see that slight variations in control failure rates and the potential for a delayed effect can substantially accelerate the accumulation of events.
+If doing an event-based cutoff for analysis these slight variations can lead to earlier analyses than anticipated when the average hazard ratio that is expected with longer follow-up would never be achieved.
+We examine the implications further below.
 
 # Sample Size and Events by Scenarios
 
 ## Fixed Design using AHR and Logrank
 
 We power a fixed design at 90\% with 2.5\% one-sided Type I error under the different scenarios under consideration.
+For the *PH* and *Delayed effect 1* scenarios we need a similar AHR, number of events and sample size for a 36 month study.
+The other two scenarios with crossing survival curves or a large effect delay would require substantially larger sample sizes due to not achieving a similar AHR by month 36.
 
 ```{r}
 ss_ahr_fixed <- do.call(
   rbind,
-  lapply(c("PH", "Delayed effect 1","Delayed effect 2", "Crossing"), 
+  lapply(c("PH", "Delayed effect 1", "Delayed effect 2", "Crossing"), 
          function(x) {
            gsdmvn::gs_design_ahr(
              enrollRates = enrollRates %>% filter(Scenario == x),
@@ -384,7 +396,8 @@ events_by_time_period <- NULL
 for(g in c("PH", "Delayed effect 1","Delayed effect 2", "Crossing")){
     events_by_time_period <- rbind(
       events_by_time_period,
-      AHRx(enrollRates = enrollRates %>% filter(Scenario == g),
+#      AHRx(enrollRates = enrollRates %>% filter(Scenario == g),
+      AHR(enrollRates = enrollRates %>% filter(Scenario == g),
           failRates = failRates %>% filter(Scenario == g),
           totalDuration = c(12, 20, 28, 36), simple = FALSE) %>% mutate(Scenario = g)
       )
@@ -540,6 +553,7 @@ do.call(
 ```
 
 The fixed design under the second weighting scheme for four scenario are summarized as follows.
+
 ```{r}
 # Ignore tau or (tau can be -1) 
 do.call(
@@ -579,62 +593,6 @@ do.call(
 #   filter(Bound =="Upper")
 ```
 
-### Max Combo Method
 
-For the following fixed design, we use a Max Combo test $Z_{1,1}: FH(0, 0)$, $Z_{2,1}: FH(0, 0.5)$, $Z_{3,1}: FH(0.5, 0.5)$, where $Z_{i,1}$ is the Z-statistics under the $i$-th test and first analysis. 
-```{r}
-# set the test type of the max combo 
-MC_test <- data.frame(
-  rho = c(0, 0, .5), 
-  gamma = c(0, .5, .5), 
-  tau = -1,
-  test = 1:3,
-  Analysis = 1,
-  analysisTimes = 44)
-
-MC_test %>% gt()
-```
-
-Under the above Max Combo test, the fixed design under four scenarios are summaried as follows. 
-```{r}
-do.call(
-  rbind,
-  lapply(
-    c("PH", "Delayed effect 1","Delayed effect 2", "Crossing"), 
-    function(x){
-      gs_design_combo(
-        enrollRates %>% filter(Scenario == x),
-        failRates %>% filter(Scenario == x),
-        MC_test,
-        alpha = 0.025,
-        beta = 0.1,
-        ratio = 1,
-        binding = FALSE,
-        upper = gs_spending_combo,
-        upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
-        lower = gs_spending_combo,
-        lpar = list(sf = gsDesign::sfLDOF, total_spend = .1)
-        ) %>% 
-        summary_bound() %>% 
-        mutate(Scenario = x)
-      }
-    )
-  ) %>% 
-  gt() %>% 
-  fmt_number(columns = 3:5, decimals = 4) 
-# gs_design_combo(enrollRates,
-#                failRates %>% filter(Scenario == g),
-#                MC_test,
-#                alpha = 0.025,
-#                beta = 0.1,
-#                ratio = 1,
-#                binding = FALSE,
-#                upper = gs_spending_combo,
-#                upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
-#                lower = gs_spending_combo,
-#                lpar = list(sf = gsDesign::sfLDOF, total_spend = .1)
-#                )
-#}
-```
 
 ## References
