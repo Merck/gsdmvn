@@ -114,7 +114,7 @@ gs_power_ahr <- function(
   ){
   
   # get the number of analysis
-  K <- length(events)
+  K <- max(length(events), length(analysisTimes), na.rm = TRUE)
   
   # calculate the asymptotic variance and statistical information
   x <- gs_info_ahr(
@@ -170,6 +170,7 @@ gs_power_ahr <- function(
     failRates = failRates,
     bounds = bounds,
     analysis = analysis)
+  
   class(output) <- c("ahr", class(output))
   
   return(output)

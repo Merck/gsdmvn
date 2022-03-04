@@ -6,6 +6,7 @@ output:
     df_print: paged
     toc: true
     toc_depth: 2
+    number_sections: true
 bibliography: gsDesign.bib
 vignette: |
   %\VignetteIndexEntry{Group Sequential Bound Tables}
@@ -141,8 +142,8 @@ x_power_ahr <- gs_power_ahr(
 
 ### WLR Design Derivation
 
-```{r}
-x_wlr <- gs_design_wlr(
+```{r, message=FALSE}
+x_design_wlr <- gs_design_wlr(
    enrollRates = enrollRates,
    failRates = failRates,
    weight = wgt05, 
@@ -151,6 +152,18 @@ x_wlr <- gs_design_wlr(
    ratio = ratio, 
    alpha = alpha, 
    beta = beta,   
+   upper = upper,
+   upar = upar,
+   lower = lower,
+   lpar = lpar
+)
+
+x_power_wlr <- gs_power_wlr(
+   enrollRates = x_design_wlr$enrollRates,
+   failRates = x_design_wlr$failRates,
+   weight = wgt05, 
+   events = c(100, 200, 300),
+   analysisTimes = NULL, 
    upper = upper,
    upar = upar,
    lower = lower,
@@ -182,11 +195,17 @@ summary_bound(x_power_ahr) %>%
 And the default output of `summary_bound()` for the WLR method is
 
 ```{r}
-summary_bound(x_wlr) %>% 
+summary_bound(x_design_wlr) %>% 
    gt::gt() %>% 
    gt::fmt_number(columns = c(3:6), decimals = 4)
 ```
 
+Note that `summary_bound()` can also be applied to summarize an object returned by `gs_power_wlr()`.
+```{r}
+summary_bound(x_power_wlr) %>% 
+   gt::gt() %>% 
+   gt::fmt_number(columns = c(3:6), decimals = 4)
+```
 
 
 # Detailed Summary Table Formatting
@@ -246,7 +265,13 @@ The above objective can also be realized by using functions in the R package `gt
 We note that `as_gt()` always produces a `gt` object and, thus, can be further customized with **gt** package formatting functions.
 In the future, we to support rich text format using a function `as_rtf()` in a fashion similar to `as_gt()`.
 
-# Details of Output from Design Functions
+# Details of Output from Design/Power Functions
+
+There are four components in the objects returned by either `gs_design_ahr()`/`gs_design_wlr()` or `gs_power_ahr()`/`gs_power_wlr()`: 
+1. failure rates: a table summarizing failure rate and dropout rate.
+1. enrollment rates: a table summarizing the enrollment rate.
+1. bounds: a table summarize the bound of each analysis.
+1. analysis: a table summarize the each analysis, with each one row for one analysis one hypothsis. 
 
 ## Failure Rates
 
@@ -262,7 +287,7 @@ Please note that both `x_design_ahr` and `x_wlr` returns the same failure rates,
 To verify, let's take a look at the failure rate of the WLR design derivation, which are shown as below.
 
 ```{r}
-x_wlr$failRates %>% 
+x_design_wlr$failRates %>% 
    gt::gt() %>% 
    gt::fmt_number(columns = 3:5, decimals = 4)
 ```
@@ -280,7 +305,7 @@ x_design_ahr$enrollRates %>%
 ```
 
 ```{r}
-x_wlr$enrollRates %>% 
+x_design_wlr$enrollRates %>% 
    gt::gt() %>% 
    gt::fmt_number(columns = 3, decimals = 4)
 ```
@@ -302,7 +327,7 @@ x_design_ahr$analysis %>%
 ```
 
 ```{r}
-x_wlr$analysis %>% 
+x_design_wlr$analysis %>% 
    gt::gt() %>% 
    gt::fmt_number(columns = 2:8, decimals = 4)
 ```
@@ -321,7 +346,7 @@ x_design_ahr$bounds %>%
 ```
 
 ```{r}
-x_wlr$bounds %>% 
+x_design_wlr$bounds %>% 
    gt::gt() %>% 
    gt::fmt_number(columns = c(3, 5:7), decimals = 4)
 ```
