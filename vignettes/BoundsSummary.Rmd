@@ -111,8 +111,8 @@ Using the design parameters above, the AHR design is derived as follows:
 
 By using the design parameters above, one can generate an AHR model by `gs_design_ahr` as
 
-```{r}
-x_ahr <- gs_design_ahr(
+```{r, message=FALSE}
+x_design_ahr <- gs_design_ahr(
    enrollRates = enrollRates,
    failRates = failRates,
    IF = IF, 
@@ -125,7 +125,19 @@ x_ahr <- gs_design_ahr(
    lower = lower,
    lpar = lpar
 )
+
+x_power_ahr <- gs_power_ahr(
+   enrollRates = x_design_ahr$enrollRates,
+   failRates = x_design_ahr$failRates,
+   events = c(100, 200, 400),
+   analysisTimes = NULL,
+   upper = upper,
+   upar = upar,
+   lower = lower,
+   lpar = lpar
+)
 ```
+
 
 ### WLR Design Derivation
 
@@ -135,7 +147,7 @@ x_wlr <- gs_design_wlr(
    failRates = failRates,
    weight = wgt05, 
    IF = NULL, 
-   analysisTimes = sort(unique(x_ahr$analysis$Time)), 
+   analysisTimes = sort(unique(x_design_ahr$analysis$Time)), 
    ratio = ratio, 
    alpha = alpha, 
    beta = beta,   
@@ -153,10 +165,19 @@ The `summary_bound()` function produces an overall summary table for bounds for 
 
 For example, the default output of `summary_bound()` for the AHR method is
 ```{r}
-summary_bound(x_ahr) %>% 
+summary_bound(x_design_ahr) %>% 
    gt::gt() %>% 
    gt::fmt_number(columns = c(3:6), decimals = 4) 
 ```
+
+Please note the `summary_bound()` can also be applied to objected returned by `gs_power_ahr()`. 
+For example,
+```{r}
+summary_bound(x_power_ahr) %>% 
+   gt::gt() %>% 
+   gt::fmt_number(columns = c(3:6), decimals = 4)
+```
+
 
 And the default output of `summary_bound()` for the WLR method is
 
@@ -179,7 +200,7 @@ But users can customize these variables chosen using `analysis_vars = ...` and t
 For example
 ```{r}
 summary_bound(
-   x_ahr,
+   x_design_ahr,
    analysis_vars = c("N", "Events"),
    analysis_decimals = c(1, 1)) %>% 
    gt::gt() %>% 
@@ -196,7 +217,7 @@ For example,
 
 ```{r}
 summary_bound(
-   x_ahr,
+   x_design_ahr,
    bound_names = c("A is better", "B is better")) %>% 
    mutate_if(is.numeric, round, digits = 4) %>% 
    gt::gt() %>% 
@@ -209,7 +230,7 @@ Users can also use `as_gt()` to get the the above R table into a gt table.
 Furthermore, they can edit the title/subtitle/spanner/footnotes of the gt table by using the arguments in `summary_bound`. 
 
 ```{r}
-summary_bound(x_ahr) %>% 
+summary_bound(x_design_ahr) %>% 
    as_gt(title = "Summary of the Crossing Probability",
          subtitle = "by Using gs_design_ahr",
          colname_spanner = "Cumulative boundary crossing probability",
@@ -232,12 +253,12 @@ In the future, we to support rich text format using a function `as_rtf()` in a f
 The failure rates of different gsDesign object can be obtained by using `x$failRates`, where `x` is the object returned either by `gs_design_ahr` or `gs_design_wlr`. 
 For example, the failure rates of the AHR design derivation can be returned by calling 
 ```{r}
-x_ahr$failRates %>% 
+x_design_ahr$failRates %>% 
    gt::gt() %>% 
    gt::fmt_number(columns = 3:5, decimals = 4)
 ```
 
-Please note that both `x_ahr` and `x_wlr` returns the same failure rates, which is the same as that inputted as `failRates`. 
+Please note that both `x_design_ahr` and `x_wlr` returns the same failure rates, which is the same as that inputted as `failRates`. 
 To verify, let's take a look at the failure rate of the WLR design derivation, which are shown as below.
 
 ```{r}
@@ -253,7 +274,7 @@ The enrollment rate of a gs design derivation can be collected by using `x$failR
 For example, the enrollment rates of the AHR/WLR design derivation is
 
 ```{r}
-x_ahr$enrollRates %>% 
+x_design_ahr$enrollRates %>% 
    gt::gt() %>% 
    gt::fmt_number(columns = 3, decimals = 4)
 ```
@@ -275,7 +296,7 @@ This type of tables are useful for understanding commonalities in how designs ar
 To get analysis summary table, users can call `x$analysis`, where `x` is the object returned either by `gs_design_ahr` or `gs_design_wlr`.
 For example, the analysis summary of the AHR/WLR design derivation is
 ```{r}
-x_ahr$analysis %>% 
+x_design_ahr$analysis %>% 
    gt::gt() %>% 
    gt::fmt_number(columns = 2:8, decimals = 4)
 ```
@@ -294,7 +315,7 @@ To get a bouns summary table, users can call `x$analysis`, where `x` is the obje
 For example, the bounds summary of the AHR/WLR design derivation is
 
 ```{r}
-x_ahr$bounds %>% 
+x_design_ahr$bounds %>% 
    gt::gt() %>% 
    gt::fmt_number(columns = c(3, 5:7), decimals = 4) 
 ```

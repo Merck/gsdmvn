@@ -85,7 +85,7 @@ gs_power_ahr <- function(
     duration = c(3, 100),
     failRate = log(2)/c(9, 18),
     hr = c(.9, .6),
-    dropoutRate = rep(.001,2)),
+    dropoutRate = rep(.001, 2)),
   # randomization ratio (experimental:control)
   ratio = 1,                   
   # targeted events of analysis
@@ -111,7 +111,11 @@ gs_power_ahr <- function(
   # parameters for numerical calculation
   r = 18,
   tol = 1e-6
-){
+  ){
+  
+  # get the number of analysis
+  K <- length(events)
+  
   # calculate the asymptotic variance and statistical information
   x <- gs_info_ahr(
     enrollRates = enrollRates,
@@ -120,7 +124,8 @@ gs_power_ahr <- function(
     events = events,
     analysisTimes = analysisTimes)
   
-  out <- gs_power_npe(
+  # given the above statistical information, calculate the power
+  y <- gs_power_npe(
     theta = x$theta, 
     info = x$info, 
     info0 = x$info0, 
@@ -132,12 +137,40 @@ gs_power_ahr <- function(
     lpar = lpar,
     test_lower = test_lower,
     r = r, 
-    tol = tol
-    ) %>%
-    right_join(x %>% select(-c(info, info0, theta)), by = "Analysis") %>%
-    select(c(Analysis, Bound, Time, Events, Z, Probability, AHR, theta, info, info0, hypothesis)) %>%
-    arrange(desc(Bound), Analysis)
+    tol = tol) # %>%
+    # right_join(x %>% select(-c(info, info0, theta)), by = "Analysis") %>%
+    # select(c(Analysis, Bound, Time, Events, Z, Probability, AHR, theta, info, info0, hypothesis)) %>%
+    # arrange(desc(Bound), Analysis)
   
-  return(out)
+  # summarize the bounds
+  bounds <- y %>% 
+    mutate(
+      `~HR at bound` = exp(-Z / sqrt(info0)),
+      `Nominal p` = pnorm(-Z)
+    ) %>% 
+    select(Analysis, Bound, Probability, hypothesis, Z, `~HR at bound`, `Nominal p`)
   
+  # summarize the analysis
+  analysis <- y %>% 
+    # add AHR into the `gs_power_ahr` output
+    mutate(AHR = exp(-theta)) %>% 
+    # add time/number of events/sample size into the `gs_power_ahr` output
+    left_join(
+      tibble::tibble(
+        Analysis = 1:K, 
+        Time = x$Time,
+        Events = events,
+        N = gsDesign2::eAccrual(x = x$Time, enrollRates = enrollRates)
+        )
+      ) %>% 
+    select(Analysis, Time, N, Events, AHR, theta, info, IF, hypothesis)
+  
+  output <- list(
+    enrollRates = enrollRates, 
+    failRates = failRates,
+    bounds = bounds,
+    analysis = analysis)
+  class(output) <- c("ahr", class(output))
+  
+  return(output)
 }

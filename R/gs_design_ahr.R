@@ -126,14 +126,16 @@ NULL
 
 
 gs_design_ahr <- function(
-  enrollRates = tibble::tibble(Stratum = "All",
-                               duration = c(2, 2, 10),
-                               rate = c(3, 6, 9)),
-  failRates = tibble::tibble(Stratum = "All",
-                             duration = c(3, 100),
-                             failRate = log(2)/c(9, 18),
-                             hr = c(.9, .6),
-                             dropoutRate = rep(.001, 2)),
+  enrollRates = tibble::tibble(
+    Stratum = "All",
+    duration = c(2, 2, 10),
+    rate = c(3, 6, 9)),
+  failRates = tibble::tibble(
+    Stratum = "All",
+    duration = c(3, 100),
+    failRate = log(2) / c(9, 18),
+    hr = c(.9, .6),
+    dropoutRate = rep(.001, 2)),
   ratio = 1,                       # Experimental:Control randomization ratio
   alpha = 0.025,                   # One-sided Type I error
   beta = 0.1,                      # NULL if enrollment is not adapted
@@ -190,18 +192,24 @@ gs_design_ahr <- function(
     for(i in seq_along(IFindx)){
       # if ...
       if(length(IFalt) == 1){
-        y <- rbind(gsDesign2::tEvents(enrollRates, failRates, 
-                                      targetEvents = IF[K - i] * finalEvents, 
-                                      ratio = ratio, interval = c(.01, nextTime)
-                                      ) %>% 
-                     mutate(theta = -log(AHR), Analysis = K - i),
-                   y)
+        y <- rbind(
+          gsDesign2::tEvents(
+            enrollRates, 
+            failRates, 
+            targetEvents = IF[K - i] * finalEvents, 
+            ratio = ratio, 
+            interval = c(.01, nextTime)
+            ) %>% 
+            mutate(theta = -log(AHR), Analysis = K - i),
+          y)
       }else if(IF[K-i] > IFalt[K-i]){
       # if the planned IF > IF under H1
-        y[K - i,] <- gsDesign2::tEvents(enrollRates, failRates, 
-                                        targetEvents = IF[K - i] * finalEvents, 
-                                        ratio = ratio, interval = c(.01, nextTime)
-                                        ) %>%
+        y[K - i,] <- gsDesign2::tEvents(
+          enrollRates, 
+          failRates, 
+          targetEvents = IF[K - i] * finalEvents, 
+          ratio = ratio, interval = c(.01, nextTime)
+          ) %>%
           dplyr::transmute(Analysis = K - i, Time, Events, AHR, theta = -log(AHR), info, info0)
       } 
       nextTime <- y$Time[K - i]
