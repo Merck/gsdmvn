@@ -21,16 +21,36 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introduction
 
-We consider design under non-proportional hazards for 
-@JTBook
+We consider fixed and group sequential design under non-proportional hazards when testing with the logrank test. 
+We focus primarily on the average hazard ratio approach, expanding the asymptotic approach of @Mukhopadhyay2020 to both group sequential design and more complex enrollment assumptions.
+The theoretical background for this is provided in other vignettes in this package.
+We provide a few basic examples along the lines of @NPHWG2020sim for illustration of design considerations under the following assumptions:
+
+1) Proportional hazards
+2) Short delayed effect
+3) Longer delayed effect
+4) Crossing survival
+
+Illustrations include
+
+1) Expected average hazard ratio (AHR) over time. 
+2) Expected event accumulation over time.
+3) The impact of planned study duration on required number of events.
+4) Power across scenarios when a trial is designed under the assumption of a short delayed effect.
+5) Timing of interim analyses.
+6) $\alpha$-spending considerations.
+
+We focus on results rather than code, but hidden code can be revealed for all examples.
 
 # Packages used
 
+The primary packages needed are **gsdmvn** and **gsDesign2** which will likely be combined into **gsDesign2** in the near future.
+Other packages used are supportive.
+
 ```{r packages, message=FALSE, warning=FALSE}
-# packages used
 library(gsDesign)
 library(gsDesign2)
-devtools::load_all() # ?? what is this for?
+devtools::load_all() # this will be replaced with library(gsdmvn) before finalization
 library(ggplot2)
 library(dplyr)
 library(gt)
@@ -41,9 +61,8 @@ library(tibble)
 
 # Scenarios
 
-Expected enrollment duration is 24 months with piecewise constant enrollment rates escalating every 2 months until month 6 where enrollment is assumed to have reached steady state.
-For alternate scenarios, enrollment will occur at a faster than planned rate.
-For both scenarios, we assume for initial illustrations that the total enrollment is 100 subjects.
+Expected enrollment duration is 18 months with piecewise constant enrollment rates escalating every 2 months until month 6 where enrollment is assumed to have reached steady state.
+We will later assume a similar ramp-up period with 24 months expected enrollment duration.
 
 ```{r}
 # Set the enrollment table of totally 24 month 
@@ -55,56 +74,68 @@ enroll24 <- tibble(
 # Adjust enrollment rates to enroll 100 subjects
 enroll24$rate <- enroll24$rate * 100 / sum(enroll24$duration * enroll24$rate)
 
-# Set the enrollment table of totally 18 month  
-enroll16 <- tibble(
+# Set the enrollment table for 18 month expected enrollment  
+enroll18 <- tibble(
   Stratum = rep("All", 4),     # un-stratified
   duration = c(rep(2, 3), 12), # 6 month ramp-up of enrollment, 18 months enrollment time target
   rate = 1:4                   # ratio of the enrollment rate
   )
 # Adjust enrollment rates to enroll 100 subjects
-enroll16$rate <- enroll16$rate * 100 / sum(enroll16$duration * enroll16$rate)
+enroll18$rate <- enroll18$rate * 100 / sum(enroll18$duration * enroll18$rate)
 
 # Put these in a single tibble by scenario
-# We will use 16 month enrollment for delayed effect and crossing hazards scenarios
+# We will use 18 month enrollment for delayed effect and crossing hazards scenarios
 enrollRates <- rbind(
-  enroll24 %>% mutate(Scenario = "PH"),
-  enroll24 %>% mutate(Scenario = "Delayed effect 1"),
-  enroll16 %>% mutate(Scenario = "Delayed effect 2"),
-  enroll16 %>% mutate(Scenario = "Crossing")
+  enroll18 %>% mutate(Scenario = "PH"),
+  enroll18 %>% mutate(Scenario = "Shorter delayed effect"),
+  enroll18 %>% mutate(Scenario = "Longer delayed effect"),
+  enroll18 %>% mutate(Scenario = "Crossing")
 )
 ```
 
 We will consider the following failure rate assumptions:
 
 - PH: Proportional hazards is assumed.
-    - Control group has exponential failure rate with a median of 12 months.
+    - Control group has exponential failure rate with a median of 14 months.
     - Constant hazard ratio of 0.7 (experimental/control).
-- Delayed effect
+- Shorter delayed effect
     - Control group has exponential failure rate with a median of 10 months.
-    - Hazard ratio of 1 for 6 months followed by a hazard ratio of 0.575.
+    - Hazard ratio of 1 for 6 months followed by a hazard ratio of 0.6.
+- Longer delayed effect
+    - Control group has exponential failure rate with a median of 10 months.
+    - Hazard ratio of 1 for 6 months followed by a hazard ratio of 0.6.
 - Crossing hazards
     - Control group has exponential failure rate with a median of 10 months.
     - Hazard ratio of 1.5 for 4 months followed by a hazard ratio of 0.5.
 
+```{r}
+# get 4 scenarios
+control_median <- c(14, 12, 12, 12)
+Month <- c(0, 4, 6, 44)
+duration <- Month - c(0, Month[1:3])
+# HR by time period for each scenario
+hr <- c(rep(.7, 4),         # constant hazard ratio of 0.7
+        1, 1, .6, .6,       # hazard ratio of 1 for 4 months followed by a hazard ratio of 0.6.
+        1, 1, 1, .6,        # hr = 1 for 6 months followed by hr = .6
+        1.5, 1.5, .5, .5)   # hazard ratio of 1.5 for 4 months followed by a hazard ratio of 0.5.
+```
+
 The survival curves for these 4 scenarios are shown below:
 
 ```{r}
-# get 4 scenarios
-Month <- c(0, 4, 6, 44)
-duration <- Month - c(0, Month[1:3])
+# Put parameters together in a tibble
 s <- tibble(
-  Scenario = c(rep("PH", 4), rep("Delayed effect 1", 4), rep("Delayed effect 2", 4), rep("Crossing", 4)),
+  Scenario = c(rep("PH", 4), rep("Shorter delayed effect", 4), rep("Longer delayed effect", 4), rep("Crossing", 4)),
   Treatment = rep("Control", 16),
-  Month = rep(Month, 4),
+  Month = rep(Month, 4), # Periods for constant HR 
   duration = rep(duration, 4),
-  rate = log(2) / c(rep(14, 4), rep(11, 12)),
-  hr = c(rep(.7, 4),         # constant hazard ratio of 0.7
-         1, 1, .6, .6,       # hazard ratio of 1 for 4 months followed by a hazard ratio of 0.6.
-         1, 1, 1, .6,        # hr = 1 for 6 months followed by hr = .6
-         1.5, 1.5, .6, .6)   # hazard ratio of 1.5 for 4 months followed by a hazard ratio of 0.5.
-         )
+  rate = log(2) / c(rep(control_median[1], 4), 
+                    rep(control_median[2], 4), 
+                    rep(control_median[3], 4), 
+                    rep(control_median[4], 4)),
+  hr = hr)
 
-# calculate the survival
+# calculate the survival at each change point for each scenario
 s <- rbind(s, s %>% mutate(Treatment = "Experimental", rate = rate * hr)) %>%
      group_by(Scenario, Treatment) %>%
      mutate(Survival = exp(-cumsum(duration * rate)))
@@ -115,38 +146,38 @@ s <- rbind(s, s %>% mutate(Treatment = "Experimental", rate = rate * hr)) %>%
 ggplot(s, aes(x = Month, y = Survival, col = Scenario, lty = Treatment, shape = Treatment)) + 
   geom_line() + 
   annotate("text", x = 18, y = .1, label = "Control for scenarios other than PH have same survival") +
-  scale_y_log10(breaks = (1:10) /10, lim = c(.05, 1)) +
+  scale_y_log10(breaks = (1:10) /10, lim = c(.07, 1)) +
   scale_x_continuous(breaks = seq(0, 42, 6)) +
   ggtitle("Survival over time for 4 scenarios studied")
 ```
     
 The average hazard ratio for these 4 scenarios are shown below.
-We note that under the *Delayed effect 1* scenario, the average hazard ratio approaches that of the *PH* scenario after a study duration of about 36 months.
+We note that under the *Shorter delayed effect* scenario, the average hazard ratio approaches that of the *PH* scenario after a study duration of about 36 months.
 
 ```{r}
 # Durations to be used in common for all failure rate scenarios
-dur <- c(4, 2, 100)
+dur <- Month[2:4] - Month[1:3]
 
 # Set the failure table 
 # We use exponential failure, proportional hazards
 failRates <- rbind(
   tibble(Scenario = "PH", Stratum = "All", 
          duration = dur, failRate = log(2) / 14,
-         hr = 0.7, dropoutRate = .001),
-  tibble(Scenario = "Delayed effect 1", Stratum = "All", 
+         hr = hr[1], dropoutRate = .001),
+  tibble(Scenario = "Shorter delayed effect", Stratum = "All", 
          duration = dur, failRate = log(2) / 11,
-         hr = c(1, .6, .6), dropoutRate = .001),
-  tibble(Scenario = "Delayed effect 2", Stratum = "All", 
+         hr = hr[6:8], dropoutRate = .001),
+  tibble(Scenario = "Longer delayed effect", Stratum = "All", 
          duration = dur, failRate = log(2) / 11,
-         hr = c(1, 1, .7), dropoutRate = .001),
+         hr = hr[10:12], dropoutRate = .001),
   tibble(Scenario = "Crossing", Stratum = "All", 
          duration = dur, failRate = log(2) / 11,
-         hr = c(1.5, .6, .6), dropoutRate = .001))
+         hr = hr[14:16], dropoutRate = .001))
 
 hr <- do.call(
   rbind,
   lapply(
-    c("PH", "Delayed effect 1", "Delayed effect 2", "Crossing"), 
+    c("PH", "Shorter delayed effect", "Longer delayed effect", "Crossing"), 
     function(x){
       gsDesign2::AHR(
         enrollRates = enrollRates %>% filter(Scenario == x), 
@@ -164,12 +195,13 @@ ggplot(hr, aes(x = Time, y = AHR, col = Scenario)) +
 ```
 
 The number of events for these 4 scenarios are shown below.
-Under the 3 NPH scenarios events accumulate faster than under the PH scenario both due to a lower control median and a delayed effect. 
+Under the 3 NPH scenarios events accumulate faster than under the PH scenario both due to a lower control median and/or a delayed effect. 
 
 ```{r, out.width = "50%"}
 ggplot(hr, aes(x = Time, y = `Events`, col = Scenario)) + 
   geom_line() + 
   scale_x_continuous(breaks = seq(0, 42, 6)) +
+  ylab("Expected events per 100 enrolled") +
   ggtitle("Expected event accumulation under the 4 scenarios studied")
 ```
 From the above, we see that slight variations in control failure rates and the potential for a delayed effect can substantially accelerate the accumulation of events.
@@ -181,25 +213,27 @@ We examine the implications further below.
 ## Fixed Design using AHR and Logrank
 
 We power a fixed design at 90\% with 2.5\% one-sided Type I error under the different scenarios under consideration.
-For the *PH* and *Delayed effect 1* scenarios we need a similar AHR, number of events and sample size for a 36 month study.
+We now assume the 18 month enrollment pattern for all scenarios.
+For the *PH* and *Shorter delayed effect* scenarios we need a similar AHR, number of events and sample size for a 36 month study.
 The other two scenarios with crossing survival curves or a large effect delay would require substantially larger sample sizes due to not achieving a similar AHR by month 36.
 
 ```{r}
 ss_ahr_fixed <- do.call(
   rbind,
-  lapply(c("PH", "Delayed effect 1", "Delayed effect 2", "Crossing"), 
+  lapply(c("PH", "Shorter delayed effect", "Longer delayed effect", "Crossing"), 
          function(x) {
-           gsdmvn::gs_design_ahr(
-             enrollRates = enrollRates %>% filter(Scenario == x),
-             failRates = failRates %>% filter(Scenario == x),
-             analysisTimes = 36,
-             upper = gs_b, 
-             upar = qnorm(.975),
-             lower = gs_b, lpar = -Inf,
-             alpha = .025,
-             beta = .1
-             )$analysis %>% 
-             subset(hypothesis == "H1") %>% 
+           xx <- 
+             gsdmvn::gs_design_ahr(
+                enrollRates = enroll18, # enrollRates %>% filter(Scenario == x),
+                failRates = failRates %>% filter(Scenario == x),
+                analysisTimes = 36,
+                upper = gs_b, 
+                upar = qnorm(.975),
+                lower = gs_b, lpar = -Inf,
+                alpha = .025,
+                beta = .1
+                )
+             left_join(xx$analysis %>% filter(hypothesis == "H1"), xx$bounds %>% filter(hypothesis == "H1", Bound == "Upper"), by = "Analysis")  %>%
              mutate(Scenario = x)
            }
          )
@@ -214,7 +248,7 @@ ss_ahr_fixed %>%
              subtitle = "36 Month Trial duration, 2.5% One-sided Type 1 Error, 90% Power")
 ```
 
-Assuming delayed effect 1 is the primary scenario for which we wish to protect power, how long should the trial be to optimize the tradeoffs between sample size, AHR and events required?
+Assuming the shorter delayed effect is the primary scenario for which we wish to protect power, how long should the trial be to optimize the tradeoffs between sample size, AHR and events required?
 We will inform this tradeoff by looking sizing the trial for different assumed trial durations with the same failure rates and assumed relative enrollment rates.
 The counts of events required is perhaps the most interesting here in that a 24 month trial requires almost twice the events to be powered at 90% compared to a trial of 42 months duration.
 For further study, we will consider the 36 month trial duration as a reasonable tradeoff between time, sample size and power under a presumed delayed effect of 4 months followed by a hazard ratio of 0.6 thereafter. 
@@ -235,7 +269,7 @@ do.call(
         beta = .1
         )$analysis %>% 
         subset(hypothesis == "H1") %>% 
-        mutate(Scenario = "Delayed effect 1")
+        mutate(Scenario = "Shorter delayed effect")
     }
     )
   )%>% 
@@ -393,7 +427,7 @@ Under the different scenarios of interest, we can examine the expected number of
 
 ```{r, message=FALSE}
 events_by_time_period <- NULL
-for(g in c("PH", "Delayed effect 1","Delayed effect 2", "Crossing")){
+for(g in c("PH", "Shorter delayed effect","Longer delayed effect", "Crossing")){
     events_by_time_period <- rbind(
       events_by_time_period,
 #      AHRx(enrollRates = enrollRates %>% filter(Scenario == g),
@@ -432,11 +466,12 @@ ahr_by_analysis %>%
 
 Here we assume the design is under a delayed effect model where the delay is not too long and the long-term average hazard ratio benefit is strong.
 proportional hazards scenario, but we look at power under the alternate scenarios.
-We will plan a 36 month group sequential design under the delayed effect 1 scenario.
+We will plan a 36 month group sequential design under the Shorter delayed effect scenario.
 Interim analyses are planned after 12, 20, and 28 months.
 
 
 ### AHR method
+
 ```{r}
 analysisTimes <- c(12, 20, 28, 36)
 upar <- list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL, theta = 0)
@@ -457,18 +492,17 @@ NPHasymmetric <- gs_design_ahr(
   lpar = lpar
 )
 summary_bound(NPHasymmetric) %>% 
-  gt() %>% 
-  fmt_number(columns = 3:6, decimals = 4) %>% 
-  tab_options(container.height = pct(5))
+  gt() %>%
+  fmt_number(columns = 3:6, decimals = 4)
 ```
 
 By scenario, we now wish to compute the adjusted expected futility bounds and the power implied.
 
-```{r}
+```{r, eval= FALSE}
 do.call(
   rbind,
   lapply(
-    c("PH", "Delayed effect 1","Delayed effect 2", "Crossing"), 
+    c("PH", "Shorter delayed effect","Longer delayed effect", "Crossing"), 
     function(x){
       AHR1 <- (ahr_by_analysis %>% filter(Scenario == x))$AHR1
       lparx <- lpar
@@ -498,11 +532,11 @@ do.call(
 We investigate two types of the weighting scheme for weight logrank method.
 
 The fixed design under the first weighting scheme for four scenario are summarized as follows.
-```{r}
+```{r, eval = FALSE}
 do.call(
   rbind,
   lapply(
-    c("PH", "Delayed effect 1","Delayed effect 2", "Crossing"), 
+    c("PH", "Shorter delayed effect","Longer delayed effect", "Crossing"), 
     function(x){
       gs_design_wlr(
         enrollRates = enrollRates %>% filter(Scenario == x), 
@@ -559,7 +593,7 @@ The fixed design under the second weighting scheme for four scenario are summari
 do.call(
   rbind,
   lapply(
-    c("PH", "Delayed effect 1","Delayed effect 2", "Crossing"), 
+    c("PH", "Shorter delayed effect","Longer delayed effect", "Crossing"), 
     function(x){
       gs_design_wlr(
         enrollRates = enrollRates %>% filter(Scenario == x), 
