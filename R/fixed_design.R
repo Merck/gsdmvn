@@ -6,7 +6,12 @@
 #' @param alpha One-sided Type I error (strictly between 0 and 1)
 #' @param Power Power (`NULL` to compute power or strictly between 0 and `1 - alpha` otherwise)
 #' @param ratio Experimental:Control randomization ratio
-#' @param ... Additional parameters needed; see examples.
+#' @param enrollRates
+#' @param failRates
+#' @param studyDuration
+#' @param rho
+#' @param gamma
+#' @param tau
 #'
 #' @return
 #' @export
@@ -17,11 +22,18 @@
 #'                   alpha = .025, Power = .9, 
 #'                   enrollRates = tibble::tibble(Stratum = "All",  duration = 18, rate = 1),
 #'                   failRates = tibble::tibble(Stratum = "All", duration = c(4, 100), failRate = log(2) / 12, hr = c(1, .6), dropoutRate = .001),
-#'                   analysisTimes = 36)
+#'                   studyDuration = 36)
 #' y %>% summary() %>% gt::gt()            
 #' 
+#' # Lachin and Foulkes (uses gsDesign::nSurv())
+#' y <- fixed_design("LF", 
+#'                   alpha = .025, Power = .9, 
+#'                   enrollRates = tibble::tibble(Stratum = "All",  duration = 18, rate = 1),
+#'                   failRates = tibble::tibble(Stratum = "All", duration = 100, failRate = log(2) / 12, hr = .7, dropoutRate = .001),
+#'                   studyDuration = 36)
+#' 
 fixed_design <- 
-  function(x = "AHR", alpha = 0.025, Power = .9, ratio = 1, ...){
+  function(x = "AHR", alpha = 0.025, Power = .9, ratio = 1, enrollRates, failRates, studyDuration, rho, gamma, tau){
      y <- switch(x, 
                  "AHR" = {
                       if (!is.null(Power)){
@@ -30,18 +42,18 @@ fixed_design <-
                                             enrollRates = enrollRates,
                                             failRates = failRates,
                                             ratio  = ratio, 
-                                            analysisTimes = analysisTimes,...)
+                                            analysisTimes = studyDuration)
                        }else{
                            d <- gs_power_ahr(upar = qnorm(1 - alpha), lpar = -Inf,
                                              enrollRates = enrollRates,
                                              failRates = failRates,
                                              ratio  = ratio, 
-                                             analysisTimes = analysisTimes,...)
+                                             analysisTimes = studyDuration)
                          }
                      list(sum_ = d$analysis %>% filter(Bound == "Upper", hypothesis == "H0"),
                          enrollRates = d$enrollRates)
               },
-            "FH" = {
+            "FH" = { # This will call gs_design_wlr or gs_power_wlr
                 list(sum_ = tibble::tibble(Option = 2, Design = "FH"),
                      c = 2)
                 },
@@ -49,10 +61,17 @@ fixed_design <-
                 list(sum_ = tibble::tibble(Option = 3, Design = "MB"),
                      stuff = "stuff")
               },
-            "LF" = { 
-                list(sum_ = tibble::tibble(Option = 4, Design = "LF"), 
-                     magic = "LF")
-              },
+            "LF" = { # Should do checks of inputs here
+                  if (is.null(Power)){beta <- NULL}else{beta <- 1 - Power}
+                  m <- length(failRates$failRate)
+                  if (m == 1){S <- NULL}else{S <- failRates$duration[1:(m-1)]}
+                  d <- nSurv(alpha = alpha, beta = beta, hr = hr,  
+                             S = S, lambdaC = failRates$failRate, eta = failRates$dropoutRate,
+                             R = enrollRates$duration, gamma = enrollRates$rate,
+                             T = studyDuration, ratio = ratio)
+                  list(sum_ = tibble::tibble(Option = 4, Design = "LF"),
+                       x = d)
+             },
             "RD" = {
                 list(sum_ = tibble::tibble(Option = 5, Design = "RD") # everything that needs to be returned should be in the tibble (p_C, p_E, N, alpha, and power)
                     )},
