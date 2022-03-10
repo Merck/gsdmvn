@@ -16,9 +16,9 @@ gs_power_ahr(
   upper = gs_b,
   upar = gsDesign(k = length(events), test.type = 1, n.I = events, maxn.IPlan =
     max(events), sfu = sfLDOF, sfupar = NULL)$upper$bound,
+  test_upper = TRUE,
   lower = gs_b,
   lpar = c(qnorm(0.1), rep(-Inf, length(events) - 1)),
-  test_upper = TRUE,
   test_lower = TRUE,
   r = 18,
   tol = 1e-06
@@ -41,12 +41,12 @@ gs_power_ahr(
 
 \item{upar}{Parameter passed to \code{upper()}}
 
+\item{test_upper}{indicator of which analyses should include an upper (efficacy) bound; single value of TRUE (default) indicates all analyses;
+otherwise, a logical vector of the same length as \code{info} should indicate which analyses will have an efficacy bound}
+
 \item{lower}{Function to compute lower bound}
 
 \item{lpar}{Parameter passed to \code{lower()}}
-
-\item{test_upper}{indicator of which analyses should include an upper (efficacy) bound; single value of TRUE (default) indicates all analyses;
-otherwise, a logical vector of the same length as \code{info} should indicate which analyses will have an efficacy bound}
 
 \item{test_lower}{indicator of which analyses should include an lower bound; single value of TRUE (default) indicates all analyses;
 single value FALSE indicated no lower bound; otherwise, a logical vector of the same length as \code{info} should indicate which analyses will have a

@@ -5,7 +5,7 @@
 \title{This is the function to format the bounds summary table into gt style.}
 \usage{
 as_gt(
-  output,
+  x,
   title = NULL,
   subtitle = NULL,
   colname_spanner = "Cumulative boundary crossing probability",
@@ -14,7 +14,7 @@ as_gt(
 )
 }
 \arguments{
-\item{output}{an object returned by \code{summary_bound}}
+\item{x}{an object returned by \code{summary_bound}}
 
 \item{title}{a string to specify the title of the gt table}
 

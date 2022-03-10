@@ -71,7 +71,7 @@ fh_test <- rbind(
 # ---------------------------- #
 #          ahr                 #
 # ---------------------------- #
-x_ahr <- gs_design_ahr2(
+x_ahr <- gs_design_ahr(
   enrollRates = enrollRates,
   failRates = failRates,
   IF = IF, # Information fraction
@@ -88,7 +88,7 @@ summary_bound(x_ahr)
 # ---------------------------- #
 #         wlr                  #
 # ---------------------------- #
-x_wlr2 <- gs_design_wlr2(
+x_wlr2 <- gs_design_wlr(
   enrollRates = enrollRates,
   failRates = failRates,
   weight = wgt05, 
@@ -106,7 +106,7 @@ summary_bound(x_wlr)
 # ---------------------------- #
 #         max combo            #
 # ---------------------------- #
-x_combo <- gsdmvn::gs_design_combo2(
+x_combo <- gsdmvn::gs_design_combo(
   ratio = 1, 
   alpha = 0.025, 
   beta = 0.2, 

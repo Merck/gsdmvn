@@ -2,6 +2,7 @@
 
 export(ahr_blinded)
 export(as_gt)
+export(fixed_design)
 export(gridpts)
 export(gs_b)
 export(gs_design_ahr)

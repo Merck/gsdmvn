@@ -1,0 +1,84 @@
+---
+title: "Fixed Design"
+output:
+  rmarkdown::html_vignette:
+    css: "custom.css"
+    df_print: paged
+    toc: true
+    toc_depth: 2
+    number_sections: true
+bibliography: gsDesign.bib
+vignette: |
+  %\VignetteIndexEntry{Group Sequential Bound Tables}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message=FALSE, warning=FALSE}
+library(gsDesign)
+library(tibble)
+library(gt)
+# load the develop version of gsdmvn
+# it will finally be replaced by `libraray(gsdmvn)`
+devtools::load_all()
+```
+
+# Parameters
+```{r}
+# Enrollment rate
+enrollRates <- tibble::tibble(
+   Stratum = "All", 
+   duration = 18, 
+   rate = 1)
+
+# Failure rates
+failRates <- tibble::tibble(
+   Stratum = "All", 
+   duration = c(4, 100), 
+   failRate = log(2) / 12,
+   hr = c(1, .6), 
+   dropoutRate = .001)
+
+# Study duration in months
+studyDuration <- 36
+
+# Experimental / Control randomization ratio
+ratio <- 1 
+
+# 1-sided Type I error
+alpha <- 0.025 
+# Type II error (1 - power)
+beta <- 0.1 
+```
+
+# AHR
+
+```{r}
+# fixed design with a given power
+fixed_design(x = "AHR", alpha = alpha, power = 1 - beta, ratio = ratio, 
+             enrollRates = enrollRates, failRates = failRates, 
+             studyDuration = studyDuration) %>% 
+  summary_fix()
+
+# fixed design with power calculated
+fixed_design(x = "AHR", alpha = alpha, ratio = ratio, 
+             enrollRates = enrollRates, failRates = failRates, 
+             studyDuration = studyDuration) %>% 
+  summary_fix()
+```
+
+# LF
+I tried LF in the example of fixed_design.R, but it gives me the error. Here we need to check the enrollRates and failRates. 
+```{r}
+try(fixed_design(x = "LF",
+             alpha = .025, Power = .9,
+             enrollRates = tibble(Stratum = "All",  duration = 18, rate = 1),
+             failRates = tibble(Stratum = "All", duration = 100, failRate = log(2) / 12, hr = .7, dropoutRate = .001),
+             studyDuration = 36) %>% 
+  summary_fix())
+```
+
