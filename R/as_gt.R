@@ -69,13 +69,13 @@ as_gt <- function(
   # --------------------------------------------- #
   # set different default title to different methods
   if(method == "ahr" && is.null(title)){
-    title <- "Bound summary for gs_design_ahr"
+    title <- "Bound summary for AHR design"
   }
   if(method == "wlr" && is.null(title)){
-    title <- "Bound summary for gs_design_wlr"
+    title <- "Bound summary for WLR design"
   }
   if(method == "combo" && is.null(title)){
-    title <- "Bound summary for gs_design_combo"
+    title <- "Bound summary for Max Combo design"
   }
   
   # set different default subtitle to different methods

@@ -146,7 +146,7 @@ gs_power_ahr <- function(
   bounds <- y %>% 
     mutate(
       `~HR at bound` = exp(-Z / sqrt(info0)),
-      `Nominal p` = pnorm(-Z)
+      `Nominal p` = pnorm(Z)
     ) %>% 
     select(Analysis, Bound, Probability, hypothesis, Z, `~HR at bound`, `Nominal p`)
   
@@ -159,7 +159,7 @@ gs_power_ahr <- function(
       tibble::tibble(
         Analysis = 1:K, 
         Time = x$Time,
-        Events = events,
+        Events = if(!is.null(events)){events}else{x$Events},
         N = gsDesign2::eAccrual(x = x$Time, enrollRates = enrollRates)
         )
       ) %>% 

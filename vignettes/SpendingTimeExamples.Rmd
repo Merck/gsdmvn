@@ -159,20 +159,9 @@ yy <- gs_power_ahr(
   upar = Z_025,
   lpar = Z_025)
 
-# get the summary table of updated design
 yy %>% 
-  # since we want the power, so we filter the upper bounds
-  filter(Bound == "Upper", hypothesis == "H1") %>% 
-  mutate(
-    # calculate the sample size, which is the same as the original design
-    N = sum(xx$enrollRates$duration * xx$enrollRates$rate),
-    # calculate the nominal p-value
-    `Nominal p` = pnorm(-Z)
-  ) %>% 
-  select(Time, N, Events, `Nominal p`, AHR, Probability) %>% 
-  gt() %>% 
-  fmt_number(columns = c("N", "Events"), decimals = 1) %>% 
-  fmt_number(columns = c("Nominal p", "AHR", "Probability"), decimals = 4)
+  summary_bound() %>% 
+  as_gt()
 ```
 
 Now we also require 30 months trial duration in addition to the targeted events.
@@ -194,17 +183,8 @@ yy <- gs_power_ahr(
 
 # get the summary table of updated design
 yy %>% 
-  # since we want the power, so we filter the upper bounds
-  filter(Bound == "Upper", hypothesis == "H1") %>% 
-  mutate(
-    # calculate the sample size, which is the same as the original design
-    N = sum(xx$enrollRates$duration * xx$enrollRates$rate),
-    # calculate the nominal p-value
-    `Nominal p` = pnorm(-Z)) %>% 
-  select(Time, N, Events, `Nominal p`, AHR, Probability) %>% 
-  gt() %>% 
-  fmt_number(columns = c("N", "Events"), decimals = 1) %>% 
-  fmt_number(columns = c("Nominal p", "AHR", "Probability"), decimals = 4)
+  summary_bound() %>% 
+  as_gt()
 ```
 
 ## Scenario 2: Low Control Event Rates
@@ -228,22 +208,12 @@ yy <- gs_power_ahr(
   # and calculate the corresponding number of events
   events = NULL,
   analysisTimes = 30,
-  upar = Z_025,
-  lpar = Z_025)
+  upper = gs_b, upar = Z_025,
+  lower = gs_b, lpar = Z_025)
 
-# get the summary table 
 yy %>% 
-  # since we want the power, so we filter the upper bounds
-  filter(Bound == "Upper", hypothesis == "H1") %>% 
-  mutate(
-    # calculate the sample size, which is the same as the original design
-    N = sum(xx$enrollRates$duration * xx$enrollRates$rate),
-    # calculate the nominal p-value
-    `Nominal p` = pnorm(-Z)) %>% 
-  select(Time, N, Events, `Nominal p`, AHR, Probability) %>% 
-  gt() %>% 
-  fmt_number(columns = c("N", "Events"), decimals = 1) %>% 
-  fmt_number(columns = c("Nominal p", "AHR", "Probability"), decimals = 4)
+  summary_bound() %>% 
+  as_gt()
 ```
 
 If we also require adequate events, we restore power to 94.5, above the originally targeted level of 90%.
@@ -263,19 +233,9 @@ yy <- gs_power_ahr(
   upar = Z_025,
   lpar = Z_025) 
 
-# get the summary table 
 yy %>% 
-  # since we want the power, so we filter the upper bounds
-  filter(Bound == "Upper", hypothesis == "H1") %>% 
-  mutate(
-    # calculate the sample size, which is the same as the original design
-    N = sum(xx$enrollRates$duration * xx$enrollRates$rate),
-    # calculate the nominal p-value
-    `Nominal p` = pnorm(-Z)) %>% 
-  select(Time, N, Events, `Nominal p`, AHR, Probability) %>% 
-  gt() %>% 
-  fmt_number(columns = c("N", "Events"), decimals = 1) %>% 
-  fmt_number(columns = c("Nominal p", "AHR", "Probability"), decimals = 4)
+  summary_bound() %>% 
+  as_gt()
 ```
 
 ## Conclusions for Fixed Design
@@ -403,11 +363,8 @@ xx <- gs_design_ahr(
   lpar = lpar)
 
 # get the summary table
-summary_bound(
-  xx,
-  analysis_vars = c("Time", "N", "Events", "IF", "AHR"),
-  analysis_decimals = c(1, 1, 1, 4, 4)) %>% 
-  filter(Bound == "Efficacy") %>% 
+xx %>% 
+  summary_bound() %>% 
   as_gt()
 ```
 
@@ -444,19 +401,8 @@ yy <- gs_power_ahr(
   ) 
 
 yy %>% 
-  filter(Bound == "Upper", hypothesis == "H1") %>% 
-  mutate(
-    # calculate the sample size
-    N = sum(xx$enrollRates$rate * xx$enrollRates$duration),
-    # the spending time is calendar fraction
-    spending_time = upar_design_CF$timing,
-    # calculate the information fraction
-    IF = info0 / max(yy$info0),
-    `Nominal p` = pnorm(-Z),
-    `~HR at bound` = exp(-Z / sqrt(info))) %>% 
-  select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
-  gt()
-
+  summary_bound() %>% 
+  as_gt()
 ```
 
 ### Fixed Incremental Spend with a Variable Number of Aanalyses
@@ -479,6 +425,14 @@ We see in the following table summarizing efficacy bounds and power that there i
 While the cumulative $\alpha$-spending is 0.001 and 0.002 at the efficacy interim analyses, we see that the nominal p-value bound at the second interim is 0.0015, more then the 0.001 incremental $\alpha$-spend.
 We also note that with these nominal p-values for testing, the approximate hazard ratio required to cross the bounds would presumably help justify consideration of completing the trial based on a definitive interim efficacy finding.
 Also, with the small interim spend, the final nominal p-value is not reduced much from the overall $\alpha=0.025$ Type I error set for the group sequential design.
+
+We also examine the futility bound.
+The nominal p-value of 0.05 at each analysis is the one-sided p-value in favor of control over experimental treatment.
+We can see that the probability of stopping early under the alternate hypothesis ($\beta$-spending) is not substantial even given the early delayed effect.
+Also, the substantial approximate observed hazard ratios to cross a futility bound seem reasonable given the timing and number of events observed; the exception to this is the small number of events at the first interim, but a larger number could be observed by this time if there were early excess risk.
+It may be useful to plan additional analyses if a futility bound is crossed to support stopping or not.
+For example, looking in subgroups or evaluating smoothed hazard rates over time for each treatment group may be useful.
+A clinical trial study team should have a complete discussion of futility bound considerations at the time of design.
 
 
 ```{r}
@@ -509,44 +463,8 @@ FHO <- gs_power_ahr(
   lpar = c(rep(qnorm(.05), 4), -Inf))
 
 FHO %>% 
-  filter(Bound == "Upper", Z < Inf, hypothesis == "H1") %>% 
-  mutate(
-    # calculate the sample size
-    N = sum(xx$enrollRates$rate * xx$enrollRates$duration),
-    # the spending time is calendar fraction
-    spending_time = upar_FHO$timing[3:5],
-    # calculate the information fraction
-    IF = info0 / max(FHO$info0),
-    `Nominal p` = pnorm(-Z),
-    `~HR at bound` = exp(-Z / sqrt(info))) %>% 
-  select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
-  gt()
-```
-
-We also examine the futility bound.
-The nominal p-value of 0.05 at each analysis is the one-sided p-value in favor of control over experimental treatment.
-We can see that the probability of stopping early under the alternate hypothesis ($\beta$-spending) is not substantial even given the early delayed effect.
-Also, the substantial approximate observed hazard ratios to cross a futility bound seem reasonable given the timing and number of events observed; the exception to this is the small number of events at the first interim, but a larger number could be observed by this time if there were early excess risk.
-It may be useful to plan additional analyses if a futility bound is crossed to support stopping or not.
-For example, looking in subgroups or evaluating smoothed hazard rates over time for each treatment group may be useful.
-A clinical trial study team should have a complete discussion of futility bound considerations at the time of design.
-
-```{r}
-FHO %>% 
-  filter(Bound == "Lower", abs(Z) < Inf, hypothesis == "H1") %>%
-  transmute(
-    Time = Time, 
-    Events = ceiling(Events),
-    "Nominal p" = pnorm(Z), 
-    "Information fraction" = info0 / max((xx$analysis %>% subset(hypothesis == "H0"))$info),
-    "~HR at bound" = exp(-Z / sqrt(info)),
-    "Cumulative beta-spend" = Probability
-    ) %>%
-  gt() %>%
-  fmt_number(columns = c("Events"), decimals = 0) %>%
-  fmt_number(columns = "Time", decimals = 1) %>%
-  fmt_number(columns = c("~HR at bound", "Cumulative beta-spend","Information fraction"), decimals = 3) %>%
-  fmt_number(columns = "Nominal p", decimals = 4)
+  summary_bound() %>% 
+  as_gt()
 ```
 
 ## Scenario with Less Treatment Effect 
@@ -587,25 +505,28 @@ yy <- gs_power_ahr(
   lpar = lpar
   ) 
 
+yy %>% 
+  summary_bound() %>% 
+  as_gt()
 #actual_IF <- yy$info0 / max_info0
 
-yy %>% 
-  filter(Bound == "Upper", hypothesis == "H1") %>% 
-  mutate(
-    # calculate the sample size
-    N = sum(xx$enrollRates$rate * xx$enrollRates$duration),
-    # the spending time is actual IF: info0 from yy / info0 from xx
-    spending_time = (yy %>% subset(hypothesis == "H0"))$info / max((xx$analysis %>% subset(hypothesis == "H0"))$info),
-    # calculate the information fraction
-    IF = info0 / max((xx$analysis %>% subset(hypothesis == "H0"))$info),
-    `Nominal p` = pnorm(-Z),
-    `~HR at bound` = exp(-Z / sqrt(info))) %>% 
-  select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
-  gt() %>% 
-  fmt_number(columns = c("Events", "N"), decimals = 0) %>%
-  fmt_number(columns = "Time", decimals = 1) %>%
-  fmt_number(columns = c("~HR at bound", "Probability", "IF"), decimals = 3) %>%
-  fmt_number(columns = "Nominal p", decimals = 4)
+# yy %>% 
+#   filter(Bound == "Upper", hypothesis == "H1") %>% 
+#   mutate(
+#     # calculate the sample size
+#     N = sum(xx$enrollRates$rate * xx$enrollRates$duration),
+#     # the spending time is actual IF: info0 from yy / info0 from xx
+#     spending_time = (yy %>% subset(hypothesis == "H0"))$info / max((xx$analysis %>% subset(hypothesis == "H0"))$info),
+#     # calculate the information fraction
+#     IF = info0 / max((xx$analysis %>% subset(hypothesis == "H0"))$info),
+#     `Nominal p` = pnorm(-Z),
+#     `~HR at bound` = exp(-Z / sqrt(info))) %>% 
+#   select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
+#   gt() %>% 
+#   fmt_number(columns = c("Events", "N"), decimals = 0) %>%
+#   fmt_number(columns = "Time", decimals = 1) %>%
+#   fmt_number(columns = c("~HR at bound", "Probability", "IF"), decimals = 3) %>%
+#   fmt_number(columns = "Nominal p", decimals = 4)
 ```
 
 Just as important, the general design principle of making interim analysis criteria more stringent that final is ensured for this alternate scenario.
@@ -622,25 +543,28 @@ yz <- gs_power_ahr(
   lpar = lpar) 
 
 yz %>% 
-  filter(Bound == "Upper", hypothesis == "H1") %>% 
-  mutate(
-    # calculate the sample size
-    N = sum(xx$enrollRates$rate * xx$enrollRates$duration),
-    # the spending time is actual IF: info0 from yy / info0 from xx
-    # spending time is less since we use planned IF to compute spending
-    spending_time = planned_IF,
-    # calculate the information fraction
-    # Note that max_info0 = max((xx$analysis %>% subset(hypothesis == "H0"))$info 
-    # is denominator to compute "Information fraction" in table
-    IF = info0 / max((xx$analysis %>% subset(hypothesis == "H0"))$info),
-    `Nominal p` = pnorm(-Z),
-    `~HR at bound` = exp(-Z / sqrt(info))) %>% 
-  select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
-  gt() %>% 
-  fmt_number(columns = c("Events", "N"), decimals = 0) %>%
-  fmt_number(columns = "Time", decimals = 1) %>%
-  fmt_number(columns = c("~HR at bound", "Probability", "IF"), decimals = 3) %>%
-  fmt_number(columns = c("Nominal p", "AHR"), decimals = 4)
+  summary_bound() %>% 
+  as_gt()
+# yz %>% 
+#   filter(Bound == "Upper", hypothesis == "H1") %>% 
+#   mutate(
+#     # calculate the sample size
+#     N = sum(xx$enrollRates$rate * xx$enrollRates$duration),
+#     # the spending time is actual IF: info0 from yy / info0 from xx
+#     # spending time is less since we use planned IF to compute spending
+#     spending_time = planned_IF,
+#     # calculate the information fraction
+#     # Note that max_info0 = max((xx$analysis %>% subset(hypothesis == "H0"))$info 
+#     # is denominator to compute "Information fraction" in table
+#     IF = info0 / max((xx$analysis %>% subset(hypothesis == "H0"))$info),
+#     `Nominal p` = pnorm(-Z),
+#     `~HR at bound` = exp(-Z / sqrt(info))) %>% 
+#   select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
+#   gt() %>% 
+#   fmt_number(columns = c("Events", "N"), decimals = 0) %>%
+#   fmt_number(columns = "Time", decimals = 1) %>%
+#   fmt_number(columns = c("~HR at bound", "Probability", "IF"), decimals = 3) %>%
+#   fmt_number(columns = c("Nominal p", "AHR"), decimals = 4)
 ```
 
 ## Scenario with Longer Control Median
@@ -671,19 +595,8 @@ yy <- gs_power_ahr(
   lpar = lpar) 
 
 yy %>% 
-  filter(Bound == "Upper", hypothesis == "H1") %>% 
-  mutate(
-    N = sum(xx$enrollRates$rate * xx$enrollRates$duration),
-    IF = info0 / max((xx$analysis %>% subset(hypothesis == "H0"))$info),
-    spending_time = (xx$analysis %>% subset(hypothesis == "H0"))$info / max((xx$analysis %>% subset(hypothesis == "H0"))$info),
-    `Nominal p` = pnorm(-Z),
-    `~HR at bound` = exp(-Z / sqrt(info))) %>% 
-  select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
-  gt() %>% 
-  fmt_number(columns = c("Events", "N"), decimals = 0) %>%
-  fmt_number(columns = "Time", decimals = 1) %>%
-  fmt_number(columns = c("~HR at bound", "Probability", "IF"), decimals = 3) %>%
-  fmt_number(columns = c("Nominal p", "AHR"), decimals = 4)
+  summary_bound() %>% 
+  as_gt()
 ```
 
 Since the number of events was less than expected, if we had used the actual number of events the interim bound would be more stringent than above and we obtain slightly greater power.
@@ -700,19 +613,22 @@ yz <- gs_power_ahr(
   lpar = lpar) 
 
 yz %>% 
-  filter(Bound == "Upper", hypothesis == "H1") %>% 
-  mutate(
-    N = sum(xx$enrollRates$rate * xx$enrollRates$duration),
-    IF = info0 / max((xx$analysis %>% subset(hypothesis == "H0"))$info),
-    spending_time = IF,
-    `Nominal p` = pnorm(-Z),
-    `~HR at bound` = exp(-Z / sqrt(info))) %>% 
-  select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
-  gt() %>% 
-  fmt_number(columns = c("Events", "N"), decimals = 0) %>%
-  fmt_number(columns = "Time", decimals = 1) %>%
-  fmt_number(columns = c("~HR at bound", "Probability", "IF"), decimals = 3) %>%
-  fmt_number(columns = c("Nominal p", "AHR"), decimals = 4)
+  summary_bound() %>% 
+  as_gt()
+# yz %>% 
+#   filter(Bound == "Upper", hypothesis == "H1") %>% 
+#   mutate(
+#     N = sum(xx$enrollRates$rate * xx$enrollRates$duration),
+#     IF = info0 / max((xx$analysis %>% subset(hypothesis == "H0"))$info),
+#     spending_time = IF,
+#     `Nominal p` = pnorm(-Z),
+#     `~HR at bound` = exp(-Z / sqrt(info))) %>% 
+#   select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
+#   gt() %>% 
+#   fmt_number(columns = c("Events", "N"), decimals = 0) %>%
+#   fmt_number(columns = "Time", decimals = 1) %>%
+#   fmt_number(columns = c("~HR at bound", "Probability", "IF"), decimals = 3) %>%
+#   fmt_number(columns = c("Nominal p", "AHR"), decimals = 4)
 ```
 
 ## Summary for Spending Time Motivation Assuming Delayed Benefit
@@ -794,10 +710,10 @@ positive <- gs_design_ahr(
 
 summary_bound(positive) %>% 
   filter(Bound == "Efficacy") %>% 
-  # calculate the spending time, which is info0 / max(info0)
-  mutate(
+  mutate(# calculate the spending time, which is info0 / max(info0)
     `Spending Time` = (positive$analysis %>% filter(hypothesis == "H0"))$info /
-                      max((positive$analysis %>% filter(hypothesis == "H0"))$info)) %>% 
+                      max((positive$analysis %>% filter(hypothesis == "H0"))$info)
+  ) %>% 
   gt() %>% 
   fmt_number(columns = 3:7, decimals = 4)
 ```
@@ -860,24 +776,27 @@ overall_planned_bounds <- gs_power_ahr(
   lpar = lpar) 
 
 overall_planned_bounds %>% 
-  filter(Bound == "Upper", hypothesis == "H1") %>% 
-  mutate(
-    # calculate the sample size
-    # the enrollment rate is an update of the positive design with an inflation factor
-    N = ceiling(sum(planned_enrollRates$rate * planned_enrollRates$duration)),
-    # calculate the information fraction
-    IF = (overall_planned_bounds %>% filter(hypothesis == "H0", Bound == "Upper"))$info0 /
-         max((overall_planned_bounds %>% filter(hypothesis == "H0", Bound == "Upper"))$info0),
-    # calculate the spending time
-    spending_time = planned_IF,
-    # calculate the nominal p and approximated hazard ratio
-    `Nominal p` = pnorm(-Z),
-    `~HR at bound` = exp(-Z / sqrt(info))) %>% 
-  select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
-  gt() %>% 
-  fmt_number(columns = c("Events"), decimals = 0) %>%
-  fmt_number(columns = "Time", decimals = 1) %>%
-  fmt_number(columns = c("~HR at bound", "Probability", "IF", "Nominal p", "AHR", "spending_time"), decimals = 3) 
+  summary_bound() %>% 
+  as_gt()
+# overall_planned_bounds %>% 
+#   filter(Bound == "Upper", hypothesis == "H1") %>% 
+#   mutate(
+#     # calculate the sample size
+#     # the enrollment rate is an update of the positive design with an inflation factor
+#     N = ceiling(sum(planned_enrollRates$rate * planned_enrollRates$duration)),
+#     # calculate the information fraction
+#     IF = (overall_planned_bounds %>% filter(hypothesis == "H0", Bound == "Upper"))$info0 /
+#          max((overall_planned_bounds %>% filter(hypothesis == "H0", Bound == "Upper"))$info0),
+#     # calculate the spending time
+#     spending_time = planned_IF,
+#     # calculate the nominal p and approximated hazard ratio
+#     `Nominal p` = pnorm(-Z),
+#     `~HR at bound` = exp(-Z / sqrt(info))) %>% 
+#   select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
+#   gt() %>% 
+#   fmt_number(columns = c("Events"), decimals = 0) %>%
+#   fmt_number(columns = "Time", decimals = 1) %>%
+#   fmt_number(columns = c("~HR at bound", "Probability", "IF", "Nominal p", "AHR", "spending_time"), decimals = 3) 
 ```
 
 
@@ -970,26 +889,30 @@ positive_60_power <- gs_power_ahr(
   lpar = lpar) 
 
 positive_60_power %>% 
-  filter(Bound == "Upper", hypothesis == "H1") %>% 
-  mutate(
-    # calculate the sample size
-    # the enrollment rate is an update of the positive design with an inflation factor
-    N = ceiling((positive_60_enrollRates %>% filter(Stratum == "Positive"))$duration *
-                (positive_60_enrollRates %>% filter(Stratum == "Positive"))$rate),
-    # calculate the information fraction
-    IF = info0 /
-         max((positive$analysis %>% filter(hypothesis == "H0"))$info),
-    # calculate the spending time
-    spending_time = IF,
-    # calculate the nominal p and approximated hazard ratio
-    `Nominal p` = pnorm(-Z),
-    `~HR at bound` = exp(-Z / sqrt(info))) %>% 
-  select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
-  gt() %>% 
-  fmt_number(columns = c("Events"), decimals = 0) %>%
-  fmt_number(columns = "Time", decimals = 1) %>%
-  fmt_number(columns = c("~HR at bound", "Probability", "IF", "AHR", "spending_time"), decimals = 3) %>% 
-  fmt_number(columns = "Nominal p", decimals = 4) 
+  summary_bound() %>% 
+  as_gt()
+
+# positive_60_power %>% 
+#   filter(Bound == "Upper", hypothesis == "H1") %>% 
+#   mutate(
+#     # calculate the sample size
+#     # the enrollment rate is an update of the positive design with an inflation factor
+#     N = ceiling((positive_60_enrollRates %>% filter(Stratum == "Positive"))$duration *
+#                 (positive_60_enrollRates %>% filter(Stratum == "Positive"))$rate),
+#     # calculate the information fraction
+#     IF = info0 /
+#          max((positive$analysis %>% filter(hypothesis == "H0"))$info),
+#     # calculate the spending time
+#     spending_time = IF,
+#     # calculate the nominal p and approximated hazard ratio
+#     `Nominal p` = pnorm(-Z),
+#     `~HR at bound` = exp(-Z / sqrt(info))) %>% 
+#   select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
+#   gt() %>% 
+#   fmt_number(columns = c("Events"), decimals = 0) %>%
+#   fmt_number(columns = "Time", decimals = 1) %>%
+#   fmt_number(columns = c("~HR at bound", "Probability", "IF", "AHR", "spending_time"), decimals = 3) %>% 
+#   fmt_number(columns = "Nominal p", decimals = 4) 
 ```
 
 #### Overall Population Power
@@ -1004,8 +927,8 @@ gs_power_ahr(
   enrollRates = positive_60_enrollRates,
   failRates = failRates,
   # set evnets and analysis time
-  events = 1:2,
-  analysisTimes = (positive_60_power %>% filter(Bound == "Upper", hypothesis == "H1"))$Time,
+  events = NULL,
+  analysisTimes = (positive_60_power$analysis %>% filter(hypothesis == "H1"))$Time %>% unique(),
   # set upper bound: use planned spending in spite of lower overall information
   upper = gs_spending_bound,
   upar = upar_overall_planned_IF,
@@ -1013,26 +936,29 @@ gs_power_ahr(
   lower = gs_b, 
   lpar = rep(-Inf, 2)
   ) %>% 
-  filter(Bound == "Upper", hypothesis == "H1") %>% 
-  mutate(
-    # calculate the sample size
-    # the enrollment rate is an update of the positive design with an inflation factor
-    N = ceiling((positive_60_enrollRates %>% filter(Stratum == "Positive"))$duration *
-                (positive_60_enrollRates %>% filter(Stratum == "Positive"))$rate),
-    # calculate the information fraction
-    IF = info0 /
-         max((overall_planned_bounds %>% filter(hypothesis == "H0"))$info0),
-    # calculate the spending time
-    spending_time = c(0.8, 1),
-    # calculate the nominal p and approximated hazard ratio
-    `Nominal p` = pnorm(-Z),
-    `~HR at bound` = exp(-Z / sqrt(info))) %>% 
-  select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
-  gt() %>% 
-  fmt_number(columns = c("Events"), decimals = 1) %>%
-  fmt_number(columns = "Time", decimals = 1) %>%
-  fmt_number(columns = c("~HR at bound", "Probability", "IF", "AHR", "spending_time"), decimals = 3) %>% 
-  fmt_number(columns = "Nominal p", decimals = 4) 
+  summary_bound() %>% 
+  as_gt()
+  
+  # filter(Bound == "Upper", hypothesis == "H1") %>% 
+  # mutate(
+  #   # calculate the sample size
+  #   # the enrollment rate is an update of the positive design with an inflation factor
+  #   N = ceiling((positive_60_enrollRates %>% filter(Stratum == "Positive"))$duration *
+  #               (positive_60_enrollRates %>% filter(Stratum == "Positive"))$rate),
+  #   # calculate the information fraction
+  #   IF = info0 /
+  #        max((overall_planned_bounds %>% filter(hypothesis == "H0"))$info0),
+  #   # calculate the spending time
+  #   spending_time = c(0.8, 1),
+  #   # calculate the nominal p and approximated hazard ratio
+  #   `Nominal p` = pnorm(-Z),
+  #   `~HR at bound` = exp(-Z / sqrt(info))) %>% 
+  # select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
+  # gt() %>% 
+  # fmt_number(columns = c("Events"), decimals = 1) %>%
+  # fmt_number(columns = "Time", decimals = 1) %>%
+  # fmt_number(columns = c("~HR at bound", "Probability", "IF", "AHR", "spending_time"), decimals = 3) %>% 
+  # fmt_number(columns = "Nominal p", decimals = 4) 
 ```
 
 If we had used information-based (i.e., event-based) spending, we would not have reached full spending at final analysis and thus would have lower power.
@@ -1043,35 +969,37 @@ gs_power_ahr(
   enrollRates = positive_60_enrollRates,
   failRates = failRates,
   # set evnets and analysis time
-  events = 1:2,
-  analysisTimes = (positive_60_power %>% filter(Bound == "Upper", hypothesis == "H1"))$Time,
+  events = NULL,
+  analysisTimes = (positive_60_power$analysis %>% filter(hypothesis == "H1"))$Time %>% unique(),
   # upper bound: use actual spending which uses less than complete alpha
   upper = gs_spending_bound,
   upar = upar_overall_actual_IF,
   # lower bound: no futility 
   lower = gs_b, 
   lpar = lpar
-  ) %>% 
-  filter(Bound == "Upper", hypothesis == "H1") %>% 
-  mutate(
-    # calculate the sample size
-    # the enrollment rate is an update of the positive design with an inflation factor
-    N = ceiling((positive_60_enrollRates %>% filter(Stratum == "Positive"))$duration *
-                (positive_60_enrollRates %>% filter(Stratum == "Positive"))$rate),
-    # calculate the information fraction
-    IF = info0 /
-         max((overall_planned_bounds %>% filter(hypothesis == "H0"))$info0),
-    # calculate the spending time
-    spending_time = IF,
-    # calculate the nominal p and approximated hazard ratio
-    `Nominal p` = pnorm(-Z),
-    `~HR at bound` = exp(-Z / sqrt(info))) %>% 
-  select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
-  gt() %>% 
-  fmt_number(columns = c("Events"), decimals = 1) %>%
-  fmt_number(columns = "Time", decimals = 1) %>%
-  fmt_number(columns = c("~HR at bound", "Probability", "IF", "AHR", "spending_time"), decimals = 3) %>% 
-  fmt_number(columns = "Nominal p", decimals = 4) 
+  ) %>%
+  summary_bound() %>% 
+  as_gt()
+  # filter(Bound == "Upper", hypothesis == "H1") %>% 
+  # mutate(
+  #   # calculate the sample size
+  #   # the enrollment rate is an update of the positive design with an inflation factor
+  #   N = ceiling((positive_60_enrollRates %>% filter(Stratum == "Positive"))$duration *
+  #               (positive_60_enrollRates %>% filter(Stratum == "Positive"))$rate),
+  #   # calculate the information fraction
+  #   IF = info0 /
+  #        max((overall_planned_bounds %>% filter(hypothesis == "H0"))$info0),
+  #   # calculate the spending time
+  #   spending_time = IF,
+  #   # calculate the nominal p and approximated hazard ratio
+  #   `Nominal p` = pnorm(-Z),
+  #   `~HR at bound` = exp(-Z / sqrt(info))) %>% 
+  # select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
+  # gt() %>% 
+  # fmt_number(columns = c("Events"), decimals = 1) %>%
+  # fmt_number(columns = "Time", decimals = 1) %>%
+  # fmt_number(columns = c("~HR at bound", "Probability", "IF", "AHR", "spending_time"), decimals = 3) %>% 
+  # fmt_number(columns = "Nominal p", decimals = 4) 
 ```
 
 ### Biomarker Subgroup Prevalence Lower Than Planned
@@ -1119,26 +1047,29 @@ positive_40_power <- gs_power_ahr(
   lpar = rep(-Inf, 2))
 
 positive_40_power %>% 
-  filter(Bound == "Upper", hypothesis == "H1") %>% 
-  mutate(
-    # calculate the sample size
-    # the enrollment rate is an update of the positive design with an inflation factor
-    N = ceiling((positive_40_enrollRates %>% filter(Stratum == "Positive"))$duration *
-                (positive_40_enrollRates %>% filter(Stratum == "Positive"))$rate),
-    # calculate the information fraction
-    IF = info0 /
-          max((positive$analysis %>% filter(hypothesis == "H0"))$info),
-    # calculate the spending time
-    spending_time = IF,
-    # calculate the nominal p and approximated hazard ratio
-    `Nominal p` = pnorm(-Z),
-    `~HR at bound` = exp(-Z / sqrt(info))) %>% 
-  select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
-  gt() %>% 
-  fmt_number(columns = c("Events"), decimals = 1) %>%
-  fmt_number(columns = "Time", decimals = 1) %>%
-  fmt_number(columns = c("~HR at bound", "Probability", "IF", "AHR", "spending_time"), decimals = 3) %>% 
-  fmt_number(columns = "Nominal p", decimals = 4) 
+  summary_bound() %>% 
+  as_gt()
+
+  # filter(Bound == "Upper", hypothesis == "H1") %>% 
+  # mutate(
+  #   # calculate the sample size
+  #   # the enrollment rate is an update of the positive design with an inflation factor
+  #   N = ceiling((positive_40_enrollRates %>% filter(Stratum == "Positive"))$duration *
+  #               (positive_40_enrollRates %>% filter(Stratum == "Positive"))$rate),
+  #   # calculate the information fraction
+  #   IF = info0 /
+  #         max((positive$analysis %>% filter(hypothesis == "H0"))$info),
+  #   # calculate the spending time
+  #   spending_time = IF,
+  #   # calculate the nominal p and approximated hazard ratio
+  #   `Nominal p` = pnorm(-Z),
+  #   `~HR at bound` = exp(-Z / sqrt(info))) %>% 
+  # select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
+  # gt() %>% 
+  # fmt_number(columns = c("Events"), decimals = 1) %>%
+  # fmt_number(columns = "Time", decimals = 1) %>%
+  # fmt_number(columns = c("~HR at bound", "Probability", "IF", "AHR", "spending_time"), decimals = 3) %>% 
+  # fmt_number(columns = "Nominal p", decimals = 4) 
 ```
 
 #### Overall Population Power
@@ -1151,30 +1082,33 @@ gs_power_ahr(
   enrollRates = positive_40_enrollRates,
   failRates = failRates,
   events = 1:2,
-  analysisTimes = (positive_40_power %>% filter(hypothesis == "H1", Bound == "Upper"))$Time,
+  analysisTimes = (positive_40_power$analysis %>% filter(hypothesis == "H1"))$Time %>% unique(),
   upper = gs_spending_bound,
   upar = upar_overall_planned_IF,
   lower = gs_b,
   lpar = rep(-Inf,2)) %>% 
-  filter(Bound == "Upper", hypothesis == "H1") %>% 
-  mutate(
-    # calculate the sample size
-    # the enrollment rate is an update of the positive design with an inflation factor
-    N = ceiling(sum(positive_60_enrollRates$duration * positive_60_enrollRates$rate)),
-    # calculate the information fraction
-    IF = info0 /
-          max((overall_planned_bounds %>% filter(hypothesis == "H0"))$info0),
-    # calculate the spending time
-    spending_time = c(0.8, 1),
-    # calculate the nominal p and approximated hazard ratio
-    `Nominal p` = pnorm(-Z),
-    `~HR at bound` = exp(-Z / sqrt(info))) %>% 
-  select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
-  gt() %>% 
-  fmt_number(columns = c("Events"), decimals = 1) %>%
-  fmt_number(columns = "Time", decimals = 1) %>%
-  fmt_number(columns = c("~HR at bound", "Probability", "IF", "AHR", "spending_time"), decimals = 3) %>% 
-  fmt_number(columns = "Nominal p", decimals = 4) 
+  summary_bound() %>% 
+  as_gt()
+
+  # filter(Bound == "Upper", hypothesis == "H1") %>% 
+  # mutate(
+  #   # calculate the sample size
+  #   # the enrollment rate is an update of the positive design with an inflation factor
+  #   N = ceiling(sum(positive_60_enrollRates$duration * positive_60_enrollRates$rate)),
+  #   # calculate the information fraction
+  #   IF = info0 /
+  #         max((overall_planned_bounds %>% filter(hypothesis == "H0"))$info0),
+  #   # calculate the spending time
+  #   spending_time = c(0.8, 1),
+  #   # calculate the nominal p and approximated hazard ratio
+  #   `Nominal p` = pnorm(-Z),
+  #   `~HR at bound` = exp(-Z / sqrt(info))) %>% 
+  # select(Time, N, Events, IF, spending_time, `Nominal p`, AHR, `~HR at bound`, Probability) %>% 
+  # gt() %>% 
+  # fmt_number(columns = c("Events"), decimals = 1) %>%
+  # fmt_number(columns = "Time", decimals = 1) %>%
+  # fmt_number(columns = c("~HR at bound", "Probability", "IF", "AHR", "spending_time"), decimals = 3) %>% 
+  # fmt_number(columns = "Nominal p", decimals = 4) 
 ```
 
 ## Summary of findings
