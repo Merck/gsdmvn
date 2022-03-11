@@ -32,6 +32,40 @@
 #' \if{html}{The contents of this section are shown in PDF user manual only.}
 #'
 #' @export
+#' @example 
+#' traget_events <- c(30, 40, 50)
+#' target_analysisTime <- c(10, 24, 30)
+#' 
+#' # calculate the power for targeted number of events
+#' gs_power_wlr(
+#'   events = traget_events, 
+#'   analysisTimes = NULL,
+#'   upper = gs_b,
+#'   upar = gsDesign::gsDesign(k = length(traget_events), test.type = 1, n.I = traget_events, maxn.IPlan = max(traget_events), sfu = sfLDOF, sfupar = NULL)$upper$bound,
+#'   lower = gs_b,           
+#'   lpar = c(qnorm(.1), rep(-Inf, length(events) - 1))) %>% 
+#'   summary_bound()
+#'   
+#' # calculate the power for targeted analysis time
+#' gs_power_wlr(
+#'   events = NULL, 
+#'   analysisTimes = target_analysisTime,
+#'   upper = gs_b,
+#'   upar = gsDesign::gsDesign(k = length(traget_events), test.type = 1, n.I = traget_events, maxn.IPlan = max(traget_events), sfu = sfLDOF, sfupar = NULL)$upper$bound,
+#'   lower = gs_b,           
+#'   lpar = c(qnorm(.1), rep(-Inf, length(events) - 1))) %>% 
+#'   summary_bound()
+#' 
+#' # calculate the power for targeted analysis time & number of events
+#' gs_power_wlr(
+#'   events = traget_events, 
+#'   analysisTimes = target_analysisTime,
+#'   upper = gs_b,
+#'   upar = gsDesign::gsDesign(k = length(traget_events), test.type = 1, n.I = traget_events, maxn.IPlan = max(traget_events), sfu = sfLDOF, sfupar = NULL)$upper$bound,
+#'   lower = gs_b,           
+#'   lpar = c(qnorm(.1), rep(-Inf, length(events) - 1))) %>% 
+#'   summary_bound()
+#'   
 gs_power_wlr <- function(
   enrollRates = tibble::tibble(
     Stratum = "All",
@@ -40,9 +74,9 @@ gs_power_wlr <- function(
   failRates = tibble::tibble(
     Stratum = "All",
     duration = c(3,100),
-    failRate = log(2)/c(9,18),
+    failRate = log(2)/c(9, 18),
     hr = c(.9,.6),
-    dropoutRate = rep(.001,2)),
+    dropoutRate = rep(.001, 2)),
   ratio = 1,               # Experimental:Control randomization ratio
   weight = wlr_weight_fh,
   approx = "asymptotic",
@@ -50,7 +84,7 @@ gs_power_wlr <- function(
   analysisTimes = NULL,   # Targeted times of analysis
   binding = FALSE,
   upper = gs_b,           # Default is Lan-DeMets approximation of
-  upar = gsDesign::gsDesign(k = length(events), test.type = 1, n.I = events, maxn.IPlan = max(events), sfu = sfLDOF, sfupar = NULL)$upper$bound,
+  upar = gsDesign::gsDesign(k = 3, test.type = 1, n.I = c(30, 40, 50), maxn.IPlan = 50, sfu = sfLDOF, sfupar = NULL)$upper$bound,
   test_upper = TRUE,
   lower = gs_b,           # Futility only at IA1
   lpar = c(qnorm(.1), rep(-Inf, length(events) - 1)), 
@@ -62,7 +96,10 @@ gs_power_wlr <- function(
   # get the number of analysis
   K <- max(length(events), length(analysisTimes), na.rm = TRUE)
   
-  # calculate the asymptotic variance and statistical information
+  # ---------------------------------------- #
+  #    calculate the asymptotic variance     #
+  #       and statistical information        #
+  # ---------------------------------------- #
   x <- gs_info_wlr(
     enrollRates = enrollRates,
     failRates = failRates,
@@ -72,7 +109,10 @@ gs_power_wlr <- function(
     analysisTimes = analysisTimes
   )
   
-  # given the above statistical information, calculate the power
+  # ---------------------------------------- #
+  #  given the above statistical information #
+  #         calculate the power              #
+  # ---------------------------------------- #
   y <- gs_power_npe(
     theta = x$theta, 
     info = x$info, 
@@ -87,11 +127,12 @@ gs_power_wlr <- function(
     r = r, 
     tol = tol)
   
+  # ---------------------------------------- #
+  #         organize the outputs             #
+  # ---------------------------------------- #
   # summarize the bounds
   bounds <- y %>%
-    left_join(
-      rbind(x %>% select(Analysis, Events) %>% mutate(hypothesis = "H1"),
-            x %>% select(Analysis, Events) %>% mutate(hypothesis = "H0"))) %>% 
+    left_join(x %>% select(Analysis, Events)) %>% 
     mutate(
       `~HR at bound` = gsDesign::zn2hr(z = Z, n = Events, ratio = ratio),
       `Nominal p` = pnorm(-Z)
@@ -99,20 +140,12 @@ gs_power_wlr <- function(
     select(Analysis, Bound, Probability, hypothesis, Z, `~HR at bound`, `Nominal p`)
   
   # summarize the analysis
-  analysis <- y %>% 
-    # add AHR into the `gs_power_ahr` output
-    mutate(AHR = exp(-theta)) %>% 
-    # add time/number of events/sample size into the `gs_power_ahr` output
-    left_join(
-      tibble::tibble(
-        Analysis = 1:K, 
-        Time = x$Time,
-        Events = events,
-        N = gsDesign2::eAccrual(x = x$Time, enrollRates = enrollRates)
-      )
-    ) %>% 
+  analysis <- x %>% 
+    select(Analysis, Time, Events, AHR) %>% 
+    mutate(N = gsDesign2::eAccrual(x = x$Time, enrollRates = enrollRates)) %>% 
+    left_join(y) %>% 
     select(Analysis, Time, N, Events, AHR, theta, info, IF, hypothesis)
-  
+    
   output <- list(
     enrollRates = enrollRates, 
     failRates = failRates,
@@ -122,12 +155,4 @@ gs_power_wlr <- function(
   class(output) <- c("wlr", class(output))
   
   return(output)
-  # return(gs_power_npe(theta = x$theta, info = x$info, info0 = x$info0, binding = binding,
-  #                     upper=upper, lower=lower, upar = upar, lpar= lpar,
-  #                     test_upper = test_upper, test_lower = test_lower,
-  #                     r = r, tol = tol) %>%
-  #          right_join(x %>% select(-c(info, info0, theta)), by = "Analysis") %>%
-  #          select(c(Analysis, Bound, Time, Events, Z, Probability, AHR, theta, info, info0)) %>%
-  #          arrange(desc(Bound), Analysis)
-  # )
 }

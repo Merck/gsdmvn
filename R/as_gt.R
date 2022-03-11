@@ -91,9 +91,10 @@ as_gt <- function(
   
   # set different default footnotes to different methods
   if(method == "ahr" && is.null(footnote)){
-    footnote <- list(content = "approximate hazard ratio to cross bound.",
-                     location = "~HR at bound",
-                     attr = "colname")
+    footnote <- list(content = c("Approximate hazard ratio to cross bound.",
+                                 "One-sided p-value for experimental vs control treatment. Values < 0.5 favor experimental, > 0.5 favor control."),
+                     location = c("~HR at bound", "Nominal p"),
+                     attr = c("colname", "colname"))
   }
   if(method == "wlr" && is.null(footnote)){
     footnote <- list(content = c("approximate weighted hazard ratio to cross bound.", "wAHR is the weighted AHR."),
