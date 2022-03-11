@@ -62,17 +62,35 @@ NULL
 #' library(gsDesign2)
 #' library(dplyr)
 #' 
-#' gs_power_ahr() %>% filter(abs(Z) < Inf)
+#' # The default output of \code{gs_power_ahr} is driven by events, i.e.,
+#' # \code{events = c(30, 40, 50), analysisTimes = NULL}
+#' gs_power_ahr() %>% summary_bound()
 #'
-#' # 2-sided symmetric O'Brien-Fleming spending bound
-#' # NOT CURRENTLY WORKING
-#' gs_power_ahr(analysisTimes = c(12, 24, 36),
-#'               binding = TRUE,
-#'               upper = gs_spending_bound,
-#'               upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
-#'               lower = gs_spending_bound,
-#'               lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL))
-#'
+#' # 2-sided symmetric O'Brien-Fleming spending bound, driven by analysis time, i.e.,
+#' # \code{events = NULL, analysisTimes = c(12, 24, 36)}
+#' gs_power_ahr(
+#'   analysisTimes = c(12, 24, 36),
+#'   events = NULL,
+#'   binding = TRUE,
+#'   upper = gs_spending_bound,
+#'   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+#'   lower = gs_spending_bound,
+#'   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)) %>% 
+#'   summary_bound()
+#' 
+#' # If \code{events} is not \code{NULL} and \code{analysisTimes} is also not \code{NULL},
+#' # then the analysis will driven by the maximal one, i.e.,
+#' # Time = max(analysisTime, calculated Time for targeted events)
+#' # Events = max(events, calcuated events for targeted analysisTime)
+#' gs_power_ahr(
+#'   analysisTimes = c(12, 24, 36),
+#'   events = c(30, 40, 50),
+#'   binding = TRUE,
+#'   upper = gs_spending_bound,
+#'   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+#'   lower = gs_spending_bound,
+#'   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL))
+
 gs_power_ahr <- function(
   # enrollment rate
   enrollRates = tibble::tibble(
@@ -116,7 +134,10 @@ gs_power_ahr <- function(
   # get the number of analysis
   K <- max(length(events), length(analysisTimes), na.rm = TRUE)
   
-  # calculate the asymptotic variance and statistical information
+  # ---------------------------------------- #
+  #    calculate the asymptotic variance     #
+  #       and statistical information        #
+  # ---------------------------------------- #
   x <- gs_info_ahr(
     enrollRates = enrollRates,
     failRates = failRates,
@@ -124,7 +145,10 @@ gs_power_ahr <- function(
     events = events,
     analysisTimes = analysisTimes)
   
-  # given the above statistical information, calculate the power
+  # ---------------------------------------- #
+  #  given the above statistical information #
+  #         calculate the power              #
+  # ---------------------------------------- #
   y <- gs_power_npe(
     theta = x$theta, 
     info = x$info, 
@@ -137,34 +161,26 @@ gs_power_ahr <- function(
     lpar = lpar,
     test_lower = test_lower,
     r = r, 
-    tol = tol) # %>%
-    # right_join(x %>% select(-c(info, info0, theta)), by = "Analysis") %>%
-    # select(c(Analysis, Bound, Time, Events, Z, Probability, AHR, theta, info, info0, hypothesis)) %>%
-    # arrange(desc(Bound), Analysis)
+    tol = tol) 
   
+  # ---------------------------------------- #
+  #         organize the outputs             #
+  # ---------------------------------------- #
   # summarize the bounds
   bounds <- y %>% 
     mutate(
       `~HR at bound` = exp(-Z / sqrt(info0)),
-      `Nominal p` = pnorm(Z)
+      `Nominal p` = pnorm(-Z)
     ) %>% 
     select(Analysis, Bound, Probability, hypothesis, Z, `~HR at bound`, `Nominal p`)
   
   # summarize the analysis
-  analysis <- y %>% 
-    # add AHR into the `gs_power_ahr` output
-    mutate(AHR = exp(-theta)) %>% 
-    # add time/number of events/sample size into the `gs_power_ahr` output
-    left_join(
-      tibble::tibble(
-        Analysis = 1:K, 
-        Time = x$Time,
-        Events = if(!is.null(events)){events}else{x$Events},
-        N = gsDesign2::eAccrual(x = x$Time, enrollRates = enrollRates)
-        )
-      ) %>% 
+  analysis <- x %>% 
+    select(Analysis, Time, Events, AHR) %>% 
+    mutate(N = gsDesign2::eAccrual(x = x$Time, enrollRates = enrollRates)) %>% 
+    left_join(y) %>% 
     select(Analysis, Time, N, Events, AHR, theta, info, IF, hypothesis)
-  
+    
   output <- list(
     enrollRates = enrollRates, 
     failRates = failRates,

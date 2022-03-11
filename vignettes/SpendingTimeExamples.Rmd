@@ -507,7 +507,9 @@ yy <- gs_power_ahr(
 
 yy %>% 
   summary_bound() %>% 
-  as_gt()
+  subset(Bound == "Efficacy") %>% 
+  gt() %>% 
+  fmt_number(columns = 3:6, decimals = 4)
 #actual_IF <- yy$info0 / max_info0
 
 # yy %>% 
@@ -544,7 +546,9 @@ yz <- gs_power_ahr(
 
 yz %>% 
   summary_bound() %>% 
-  as_gt()
+  subset(Bound == "Efficacy") %>% 
+  gt() %>% 
+  fmt_number(columns = 3:6, decimals = 4)
 # yz %>% 
 #   filter(Bound == "Upper", hypothesis == "H1") %>% 
 #   mutate(
@@ -596,7 +600,9 @@ yy <- gs_power_ahr(
 
 yy %>% 
   summary_bound() %>% 
-  as_gt()
+  subset(Bound == "Efficacy") %>% 
+  gt() %>% 
+  fmt_number(columns = 3:6, decimals = 4)
 ```
 
 Since the number of events was less than expected, if we had used the actual number of events the interim bound would be more stringent than above and we obtain slightly greater power.
@@ -614,7 +620,9 @@ yz <- gs_power_ahr(
 
 yz %>% 
   summary_bound() %>% 
-  as_gt()
+  subset(Bound == "Efficacy") %>% 
+  gt() %>% 
+  fmt_number(columns = 3:6, decimals = 4)
 # yz %>% 
 #   filter(Bound == "Upper", hypothesis == "H1") %>% 
 #   mutate(
@@ -654,7 +662,7 @@ m <- 12
 
 # the enrollment rate of both subgroup and population is the same
 enrollRates <- tibble(
-  Stratum = c("Positive","Negative"), 
+  Stratum = c("Positive", "Negative"), 
   duration = 12, 
   rate = 20)
 
@@ -708,14 +716,18 @@ positive <- gs_design_ahr(
   lower = gs_b, 
   lpar = lpar)
 
-summary_bound(positive) %>% 
-  filter(Bound == "Efficacy") %>% 
-  mutate(# calculate the spending time, which is info0 / max(info0)
-    `Spending Time` = (positive$analysis %>% filter(hypothesis == "H0"))$info /
-                      max((positive$analysis %>% filter(hypothesis == "H0"))$info)
-  ) %>% 
+positive %>% 
+  summary_bound() %>% 
+  subset(Bound == "Efficacy") %>% 
   gt() %>% 
-  fmt_number(columns = 3:7, decimals = 4)
+  fmt_number(columns = 3:6, decimals = 4)
+
+  # mutate(# calculate the spending time, which is info0 / max(info0)
+  #   `Spending Time` = (positive$analysis %>% filter(hypothesis == "H0"))$info /
+  #                      max((positive$analysis %>% filter(hypothesis == "H0"))$info)
+  # ) %>% 
+  # gt() %>% 
+  # fmt_number(columns = 3:7, decimals = 4)
 ```
 
 ## Planned Design for Overall Population
@@ -777,7 +789,9 @@ overall_planned_bounds <- gs_power_ahr(
 
 overall_planned_bounds %>% 
   summary_bound() %>% 
-  as_gt()
+  subset(Bound == "Efficacy") %>% 
+  gt() %>% 
+  fmt_number(columns = 3:6, decimals = 4)
 # overall_planned_bounds %>% 
 #   filter(Bound == "Upper", hypothesis == "H1") %>% 
 #   mutate(
@@ -890,7 +904,9 @@ positive_60_power <- gs_power_ahr(
 
 positive_60_power %>% 
   summary_bound() %>% 
-  as_gt()
+  subset(Bound == "Efficacy") %>% 
+  gt() %>% 
+  fmt_number(columns = 3:6, decimals = 4)
 
 # positive_60_power %>% 
 #   filter(Bound == "Upper", hypothesis == "H1") %>% 
@@ -937,7 +953,9 @@ gs_power_ahr(
   lpar = rep(-Inf, 2)
   ) %>% 
   summary_bound() %>% 
-  as_gt()
+  subset(Bound == "Efficacy") %>% 
+  gt() %>% 
+  fmt_number(columns = 3:6, decimals = 4)
   
   # filter(Bound == "Upper", hypothesis == "H1") %>% 
   # mutate(
@@ -977,9 +995,11 @@ gs_power_ahr(
   # lower bound: no futility 
   lower = gs_b, 
   lpar = lpar
-  ) %>%
+  ) %>% 
   summary_bound() %>% 
-  as_gt()
+  subset(Bound == "Efficacy") %>% 
+  gt() %>% 
+  fmt_number(columns = 3:6, decimals = 4)
   # filter(Bound == "Upper", hypothesis == "H1") %>% 
   # mutate(
   #   # calculate the sample size
@@ -1048,7 +1068,9 @@ positive_40_power <- gs_power_ahr(
 
 positive_40_power %>% 
   summary_bound() %>% 
-  as_gt()
+  subset(Bound == "Efficacy") %>% 
+  gt() %>% 
+  fmt_number(columns = 3:6, decimals = 4)
 
   # filter(Bound == "Upper", hypothesis == "H1") %>% 
   # mutate(
@@ -1088,7 +1110,9 @@ gs_power_ahr(
   lower = gs_b,
   lpar = rep(-Inf,2)) %>% 
   summary_bound() %>% 
-  as_gt()
+  subset(Bound == "Efficacy") %>% 
+  gt() %>% 
+  fmt_number(columns = 3:6, decimals = 4)
 
   # filter(Bound == "Upper", hypothesis == "H1") %>% 
   # mutate(
@@ -1111,7 +1135,7 @@ gs_power_ahr(
   # fmt_number(columns = "Nominal p", decimals = 4) 
 ```
 
-## Summary of findings
+## Summary of Findings
 
 We suggested two overall findings when planning and executing a trial with a potentially delayed treatment effect:
 
