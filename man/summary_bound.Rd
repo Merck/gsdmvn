@@ -10,6 +10,7 @@ summary_bound(
   x,
   analysis_vars = NULL,
   analysis_decimals = NULL,
+  display_columns = NULL,
   bound_names = c("Efficacy", "Futility")
 )
 }
@@ -68,6 +69,7 @@ fh_test <- rbind(
   data.frame(rho = 0, gamma = 0, tau = -1, test = 1, Analysis = 1:3,analysisTimes = c(12, 24, 36)), 
   data.frame(rho = c(0, 0.5), gamma = 0.5, tau = -1, test = 2:3, Analysis = 3, analysisTimes = 36)
 )
+
 # ---------------------------- #
 #          ahr                 #
 # ---------------------------- #
@@ -84,11 +86,15 @@ x_ahr <- gs_design_ahr(
   lower = lower,
   lpar = lpar
   )
-summary_bound(x_ahr)
+x_ahr \%>\% summary_bound()
+x_ahr \%>\% summary_bound(analysis_vars = c("Time", "Events", "IF"), analysis_decimals = c(1, 0, 2))
+x_ahr \%>\% summary_bound(display_columns = c("Analysis", "Bound", "Z", "Probability"))
+x_ahr \%>\% summary_bound(bound_names = c("A is better", "B is better"))
+
 # ---------------------------- #
 #         wlr                  #
 # ---------------------------- #
-x_wlr2 <- gs_design_wlr(
+x_wlr <- gs_design_wlr(
   enrollRates = enrollRates,
   failRates = failRates,
   weight = wgt05, 
@@ -103,6 +109,7 @@ x_wlr2 <- gs_design_wlr(
   lpar = lpar
   )
 summary_bound(x_wlr)
+
 # ---------------------------- #
 #         max combo            #
 # ---------------------------- #

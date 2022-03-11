@@ -65,6 +65,7 @@
 #'   data.frame(rho = 0, gamma = 0, tau = -1, test = 1, Analysis = 1:3,analysisTimes = c(12, 24, 36)), 
 #'   data.frame(rho = c(0, 0.5), gamma = 0.5, tau = -1, test = 2:3, Analysis = 3, analysisTimes = 36)
 #' )
+#' 
 #' # ---------------------------- #
 #' #          ahr                 #
 #' # ---------------------------- #
@@ -81,11 +82,15 @@
 #'   lower = lower,
 #'   lpar = lpar
 #'   )
-#' summary_bound(x_ahr)
+#' x_ahr %>% summary_bound()
+#' x_ahr %>% summary_bound(analysis_vars = c("Time", "Events", "IF"), analysis_decimals = c(1, 0, 2))
+#' x_ahr %>% summary_bound(display_columns = c("Analysis", "Bound", "Z", "Probability"))
+#' x_ahr %>% summary_bound(bound_names = c("A is better", "B is better"))
+#' 
 #' # ---------------------------- #
 #' #         wlr                  #
 #' # ---------------------------- #
-#' x_wlr2 <- gs_design_wlr(
+#' x_wlr <- gs_design_wlr(
 #'   enrollRates = enrollRates,
 #'   failRates = failRates,
 #'   weight = wgt05, 
@@ -100,6 +105,7 @@
 #'   lpar = lpar
 #'   )
 #' summary_bound(x_wlr)
+#' 
 #' # ---------------------------- #
 #' #         max combo            #
 #' # ---------------------------- #
@@ -121,85 +127,117 @@ summary_bound <- function(
   x,
   analysis_vars = NULL,
   analysis_decimals = NULL,
+  display_columns = NULL,
   bound_names = c("Efficacy", "Futility")
 ){
-  # get the 
-  # (1) bounds table,
-  # (2) analysis summary table, 
-  # (3) analysis variables to be displayed on the header
-  # (4) decimals to be displayed for the analysis variables in (3)
+  
   method <- class(x)[class(x) %in% c("ahr", "wlr", "combo")]
   x_bounds <- x$bounds
   x_analysis <- x$analysis
   K <- max(x_analysis$Analysis)
+  
+  # --------------------------------------------- #
+  #     prepare the analysis summary row          #
+  # --------------------------------------------- #
+  # get the 
+  # (1) analysis variables to be displayed on the header
+  # (2) decimals to be displayed for the analysis variables in (3)
   if(is.null(analysis_vars) & is.null(analysis_decimals)){
     analysis_vars <- c("Time", "N", "Events", "AHR", ifelse(method == "ahr" || method == "wlr", "IF", "EF"))
     analysis_decimals <- c(1, 1, 1, 2, 2)  
+  }else if(is.null(analysis_vars) & !is.null(analysis_decimals)){
+    stop("summary_bound: please input analysis_vars and analysis_decimals in pairs!")
+  }else if(!is.null(analysis_vars) & is.null(analysis_decimals)){
+    stop("summary_bound: please input analysis_vars and analysis_decimals in pairs!")
   }
-  temp <- if(method == "ahr" || method == "wlr"){c("Analysis", "Bound", "Nominal p", "~HR at bound", "Alternate hypothesis")}else{c("Analysis", "Bound", "Nominal p", "Alternate hypothesis")}
-                
   # set the analysis summary header
   analyses <- x_analysis %>%
     dplyr::group_by(Analysis) %>%
     dplyr::filter(dplyr::row_number() == 1) %>%
     dplyr::select(all_of(c("Analysis", analysis_vars)))
   
-  # Merge 3 tables: analyses (one to many), alternate hypothesis table, null hypothesis table
-  xy <- full_join(
-    # a table under alternative hypothesis
-    x_bounds %>% 
-      dplyr::filter(hypothesis == "H1") %>% 
-      dplyr::rename("Alternate hypothesis" = Probability) %>%
-      # change Upper -> bound_names[1], e.g., Efficacy
-      # change Lower -> bound_names[2], e.g., Futility
-      dplyr::mutate(Bound = dplyr::recode(Bound, "Upper" = bound_names[1], "Lower" = bound_names[2])) %>%
-      dplyr::select(all_of(temp)), 
-      
-    # a table under null hypothesis
-    x_bounds %>% 
-      dplyr::filter(hypothesis == "H0") %>%
-      dplyr::mutate("Null hypothesis" = Probability,
-             Bound = dplyr::recode(Bound, "Upper" = bound_names[1], "Lower" = bound_names[2])) %>%
-      dplyr::select(all_of(c("Analysis", "Bound", "Null hypothesis"))),
-    
-    by = c("Analysis", "Bound"))
+  if(is.null(display_columns)){
+    if(method == "ahr" || method == "wlr"){
+      display_columns <- c("Analysis", "Bound", "Nominal p", "~HR at bound", "Alternate hypothesis", "Null hypothesis")
+    }else{
+      display_columns <- c("Analysis", "Bound", "Nominal p", "Alternate hypothesis", "Null hypothesis")
+    }
+  }
+                  
+  # --------------------------------------------- #
+  #             merge 2 tables:                   #
+  #         (1) alternate hypothesis table        #
+  #         (2) null hypothesis table             #
+  # --------------------------------------------- #
+  # table A: a table under alternative hypothesis
+  tbl_a <- x_bounds %>% 
+    dplyr::filter(hypothesis == "H1") %>% 
+    dplyr::rename("Alternate hypothesis" = Probability) %>%
+    # change Upper -> bound_names[1], e.g., Efficacy
+    # change Lower -> bound_names[2], e.g., Futility
+    dplyr::mutate(Bound = dplyr::recode(Bound, "Upper" = bound_names[1], "Lower" = bound_names[2])) 
   
+  # table B: a table under null hypothesis  
+  tbl_b <- x_bounds %>% 
+    dplyr::filter(hypothesis == "H0") %>%
+    dplyr::rename("Null hypothesis" = Probability) %>% 
+    dplyr::mutate(Bound = dplyr::recode(Bound, "Upper" = bound_names[1], "Lower" = bound_names[2])) %>%
+    dplyr::select(all_of(c("Analysis", "Bound", "Null hypothesis")))
+  
+  xy <- full_join(tbl_a, tbl_b, by = c("Analysis", "Bound"))
+  
+  # filter the columns to display as the output
+  ## if `Probability` is selected to output, then transform it to `c("Alternate hypothesis", "Null hypothesis")`
+  if("Probability" %in% display_columns){
+    display_columns <- display_columns[!display_columns == "Probability"]
+    display_columns <- c(display_columns, "Alternate hypothesis", "Null hypothesis")
+  }
+  ## check if the `display_columns` are included in `x` output
+  if(sum(!(display_columns %in% names(xy))) >= 1){
+    stop("summary_bound: the variable names in display_columns is not outputted in the gsDesign object!")
+  }else{
+    xy <- xy %>% dplyr::select(all_of(display_columns))
+  }
+  
+  # --------------------------------------------- #
+  #             merge 2 tables:                   #
+  #         (1) analysis summary table            #
+  #         (2) xy: bound_summary_detail table    #
+  # --------------------------------------------- #
   # Merge 3 tables: 1 line per analysis, alternate hypothesis table, null hypothesis table
   # if the method is AHR
   if(method == "ahr"){
     # header
-    analysis_summary_header <- analyses %>%
-      dplyr::select(all_of(c("Analysis", analysis_vars)))
+    analysis_summary_header <- analyses %>% dplyr::select(all_of(c("Analysis", analysis_vars)))
     # bound details
-    bound_summary_detail <- xy %>%
-      dplyr::select(all_of(c("Analysis", "Bound", "~HR at bound", 
-                      "Nominal p", "Alternate hypothesis", "Null hypothesis")))
+    bound_summary_detail <- xy # %>% dplyr::select(all_of(c("Analysis", "Bound", "~HR at bound",  "Nominal p", "Alternate hypothesis", "Null hypothesis")))
   }
   
   # if the method is WLR, change AHR to wAHR
   if(method == "wlr"){
     # header
-    analysis_summary_header <- analyses %>%
-      dplyr::select(all_of(c("Analysis", analysis_vars)))
+    analysis_summary_header <- analyses %>% dplyr::select(all_of(c("Analysis", analysis_vars)))
     if("AHR" %in% analysis_vars){
       analysis_summary_header <- analysis_summary_header %>% dplyr::rename(wAHR = AHR)
     }
     # bound details
-    bound_summary_detail <- xy %>%
-      dplyr::select(all_of(c("Analysis", "Bound", "~HR at bound", 
-                             "Nominal p", "Alternate hypothesis", "Null hypothesis"))) %>% 
-      dplyr::rename("~wHR at bound" = "~HR at bound")
+    if("~HR at bound" %in% display_columns){
+      bound_summary_detail <- xy %>% dplyr::rename("~wHR at bound" = "~HR at bound")
+    }else{
+      bound_summary_detail <- xy
+    }
   }
   
   # if the method is COMBO, remove the column of "~HR at bound", and remove AHR from header 
   if(method == "combo"){
     # header
-    analysis_summary_header <- analyses %>%
-      dplyr::select(all_of(c("Analysis", analysis_vars)))
+    analysis_summary_header <- analyses %>% dplyr::select(all_of(c("Analysis", analysis_vars)))
     # bound details
-    bound_summary_detail <- xy %>%
-      dplyr::select(all_of(c("Analysis", "Bound", #"~HR at bound",
-                             "Nominal p", "Alternate hypothesis", "Null hypothesis"))) 
+    if("~HR at bound" %in% display_columns){
+      stop("summary_bound: ~HR at bound can't be display!")
+    }else{
+      bound_summary_detail <- xy
+    }
   }
   
   output <- table_ab(
