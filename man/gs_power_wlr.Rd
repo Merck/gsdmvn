@@ -16,8 +16,8 @@ gs_power_wlr(
   analysisTimes = NULL,
   binding = FALSE,
   upper = gs_b,
-  upar = gsDesign::gsDesign(k = length(events), test.type = 1, n.I = events, maxn.IPlan
-    = max(events), sfu = sfLDOF, sfupar = NULL)$upper$bound,
+  upar = gsDesign::gsDesign(k = 3, test.type = 1, n.I = c(30, 40, 50), maxn.IPlan = 50,
+    sfu = sfLDOF, sfupar = NULL)$upper$bound,
   test_upper = TRUE,
   lower = gs_b,
   lpar = c(qnorm(0.1), rep(-Inf, length(events) - 1)),
@@ -89,3 +89,38 @@ Group sequential design power using weighted log rank test under non-proportiona
 \if{html}{The contents of this section are shown in PDF user manual only.}
 }
 
+\examples{
+traget_events <- c(30, 40, 50)
+target_analysisTime <- c(10, 24, 30)
+
+# calculate the power for targeted number of events
+gs_power_wlr(
+  events = traget_events, 
+  analysisTimes = NULL,
+  upper = gs_b,
+  upar = gsDesign::gsDesign(k = length(traget_events), test.type = 1, n.I = traget_events, maxn.IPlan = max(traget_events), sfu = sfLDOF, sfupar = NULL)$upper$bound,
+  lower = gs_b,           
+  lpar = c(qnorm(.1), rep(-Inf, length(events) - 1))) \%>\% 
+  summary_bound()
+  
+# calculate the power for targeted analysis time
+gs_power_wlr(
+  events = NULL, 
+  analysisTimes = target_analysisTime,
+  upper = gs_b,
+  upar = gsDesign::gsDesign(k = length(traget_events), test.type = 1, n.I = traget_events, maxn.IPlan = max(traget_events), sfu = sfLDOF, sfupar = NULL)$upper$bound,
+  lower = gs_b,           
+  lpar = c(qnorm(.1), rep(-Inf, length(events) - 1))) \%>\% 
+  summary_bound()
+
+# calculate the power for targeted analysis time & number of events
+gs_power_wlr(
+  events = traget_events, 
+  analysisTimes = target_analysisTime,
+  upper = gs_b,
+  upar = gsDesign::gsDesign(k = length(traget_events), test.type = 1, n.I = traget_events, maxn.IPlan = max(traget_events), sfu = sfLDOF, sfupar = NULL)$upper$bound,
+  lower = gs_b,           
+  lpar = c(qnorm(.1), rep(-Inf, length(events) - 1))) \%>\% 
+  summary_bound()
+  
+}

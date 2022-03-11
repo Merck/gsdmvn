@@ -84,15 +84,32 @@ The \code{tEvents()} function is used to get events and average HR at targeted \
 library(gsDesign2)
 library(dplyr)
 
-gs_power_ahr() \%>\% filter(abs(Z) < Inf)
+# The default output of \code{gs_power_ahr} is driven by events, i.e.,
+# \code{events = c(30, 40, 50), analysisTimes = NULL}
+gs_power_ahr() \%>\% summary_bound()
 
-# 2-sided symmetric O'Brien-Fleming spending bound
-# NOT CURRENTLY WORKING
-gs_power_ahr(analysisTimes = c(12, 24, 36),
-              binding = TRUE,
-              upper = gs_spending_bound,
-              upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
-              lower = gs_spending_bound,
-              lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL))
+# 2-sided symmetric O'Brien-Fleming spending bound, driven by analysis time, i.e.,
+# \code{events = NULL, analysisTimes = c(12, 24, 36)}
+gs_power_ahr(
+  analysisTimes = c(12, 24, 36),
+  events = NULL,
+  binding = TRUE,
+  upper = gs_spending_bound,
+  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+  lower = gs_spending_bound,
+  lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)) \%>\% 
+  summary_bound()
 
+# If \code{events} is not \code{NULL} and \code{analysisTimes} is also not \code{NULL},
+# then the analysis will driven by the maximal one, i.e.,
+# Time = max(analysisTime, calculated Time for targeted events)
+# Events = max(events, calcuated events for targeted analysisTime)
+gs_power_ahr(
+  analysisTimes = c(12, 24, 36),
+  events = c(30, 40, 50),
+  binding = TRUE,
+  upper = gs_spending_bound,
+  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+  lower = gs_spending_bound,
+  lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL))
 }

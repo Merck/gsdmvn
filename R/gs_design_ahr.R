@@ -124,7 +124,6 @@ NULL
 #'               param = NULL, timing = NULL),
 #'   h1_spending = TRUE)
 
-
 gs_design_ahr <- function(
   enrollRates = tibble::tibble(
     Stratum = "All",

@@ -32,7 +32,7 @@
 #' \if{html}{The contents of this section are shown in PDF user manual only.}
 #'
 #' @export
-#' @example 
+#' @examples 
 #' traget_events <- c(30, 40, 50)
 #' target_analysisTime <- c(10, 24, 30)
 #' 

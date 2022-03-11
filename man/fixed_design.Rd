@@ -7,14 +7,10 @@
 fixed_design(
   x = "AHR",
   alpha = 0.025,
-  Power = 0.9,
+  power = 0.9,
   ratio = 1,
-  enrollRates,
-  failRates,
-  studyDuration,
-  rho,
-  gamma,
-  tau
+  studyDuration = 36,
+  ...
 )
 }
 \arguments{
@@ -22,11 +18,11 @@ fixed_design(
 
 \item{alpha}{One-sided Type I error (strictly between 0 and 1)}
 
-\item{Power}{Power (\code{NULL} to compute power or strictly between 0 and \code{1 - alpha} otherwise)}
+\item{power}{Power (\code{NULL} to compute power or strictly between 0 and \code{1 - alpha} otherwise)}
 
 \item{ratio}{Experimental:Control randomization ratio}
 
-\item{tau}{}
+\item{studyDuration}{study duration}
 }
 \value{
 
@@ -42,7 +38,7 @@ y <- fixed_design("AHR",
                   enrollRates = tibble::tibble(Stratum = "All",  duration = 18, rate = 1),
                   failRates = tibble::tibble(Stratum = "All", duration = c(4, 100), failRate = log(2) / 12, hr = c(1, .6), dropoutRate = .001),
                   studyDuration = 36)
-y \%>\% summary() \%>\% gt::gt()            
+y \%>\% summary_fix()            
 
 # Lachin and Foulkes (uses gsDesign::nSurv())
 y <- fixed_design("LF", 
