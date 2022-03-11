@@ -210,7 +210,7 @@ summary_bound <- function(
     # header
     analysis_summary_header <- analyses %>% dplyr::select(all_of(c("Analysis", analysis_vars)))
     # bound details
-    bound_summary_detail <- xy # %>% dplyr::select(all_of(c("Analysis", "Bound", "~HR at bound",  "Nominal p", "Alternate hypothesis", "Null hypothesis")))
+    bound_summary_detail <- xy 
   }
   
   # if the method is WLR, change AHR to wAHR
