@@ -226,7 +226,9 @@ summary_bound <- function(
     table_b = bound_summary_detail,
     decimals = c(0, analysis_decimals),
     byvar = "Analysis") %>% 
-    group_by(Analysis)
+    group_by(Analysis) %>% 
+    select("Bound", "Z", ifelse(method == "ahr", "~HR at bound", ifelse(method == "wlr", "~wHR at bound", NA)), 
+           "Nominal p", "Alternate hypothesis", "Null hypothesis")
   
   class(output) <- c(method, class(output))
   return(output)

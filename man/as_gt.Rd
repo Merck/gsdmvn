@@ -12,7 +12,8 @@ as_gt(
   colname_spannersub = c("Alternate hypothesis", "Null hypothesis"),
   footnote = NULL,
   display_bound = c("Efficacy", "Futility"),
-  display_columns = NULL
+  display_columns = NULL,
+  display_inf_bound = TRUE
 )
 }
 \arguments{
@@ -33,6 +34,8 @@ the \code{attr} is a vector of string to specify the attributes of the footnotes
 users can use the functions in the \code{gt} package to custom themselves.}
 
 \item{display_columns}{a vector of strings specifying the variables to be displayed in the summary table}
+
+\item{display_inf_bound}{a logic value (TRUE or FALSE) whether to display the +-inf bound}
 }
 \value{
 a gt table summarizing the bounds table in group sequential designs
@@ -71,7 +74,7 @@ gs_power_wlr() \%>\%
 gs_power_wlr() \%>\% 
   summary_bound() \%>\%
   as_gt(
-    colname_spanner = "Cumulative probabilit to cross boundaries",
+    colname_spanner = "Cumulative probability to cross boundaries",
     colname_spannersub = c("under H1", "under H0"))
     
 # usage of \code{footnote = ...}

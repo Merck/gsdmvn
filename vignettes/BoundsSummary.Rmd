@@ -180,7 +180,7 @@ For example, the default output of `summary_bound()` for the AHR method is
 ```{r}
 summary_bound(x_design_ahr) %>% 
    gt::gt() %>% 
-   gt::fmt_number(columns = c(3:6), decimals = 4) 
+   gt::fmt_number(columns = c(3:6), decimals = 4)
 ```
 
 Please note the `summary_bound()` can also be applied to objected returned by `gs_power_ahr()`. 
@@ -269,10 +269,17 @@ In the future, we to support rich text format using a function `as_rtf()` in a f
 
 Users can select the variables to be displayed in the summary table by using the argument `display_colunm = ...`.
 ```{r}
-summary_bound(x_design_ahr, display_columns = c("Analysis", "Bound", "Z", "Probability")) %>% 
-   as_gt()
+summary_bound(x_design_ahr) %>% 
+   as_gt(display_columns = c("Analysis", "Bound", "Z", "Probability"))
 ```
 
+## Custom Whether to Show Infinity Bound or Not 
+
+Users have options to either show the infinity bounds or not by taking advantage of `display_inf_bound = ...`.
+```{r}
+summary_bound(x_design_ahr) %>% 
+   as_gt(display_inf_bound = FALSE)
+```
 
 
 

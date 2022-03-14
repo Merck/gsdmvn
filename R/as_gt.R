@@ -28,6 +28,7 @@
 #'                 the \code{attr} is a vector of string to specify the attributes of the footnotes, e.g., c("colname", "title", "subtitle", "analysis", "spanner");
 #'                 users can use the functions in the \code{gt} package to custom themselves.
 #' @param display_columns a vector of strings specifying the variables to be displayed in the summary table
+#' @param display_inf_bound a logic value (TRUE or FALSE) whether to display the +-inf bound
 #' 
 #' @return a gt table summarizing the bounds table in group sequential designs
 #' @export
@@ -63,7 +64,7 @@
 #' gs_power_wlr() %>% 
 #'   summary_bound() %>%
 #'   as_gt(
-#'     colname_spanner = "Cumulative probabilit to cross boundaries",
+#'     colname_spanner = "Cumulative probability to cross boundaries",
 #'     colname_spannersub = c("under H1", "under H0"))
 #'     
 #'# usage of \code{footnote = ...}
@@ -98,7 +99,8 @@ as_gt <- function(
   colname_spannersub = c("Alternate hypothesis", "Null hypothesis"),
   footnote = NULL,
   display_bound = c("Efficacy", "Futility"),
-  display_columns = NULL
+  display_columns = NULL,
+  display_inf_bound = TRUE
 ){
   method <- class(x)[class(x) %in% c("ahr", "wlr", "combo")]
   
@@ -183,6 +185,12 @@ as_gt <- function(
     footnote <- lapply(footnote, function(x) x[!is.na(x)])
   }
   
+  # --------------------------------------------- #
+  #     filter out inf bound                      #
+  # --------------------------------------------- # 
+  x <- x %>% 
+    subset(!is.na(`Alternate hypothesis`)) %>% 
+    subset(!is.na(`Null hypothesis`))
   
   # --------------------------------------------- #
   #     add spanner                               #
@@ -191,52 +199,65 @@ as_gt <- function(
   names(x)[names(x) == "Null hypothesis"] <- colname_spannersub[2]
   
   x <- x %>% 
-    subset(Bound %in% display_bound) %>% 
+    subset(Bound %in% display_bound) %>%
     dplyr::group_by(Analysis) %>%
     gt::gt() %>%
     gt::tab_spanner(
       columns = all_of(colname_spannersub),
-      label = colname_spanner) %>%
-    gt::fmt_number(
-      columns = all_of(seq(3, ifelse(method %in% c("ahr", "wlr"), 6, 5), by = 1)), #3:6
-      decimals = 4) %>%
-    gt::tab_header(
-      title = title,
-      subtitle = subtitle)
+      label = colname_spanner) %>% 
+    gt::fmt_number(columns = colname_spannersub[1], decimals = 4) %>% 
+    gt::fmt_number(columns = colname_spannersub[2], decimals = 4) %>% 
+    gt::tab_header(title = title, subtitle = subtitle)
+  
+  if("Z" %in% display_columns){
+    x <- x %>% gt::fmt_number(columns = "Z", decimals = 4)
+  }
+  if("Nominal p" %in% display_columns){
+    x <- x %>% gt::fmt_number(columns = "Nominal p", decimals = 4)
+  }
+  if("~HR at bound" %in% display_columns){
+    x <- x %>% gt::fmt_number(columns = "~HR at bound", decimals = 4)
+  }
+  if("~wHR at bound" %in% display_columns){
+    x <- x %>% gt::fmt_number(columns = "~wHR at bound", decimals = 4)
+  }
+     
   
   # --------------------------------------------- #
   #     add footnotes                             #
   # --------------------------------------------- # 
   if(!is.null(footnote$content)){
-    for (i in 1:length(footnote$content)) {
-      # if the footnotes is added on the colnames
-      if(footnote$attr[i] == "colname"){
-        x <- x %>% 
-          gt::tab_footnote(
-            footnote = footnote$content[i],
-            locations = gt::cells_column_labels(columns = footnote$location[i]))
-      }
-      # if the footnotes is added on the title/subtitle
-      if(footnote$attr[i] == "title" || footnote$attr[i] == "subtitle"){
-        x <- x %>% 
-          gt::tab_footnote(
-            footnote = footnote$content[i],
-            locations = gt::cells_title(group = footnote$attr[i]))
-      }
-      # if the footnotes is added on the analysis summary row, which is a grouping variable, i.e., Analysis
-      if(footnote$attr[i] == "analysis"){
-        x <- x %>% 
-          gt::tab_footnote(
-            footnote = footnote$content[i],
-            locations = gt::cells_row_groups(groups = dplyr::starts_with("Analysis")))
-      }
-      # if the footnotes is added on the column spanner
-      if(footnote$attr[i] == "spanner"){
-        x <- x %>% 
-          gt::tab_footnote(
-            footnote = footnote$content[i],
-            locations = gt::cells_column_spanners(spanners = colname_spanner)
-          )
+    if(length(footnote$content) != 0){
+      for (i in 1:length(footnote$content)) {
+        # if the footnotes is added on the colnames
+        if(footnote$attr[i] == "colname"){
+          x <- x %>% 
+            gt::tab_footnote(
+              footnote = footnote$content[i],
+              locations = gt::cells_column_labels(columns = footnote$location[i]))
+        }
+        # if the footnotes is added on the title/subtitle
+        if(footnote$attr[i] == "title" || footnote$attr[i] == "subtitle"){
+          x <- x %>% 
+            gt::tab_footnote(
+              footnote = footnote$content[i],
+              locations = gt::cells_title(group = footnote$attr[i]))
+        }
+        # if the footnotes is added on the analysis summary row, which is a grouping variable, i.e., Analysis
+        if(footnote$attr[i] == "analysis"){
+          x <- x %>% 
+            gt::tab_footnote(
+              footnote = footnote$content[i],
+              locations = gt::cells_row_groups(groups = dplyr::starts_with("Analysis")))
+        }
+        # if the footnotes is added on the column spanner
+        if(footnote$attr[i] == "spanner"){
+          x <- x %>% 
+            gt::tab_footnote(
+              footnote = footnote$content[i],
+              locations = gt::cells_column_spanners(spanners = colname_spanner)
+            )
+        }
       }
     }
   }
