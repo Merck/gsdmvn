@@ -265,6 +265,17 @@ The above objective can also be realized by using functions in the R package `gt
 We note that `as_gt()` always produces a `gt` object and, thus, can be further customized with **gt** package formatting functions.
 In the future, we to support rich text format using a function `as_rtf()` in a fashion similar to `as_gt()`.
 
+## Custom the Variables to Display 
+
+Users can select the variables to be displayed in the summary table by using the argument `display_colunm = ...`.
+```{r}
+summary_bound(x_design_ahr, display_columns = c("Analysis", "Bound", "Z", "Probability")) %>% 
+   as_gt()
+```
+
+
+
+
 # Details of Output from Design/Power Functions
 
 There are four components in the objects returned by either `gs_design_ahr()`/`gs_design_wlr()` or `gs_power_ahr()`/`gs_power_wlr()`: 

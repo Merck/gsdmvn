@@ -127,7 +127,6 @@ summary_bound <- function(
   x,
   analysis_vars = NULL,
   analysis_decimals = NULL,
-  display_columns = NULL,
   bound_names = c("Efficacy", "Futility")
 ){
   
@@ -155,14 +154,6 @@ summary_bound <- function(
     dplyr::group_by(Analysis) %>%
     dplyr::filter(dplyr::row_number() == 1) %>%
     dplyr::select(all_of(c("Analysis", analysis_vars)))
-  
-  if(is.null(display_columns)){
-    if(method == "ahr" || method == "wlr"){
-      display_columns <- c("Analysis", "Bound", "Nominal p", "~HR at bound", "Alternate hypothesis", "Null hypothesis")
-    }else{
-      display_columns <- c("Analysis", "Bound", "Nominal p", "Alternate hypothesis", "Null hypothesis")
-    }
-  }
                   
   # --------------------------------------------- #
   #             merge 2 tables:                   #
@@ -186,19 +177,6 @@ summary_bound <- function(
   
   xy <- full_join(tbl_a, tbl_b, by = c("Analysis", "Bound"))
   
-  # filter the columns to display as the output
-  ## if `Probability` is selected to output, then transform it to `c("Alternate hypothesis", "Null hypothesis")`
-  if("Probability" %in% display_columns){
-    display_columns <- display_columns[!display_columns == "Probability"]
-    display_columns <- c(display_columns, "Alternate hypothesis", "Null hypothesis")
-  }
-  ## check if the `display_columns` are included in `x` output
-  if(sum(!(display_columns %in% names(xy))) >= 1){
-    stop("summary_bound: the variable names in display_columns is not outputted in the gsDesign object!")
-  }else{
-    xy <- xy %>% dplyr::select(all_of(display_columns))
-  }
-  
   # --------------------------------------------- #
   #             merge 2 tables:                   #
   #         (1) analysis summary table            #
@@ -221,7 +199,7 @@ summary_bound <- function(
       analysis_summary_header <- analysis_summary_header %>% dplyr::rename(wAHR = AHR)
     }
     # bound details
-    if("~HR at bound" %in% display_columns){
+    if("~HR at bound" %in% names(xy)){
       bound_summary_detail <- xy %>% dplyr::rename("~wHR at bound" = "~HR at bound")
     }else{
       bound_summary_detail <- xy
@@ -233,7 +211,7 @@ summary_bound <- function(
     # header
     analysis_summary_header <- analyses %>% dplyr::select(all_of(c("Analysis", analysis_vars)))
     # bound details
-    if("~HR at bound" %in% display_columns){
+    if("~HR at bound" %in% names(xy)){
       stop("summary_bound: ~HR at bound can't be display!")
     }else{
       bound_summary_detail <- xy
