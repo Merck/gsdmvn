@@ -84,7 +84,6 @@
 #'   )
 #' x_ahr %>% summary_bound()
 #' x_ahr %>% summary_bound(analysis_vars = c("Time", "Events", "IF"), analysis_decimals = c(1, 0, 2))
-#' x_ahr %>% summary_bound(display_columns = c("Analysis", "Bound", "Z", "Probability"))
 #' x_ahr %>% summary_bound(bound_names = c("A is better", "B is better"))
 #' 
 #' # ---------------------------- #

@@ -27,7 +27,8 @@
 #'                 the \code{location} is a vector of string to specify the locations to put the superscript of the footnote index;
 #'                 the \code{attr} is a vector of string to specify the attributes of the footnotes, e.g., c("colname", "title", "subtitle", "analysis", "spanner");
 #'                 users can use the functions in the \code{gt} package to custom themselves.
-#'
+#' @param display_columns a vector of strings specifying the variables to be displayed in the summary table
+#' 
 #' @return a gt table summarizing the bounds table in group sequential designs
 #' @export
 #'
