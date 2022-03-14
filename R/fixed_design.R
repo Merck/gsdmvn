@@ -7,7 +7,8 @@
 #' @param power Power (`NULL` to compute power or strictly between 0 and `1 - alpha` otherwise)
 #' @param ratio Experimental:Control randomization ratio
 #' @param studyDuration study duration
-#'
+#' @param ...
+#' 
 #' @return
 #' @export
 #'
@@ -30,28 +31,51 @@
 fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = 1, studyDuration = 36, ...){
      y <- switch(x, 
                  "AHR" = {
-                      if (!is.null(power)){
-                         d <- gs_design_ahr(alpha = alpha, beta = 1 - power,
-                                            upar = qnorm(1 - alpha), lpar = -Inf,
-                                            enrollRates = enrollRates,
-                                            failRates = failRates,
-                                            ratio  = ratio, 
-                                            analysisTimes = studyDuration)
-                       }else{
-                          d <- gs_power_ahr(upar = qnorm(1 - alpha), lpar = -Inf,
-                                            enrollRates = enrollRates,
-                                            failRates = failRates,
-                                            ratio  = ratio, 
-                                            analysisTimes = studyDuration)
-                       }
+                    if (!is.null(power)){
+                       d <- gs_design_ahr(alpha = alpha, beta = 1 - power,
+                                          upar = qnorm(1 - alpha), lpar = -Inf,
+                                          enrollRates = enrollRates,
+                                          failRates = failRates,
+                                          ratio  = ratio, 
+                                          analysisTimes = studyDuration)
+                    }else{
+                       d <- gs_power_ahr(upar = qnorm(1 - alpha), lpar = -Inf,
+                                         enrollRates = enrollRates,
+                                         failRates = failRates,
+                                         ratio  = ratio, 
+                                         analysisTimes = studyDuration)
+                    }
                     
-                     list(sum_ = (d$analysis %>% filter(hypothesis == "H0"))$N,
-                          enrollRates = d$enrollRates)
-                     },
+                    list(sum_ = (d$analysis %>% filter(hypothesis == "H0"))$N,
+                         enrollRates = d$enrollRates,
+                         design = "AHR")
+                    },
                  
                  "FH" = { # This will call gs_design_wlr or gs_power_wlr
-                    list(sum_ = tibble::tibble(Option = 2, Design = "FH"),
-                         c = 2)
+                    # if the weight is not inputted, set it as the default
+                    if(!methods::hasArg(weight)){
+                       weight = function(x, arm0, arm1){gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5)}
+                    }
+                    if (!is.null(power)){
+                       d <- gs_design_wlr(alpha = alpha, beta = 1 - power,
+                                          upar = qnorm(1 - alpha), lpar = -Inf,
+                                          enrollRates = enrollRates, 
+                                          failRates = failRates,
+                                          ratio = ratio, 
+                                          weight = weight,
+                                          analysisTimes = studyDuration)
+                    }else{
+                       d <- gs_power_wlr(upar = qnorm(1 - alpha), lpar = -Inf,
+                                         enrollRates = enrollRates, 
+                                         failRates = failRates,
+                                         ratio = ratio, 
+                                         weight = weight,
+                                         analysisTimes = studyDuration)
+                    }
+                    
+                    list(sum_ = (d$analysis %>% filter(hypothesis == "H0"))$N,
+                         enrollRates = d$enrollRates,
+                         design = "FH")
                     },
                  
                  "MB" = {

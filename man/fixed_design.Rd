@@ -23,6 +23,8 @@ fixed_design(
 \item{ratio}{Experimental:Control randomization ratio}
 
 \item{studyDuration}{study duration}
+
+\item{...}{}
 }
 \value{
 
