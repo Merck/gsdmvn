@@ -33,6 +33,8 @@ the \code{location} is a vector of string to specify the locations to put the su
 the \code{attr} is a vector of string to specify the attributes of the footnotes, e.g., c("colname", "title", "subtitle", "analysis", "spanner");
 users can use the functions in the \code{gt} package to custom themselves.}
 
+\item{display_bound}{a vector of strings specifying the label of the bounds. The default is \code{c("Efficacy", "Futility")}}
+
 \item{display_columns}{a vector of strings specifying the variables to be displayed in the summary table}
 
 \item{display_inf_bound}{a logic value (TRUE or FALSE) whether to display the +-inf bound}

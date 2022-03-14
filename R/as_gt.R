@@ -27,6 +27,7 @@
 #'                 the \code{location} is a vector of string to specify the locations to put the superscript of the footnote index;
 #'                 the \code{attr} is a vector of string to specify the attributes of the footnotes, e.g., c("colname", "title", "subtitle", "analysis", "spanner");
 #'                 users can use the functions in the \code{gt} package to custom themselves.
+#' @param display_bound a vector of strings specifying the label of the bounds. The default is \code{c("Efficacy", "Futility")}
 #' @param display_columns a vector of strings specifying the variables to be displayed in the summary table
 #' @param display_inf_bound a logic value (TRUE or FALSE) whether to display the +-inf bound
 #' 
