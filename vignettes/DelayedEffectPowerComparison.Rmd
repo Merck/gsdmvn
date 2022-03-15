@@ -1,0 +1,89 @@
+---
+title: "Power for delayed effect scenarios"
+subtitle: "Impact of study duration on power"
+author: "Keaven M. Anderson and Yujie Zhao"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_depth: 2
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages, message=FALSE, warning=FALSE}
+library(gsDesign)
+library(gsDesign2)
+library(gsdmvn)
+library(ggplot2)
+library(dplyr)
+library(gt)
+library(tidyr)
+library(tibble)
+```
+
+```{r}
+enrollRates <- tibble(Stratum = "All", duration = 12, rate = 1)
+failRates <- tibble(Stratum = "All",
+                            duration = c(6, 100),
+                            failRate = log(2) / 15,
+                            hr = c(1, .6),
+                            dropoutRate = 0.001)
+tab <- NULL
+for(trial_duration in seq(20, 60, 4)){
+  FH05 <- 
+    gs_design_wlr(
+       enrollRates = enrollRates, 
+       failRates = failRates,
+       ratio = 1, 
+       alpha = 0.025, beta = 0.15,
+       weight = function(x, arm0, arm1){
+         gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5)},
+       upar = qnorm(.975),
+       lpar = -Inf,
+       analysisTimes = trial_duration)   
+  FH00 <- 
+    gs_power_wlr(
+       enrollRates = FH05$enrollRates, 
+       failRates = failRates,
+       ratio = 1, 
+       weight = function(x, arm0, arm1){
+         gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0)},
+       upar = qnorm(.975),
+       lpar = -Inf,
+       analysisTimes = trial_duration,
+       events = .1) %>%
+    summary_bound() %>% ungroup() %>% filter(Bound == "Efficacy")
+    tab <-
+    rbind(tab, 
+        cbind(
+              FH05 %>% 
+              summary_bound() %>% ungroup() %>% 
+              transmute("Study duration" = FH05$analysis$Time[1], N = FH05$analysis$N[1], Events = FH05$analysi$Events[1],
+                        AHR = FH00$wHR[1], "FH(0, 0.5) power" = `Alternate hypothesis`),
+              FH00 %>% ungroup() %>% transmute("Logrank power" = `Alternate hypothesis`)
+    )   )
+}
+tab %>% gt() %>%
+  fmt_number(columns = c(2,3), decimals = 1) %>%
+  fmt_number(columns = 5, decimals = 3)
+```
+
+# Overview
+
+We consider a delayed effect scenario where 
+
+- The control group time-to-event distribution is exponential with a median of 15 months.
+- The experimental group has a hazard ratio vs. control of 1 for 6 months and 0.6 thereafter.
+- Enrollment at a constant rate for 12 months.
+- Total study duration from 20 to 48 months.
+
+For the above scenarios, we compute sample size and events required using the Fleming-Harrington $\rho=0, \gamma=0.5$ test to obtain power of 85% given 1-sided Type I error of 0.025. 
+We then compute power for the logrank test.
+The general summary is that the Fleming-Harrington test has a meaningful power gain relative to logrank regardless of the study durations evaluated.
+
+
