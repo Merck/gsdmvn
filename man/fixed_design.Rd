@@ -8,8 +8,8 @@ fixed_design(
   x = "AHR",
   alpha = 0.025,
   power = 0.9,
-  ratio = 1,
-  studyDuration = 36,
+  ratio = NULL,
+  studyDuration = NULL,
   ...
 )
 }
