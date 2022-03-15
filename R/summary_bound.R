@@ -226,9 +226,15 @@ summary_bound <- function(
     table_b = bound_summary_detail,
     decimals = c(0, analysis_decimals),
     byvar = "Analysis") %>% 
-    group_by(Analysis) %>% 
-    select("Bound", "Z", ifelse(method == "ahr", "~HR at bound", ifelse(method == "wlr", "~wHR at bound", NA)), 
-           "Nominal p", "Alternate hypothesis", "Null hypothesis")
+    group_by(Analysis)
+  
+  if(method == "ahr"){
+    output <- output %>% select(Analysis, Bound, Z, `~HR at bound`, `Nominal p`, `Alternate hypothesis`, `Null hypothesis`)
+  }else if(method == "wlr"){
+    output <- output %>% select(Analysis, Bound, Z, `~wHR at bound`, `Nominal p`, `Alternate hypothesis`, `Null hypothesis`)
+  }else if(method == "combo"){
+    output <- output %>% select(Analysis, Bound, Z, `Nominal p`, `Alternate hypothesis`, `Null hypothesis`)
+  }
   
   class(output) <- c(method, class(output))
   return(output)

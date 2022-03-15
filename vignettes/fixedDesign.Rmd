@@ -91,11 +91,11 @@ fixed_design(x = "FH", alpha = alpha, ratio = ratio,
 # LF
 I tried LF in the example of fixed_design.R, but it gives me the error. Here we need to check the enrollRates and failRates. 
 ```{r, eval=FALSE}
-try(fixed_design(x = "LF",
-             alpha = .025, Power = .9,
-             enrollRates = tibble(Stratum = "All",  duration = 18, rate = 1),
-             failRates = tibble(Stratum = "All", duration = 100, failRate = log(2) / 12, hr = .7, dropoutRate = .001),
-             studyDuration = 36) %>% 
-  summary_fix())
+fixed_design(x = "LF", alpha = alpha, power = 1 - beta, ratio = ratio,
+             enrollRates = enrollRates,
+             failRates = failRates,
+             studyDuration = studyDuration)
 ```
+
+
 
