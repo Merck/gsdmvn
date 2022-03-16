@@ -131,6 +131,7 @@ gs_power_wlr <- function(
   #         organize the outputs             #
   # ---------------------------------------- #
   # summarize the bounds
+  suppressMessages(
   bounds <- y %>%
     left_join(x %>% select(Analysis, Events)) %>% 
     mutate(
@@ -138,14 +139,17 @@ gs_power_wlr <- function(
       `Nominal p` = pnorm(-Z)
     ) %>% 
     select(Analysis, Bound, Probability, hypothesis, Z, `~HR at bound`, `Nominal p`)
+  )
   
   # summarize the analysis
+  suppressMessages(
   analysis <- x %>% 
     select(Analysis, Time, Events, AHR) %>% 
     mutate(N = gsDesign2::eAccrual(x = x$Time, enrollRates = enrollRates)) %>% 
     left_join(y) %>% 
     select(Analysis, Time, N, Events, AHR, theta, info, IF, hypothesis)
-    
+  )
+  
   output <- list(
     enrollRates = enrollRates, 
     failRates = failRates,

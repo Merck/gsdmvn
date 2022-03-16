@@ -179,6 +179,7 @@ gs_design_wlr <- function(
   # --------------------------------------------- #
   #     combine all the calculations              #
   # --------------------------------------------- #
+  suppressMessages(
   allout <- gs_design_npe(
     theta = y$theta, theta1 = theta1,
     info = y$info, info0 = y$info0, info1 = info1,
@@ -194,9 +195,9 @@ gs_design_wlr <- function(
              "N", "Events", 
              "Z", "Probability",
              "AHR", "theta", 
-             "info", "info0", "info1", "IF", "hypothesis")) %>%  # "AHR", "theta", "info", "info0")) %>%
-    
-    arrange(desc(hypothesis), desc(Bound), Analysis)  # arrange(desc(Bound), Analysis)
+             "info", "info0", "info1", "IF", "hypothesis")) %>%  
+    arrange(desc(hypothesis), desc(Bound), Analysis)  
+  )
   
   allout$Events <- allout$Events * allout$info[K] / y$info[K]
   allout$N <- allout$N * allout$info[K] / y$info[K]
@@ -204,8 +205,6 @@ gs_design_wlr <- function(
   # add `~HR at bound`, `HR generic` and `Nominal p`
   allout <- allout %>% mutate(
     "~HR at bound" = gsDesign::zn2hr(z = Z, n = Events, ratio = ratio),
-    #"HR generic (H0)" = exp(-Z / sqrt(info0)),
-    #"HR generic (H1)" = exp(-Z / sqrt(info)),
     "Nominal p" = pnorm(-Z)
   ) 
   # --------------------------------------------- #
@@ -213,15 +212,12 @@ gs_design_wlr <- function(
   # --------------------------------------------- #
   bounds <- allout %>% 
     select(all_of(c("Analysis", "Bound", "Probability", "hypothesis", "Z",
-                    "~HR at bound", "Nominal p" #,"HR generic (H0)", "HR generic (H1)" 
-    )))
+                    "~HR at bound", "Nominal p" )))
   # --------------------------------------------- #
   #     get analysis summary to output            #
   # --------------------------------------------- #
   analysis <- allout %>% 
-    select(Analysis, Time, N, Events, AHR, theta, info, 
-           #info0, info1, 
-           IF, hypothesis) %>% 
+    select(Analysis, Time, N, Events, AHR, theta, info, IF, hypothesis) %>% 
     unique()
   
   # --------------------------------------------- #
