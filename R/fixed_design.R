@@ -72,7 +72,7 @@ fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = NULL, stu
                                         alpha = (d$bounds %>% filter(hypothesis == "H0"))$Probability %>% round(4),
                                         Power = (d$bounds %>% filter(hypothesis == "H1"))$Probability %>% round(4))
                   
-                  list(analysis = ans, enrollRates = d$enrollRates, failRates = d$failRates, design = "AHR")
+                  list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "AHR")
                   },
                
                "FH" = { # This will call gs_design_wlr or gs_power_wlr
@@ -104,7 +104,7 @@ fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = NULL, stu
                                         alpha = (d$bounds %>% filter(hypothesis == "H0"))$Probability %>% round(4),
                                         Power = (d$bounds %>% filter(hypothesis == "H1"))$Probability %>% round(4))
                   
-                  list(analysis = ans, enrollRates = d$enrollRates, failRates = d$failRates, design = "FH")
+                  list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "FH")
                   },
                
                
@@ -132,7 +132,7 @@ fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = NULL, stu
                                         Time = d$T %>% round(2),
                                         alpha = d$alpha %>% round(4),
                                         Power = d$power %>% round(4))
-                  list(analysis = ans, enrollRates = d$enrollRates, failRates = d$failRates, design = "FH")
+                  list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "FH")
                   },
                
                
@@ -150,5 +150,5 @@ fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = NULL, stu
 # summary function of the fixed design
 # let start with the non-S3 method first. Since we need to align how can S3 class we need later.
 summary_fix <- function(y){
-   y$sum_
+   return(y$ans$N)
 }
