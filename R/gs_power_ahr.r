@@ -175,12 +175,14 @@ gs_power_ahr <- function(
     select(Analysis, Bound, Probability, hypothesis, Z, `~HR at bound`, `Nominal p`)
   
   # summarize the analysis
+  suppressMessages(
   analysis <- x %>% 
     select(Analysis, Time, Events, AHR) %>% 
     mutate(N = gsDesign2::eAccrual(x = x$Time, enrollRates = enrollRates)) %>% 
     left_join(y) %>% 
     select(Analysis, Time, N, Events, AHR, theta, info, IF, hypothesis)
-    
+  )
+  
   output <- list(
     enrollRates = enrollRates, 
     failRates = failRates,

@@ -232,6 +232,7 @@ gs_design_ahr <- function(
   # --------------------------------------------- #
   #     combine all the calculations              #
   # --------------------------------------------- #
+  suppressMessages(
   allout <- gs_design_npe(
     theta = y$theta, theta1 = theta1,
     info = y$info, info0 = y$info0, info1 = info1,
@@ -270,6 +271,7 @@ gs_design_ahr <- function(
     arrange(
       desc(hypothesis), desc(Bound), Analysis
     )   # arrange(desc(Bound), Analysis, desc(hypothesis))
+  )
   
   allout$Events <- allout$Events * allout$info[K] / y$info[K]
   allout$N <- allout$N * allout$info[K] / y$info[K]
