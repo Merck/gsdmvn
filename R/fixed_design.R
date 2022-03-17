@@ -7,7 +7,6 @@
 #' @param power Power (`NULL` to compute power or strictly between 0 and `1 - alpha` otherwise)
 #' @param ratio Experimental:Control randomization ratio
 #' @param studyDuration study duration
-#' @param hr hazard ratio, input if "LF" is used
 #' @param ...
 #' 
 #' @return
@@ -29,7 +28,7 @@
 #'                   failRates = tibble::tibble(Stratum = "All", duration = 100, failRate = log(2) / 12, hr = .7, dropoutRate = .001),
 #'                   studyDuration = 36)
 #' 
-fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = NULL, studyDuration = NULL, hr, ...){
+fixed_design <- function(x = "AHR", alpha = 0.025, power = NULL, ratio = NULL, studyDuration = NULL, ...){
    # --------------------------------------------- #
    #     check inputs                              #
    # --------------------------------------------- #
@@ -63,15 +62,16 @@ fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = NULL, stu
                                        enrollRates = enrollRates,
                                        failRates = failRates,
                                        ratio  = ratio, 
-                                       analysisTimes = studyDuration)
+                                       analysisTimes = studyDuration,
+                                       events = NULL)
                   }
-                  ans <- tibble::tibble(Design = "FH",
-                                        N = (d$analysis %>% filter(hypothesis == "H0"))$N %>% round(1),
-                                        Events = (d$analysis %>% filter(hypothesis == "H0"))$Events %>% round(1),
-                                        Time = (d$analysis %>% filter(hypothesis == "H0"))$Time %>% round(2),
-                                        Bound = (d$bounds %>% filter(Bound == "Upper" & hypothesis == "H1"))$Z %>% round(4),
-                                        alpha = (d$bounds %>% filter(hypothesis == "H0"))$Probability %>% round(4),
-                                        Power = (d$bounds %>% filter(hypothesis == "H1"))$Probability %>% round(4))
+                  ans <- tibble::tibble(Design = "AHR",
+                                        N = (d$analysis %>% filter(hypothesis == "H0"))$N,
+                                        Events = (d$analysis %>% filter(hypothesis == "H0"))$Events,
+                                        Time = (d$analysis %>% filter(hypothesis == "H0"))$Time,
+                                        Bound = (d$bounds %>% filter(Bound == "Upper" & hypothesis == "H1"))$Z,
+                                        alpha = (d$bounds %>% filter(hypothesis == "H0", Bound == "Upper"))$Probability,
+                                        Power = (d$bounds %>% filter(hypothesis == "H1", Bound == "Upper"))$Probability)
                   
                   list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "AHR")
                   },
@@ -95,15 +95,16 @@ fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = NULL, stu
                                        failRates = failRates,
                                        ratio = ratio, 
                                        weight = weight,
-                                       analysisTimes = studyDuration)
+                                       analysisTimes = studyDuration,
+                                       events = NULL)
                   }
                   ans <- tibble::tibble(Design = "FH",
-                                        N = (d$analysis %>% filter(hypothesis == "H0"))$N %>% round(1),
-                                        Events = (d$analysis %>% filter(hypothesis == "H0"))$Events %>% round(1),
-                                        Time = (d$analysis %>% filter(hypothesis == "H0"))$Time %>% round(2),
-                                        Bound = (d$bounds %>% filter(Bound == "Upper" & hypothesis == "H1"))$Z %>% round(4),
-                                        alpha = (d$bounds %>% filter(hypothesis == "H0"))$Probability %>% round(4),
-                                        Power = (d$bounds %>% filter(hypothesis == "H1"))$Probability %>% round(4))
+                                        N = (d$analysis %>% filter(hypothesis == "H0"))$N,
+                                        Events = (d$analysis %>% filter(hypothesis == "H0"))$Events,
+                                        Time = (d$analysis %>% filter(hypothesis == "H0"))$Time,
+                                        Bound = (d$bounds %>% filter(Bound == "Upper" & hypothesis == "H1"))$Z,
+                                        alpha = (d$bounds %>% filter(hypothesis == "H0", Bound == "Upper"))$Probability,
+                                        Power = (d$bounds %>% filter(hypothesis == "H1", Bound == "Upper"))$Probability)
                   
                   list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "FH")
                   },
@@ -156,12 +157,12 @@ fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = NULL, stu
                   }
                   # get the output of MB
                   ans <- tibble::tibble(Design = "MB",
-                                        N = (d$analysis %>% filter(hypothesis == "H0"))$N %>% round(1),
-                                        Events = (d$analysis %>% filter(hypothesis == "H0"))$Events %>% round(1),
-                                        Time = (d$analysis %>% filter(hypothesis == "H0"))$Time %>% round(2),
-                                        Bound = (d$bounds %>% filter(Bound == "Upper" & hypothesis == "H1"))$Z %>% round(4),
-                                        alpha = (d$bounds %>% filter(hypothesis == "H0"))$Probability %>% round(4),
-                                        Power = (d$bounds %>% filter(hypothesis == "H1"))$Probability %>% round(4))
+                                        N = (d$analysis %>% filter(hypothesis == "H0"))$N,
+                                        Events = (d$analysis %>% filter(hypothesis == "H0"))$Events,
+                                        Time = (d$analysis %>% filter(hypothesis == "H0"))$Time,
+                                        Bound = (d$bounds %>% filter(Bound == "Upper" & hypothesis == "H1"))$Z,
+                                        alpha = (d$bounds %>% filter(hypothesis == "H0", Bound == "Upper"))$Probability,
+                                        Power = (d$bounds %>% filter(hypothesis == "H1", Bound == "Upper"))$Probability)
                   
                   list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "MB")
                   
@@ -170,23 +171,30 @@ fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = NULL, stu
                
                  
                "LF" = { # Should do checks of inputs here
-                  # check the input
+                  # calculate the S: durations of piecewise constant event rates 
                   m <- length(failRates$failRate)
                   if (m == 1){S <- NULL}else{S <- failRates$duration[1:(m-1)]}
                   
-                  if(methods::hasArg(hr)){
-                     message("fixed_design: we ignore failRates$hr since hr is input!")
+                  # calculate the ahr as the hr in nSurv
+                  if (!is.null(power)){
+                     dd <- gs_design_ahr(alpha = alpha, beta = 1 - power,
+                                         upar = qnorm(1 - alpha), lpar = -Inf,
+                                         enrollRates = enrollRates,
+                                         failRates = failRates,
+                                         ratio  = ratio, 
+                                         analysisTimes = studyDuration)
                   }else{
-                     if(length(unique(failRates$hr)) == 1){
-                        hr <- unique(failRates$hr)
-                     }else{
-                        hr <- failRates$hr[1]
-                        message("fixed_design: hr is not input and we take h <- failRates$hr[1]!")
-                     }
+                     dd <- gs_power_ahr(upar = qnorm(1 - alpha), lpar = -Inf,
+                                        enrollRates = enrollRates,
+                                        failRates = failRates,
+                                        ratio  = ratio, 
+                                        analysisTimes = studyDuration,
+                                        events = NULL)
                   }
                   
-                  d <- gsDesign::nSurv(alpha = alpha, beta = 1 - power, 
-                                       ratio = ratio, hr = hr,
+                  # use nSuve to develop the design
+                  d <- gsDesign::nSurv(alpha = alpha, beta = if(is.null(power)){NULL}else{1 - power}, 
+                                       ratio = ratio, hr = dd$analysis$AHR[1],
                                        # failRates
                                        lambdaC = failRates$failRate,
                                        S = S, eta = failRates$dropoutRate,  
@@ -195,12 +203,12 @@ fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = NULL, stu
                                        T = studyDuration, minfup = studyDuration - sum(enrollRates$duration))
                   
                   ans <- tibble::tibble(Design = "LF",
-                                        N = d$n %>% round(1),
-                                        Events = d$d %>% round(1),
-                                        Time = d$T %>% round(2),
-                                        alpha = d$alpha %>% round(4),
-                                        Power = d$power %>% round(4))
-                  list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "FH")
+                                        N = d$n,
+                                        Events = d$d,
+                                        Time = d$T,
+                                        alpha = d$alpha,
+                                        Power = d$power)
+                  list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "LF")
                   },
                
                

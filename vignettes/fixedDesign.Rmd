@@ -33,7 +33,7 @@ devtools::load_all()
 enrollRates <- tibble::tibble(
    Stratum = "All", 
    duration = 18, 
-   rate = 1)
+   rate = 20)
 
 # Failure rates
 failRates <- tibble::tibble(
@@ -62,13 +62,13 @@ beta <- 0.1
 fixed_design(x = "AHR", alpha = alpha, power = 1 - beta, ratio = ratio, 
              enrollRates = enrollRates, failRates = failRates, 
              studyDuration = studyDuration) %>% 
-  summary_fix()
+  summary_fix() %>% gt()
 
 # fixed design with power calculated
 fixed_design(x = "AHR", alpha = alpha, ratio = ratio, 
              enrollRates = enrollRates, failRates = failRates, 
              studyDuration = studyDuration) %>% 
-  summary_fix()
+  summary_fix() %>% gt()
 ```
 
 # FH
@@ -77,13 +77,13 @@ fixed_design(x = "AHR", alpha = alpha, ratio = ratio,
 fixed_design(x = "FH", alpha = alpha, power = 1 - beta, ratio = ratio, 
              enrollRates = enrollRates, failRates = failRates, 
              studyDuration = studyDuration) %>% 
-  summary_fix()
+  summary_fix() %>% gt()
 
 # fixed design with power calculated
 fixed_design(x = "FH", alpha = alpha, ratio = ratio, 
              enrollRates = enrollRates, failRates = failRates, 
              studyDuration = studyDuration) %>% 
-  summary_fix()
+  summary_fix() %>% gt()
 ```
 
 # MB
@@ -94,7 +94,8 @@ fixed_design(x = "MB",
              enrollRates = enrollRates,
              failRates = failRates,
              studyDuration = studyDuration,
-             rho = 0, gamma = 0.5, tau = 6) 
+             rho = 0, gamma = 0.5, tau = 6) %>% 
+  summary_fix() %>% gt()
 
 fixed_design(x = "MB",
              ratio = ratio,
@@ -102,24 +103,27 @@ fixed_design(x = "MB",
              enrollRates = enrollRates,
              failRates = failRates,
              studyDuration = studyDuration,
-             rho = 0, gamma = 0.5, tau = 6)
+             rho = 0, gamma = 0.5, tau = 6)%>% 
+  summary_fix() %>% gt()
 ```
 
 
 # LF
 ```{r}
-# hr is not input
+# with targted power
 fixed_design(x = "LF", alpha = alpha, power = 1 - beta, 
              ratio = ratio,
              enrollRates = enrollRates,
              failRates = failRates,
-             studyDuration = studyDuration)
-# hr is input
-fixed_design(x = "LF", alpha = alpha, power = 1- beta, 
-             ratio = ratio, hr = 0.6,
+             studyDuration = studyDuration) %>% 
+  summary_fix() %>% gt()
+# without targted power
+fixed_design(x = "LF", alpha = alpha,  
+             ratio = ratio, 
              enrollRates = enrollRates,
              failRates = failRates,
-             studyDuration = studyDuration)
+             studyDuration = studyDuration)%>% 
+  summary_fix() %>% gt()
 
 ```
 
