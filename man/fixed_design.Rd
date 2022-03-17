@@ -10,6 +10,7 @@ fixed_design(
   power = 0.9,
   ratio = NULL,
   studyDuration = NULL,
+  hr,
   ...
 )
 }
@@ -23,6 +24,8 @@ fixed_design(
 \item{ratio}{Experimental:Control randomization ratio}
 
 \item{studyDuration}{study duration}
+
+\item{hr}{hazard ratio, input if "LF" is used}
 
 \item{...}{}
 }
