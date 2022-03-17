@@ -807,16 +807,16 @@
 <span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 3</span></span>
 <span class="co">#&gt;    nsim `Early futility (%)` `Power (%)`</span>
 <span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">1</span>   200                  0.5          92</span></code></pre></div>
+<span class="co">#&gt; <span style="color: #BCBCBC;">1</span>   200                    3          83</span></code></pre></div>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">xx</span> <span class="op">&lt;-</span> <span class="va">trialsum</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Positive <span class="op">=</span> <span class="op">(</span><span class="va">Z</span> <span class="op">&gt;=</span> <span class="va">upper</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">xx</span><span class="op">$</span><span class="va">k</span>, <span class="va">xx</span><span class="op">$</span><span class="va">Positive</span><span class="op">)</span>
 <span class="co">#&gt;    </span>
 <span class="co">#&gt;     FALSE TRUE</span>
-<span class="co">#&gt;   1     1    0</span>
-<span class="co">#&gt;   2     0   15</span>
-<span class="co">#&gt;   3     0   99</span>
-<span class="co">#&gt;   4    15   70</span></code></pre></div>
+<span class="co">#&gt;   1     6    0</span>
+<span class="co">#&gt;   2     0   12</span>
+<span class="co">#&gt;   3     0  101</span>
+<span class="co">#&gt;   4    28   53</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="differences-from-gsdesign">Differences From <strong>gsDesign</strong><a class="anchor" aria-label="anchor" href="#differences-from-gsdesign"></a>
