@@ -7,6 +7,7 @@
 #' @param power Power (`NULL` to compute power or strictly between 0 and `1 - alpha` otherwise)
 #' @param ratio Experimental:Control randomization ratio
 #' @param studyDuration study duration
+#' @param hr hazard ratio, input if "LF" is used
 #' @param ...
 #' 
 #' @return
@@ -28,7 +29,7 @@
 #'                   failRates = tibble::tibble(Stratum = "All", duration = 100, failRate = log(2) / 12, hr = .7, dropoutRate = .001),
 #'                   studyDuration = 36)
 #' 
-fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = NULL, studyDuration = NULL, ...){
+fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = NULL, studyDuration = NULL, hr, ...){
    # --------------------------------------------- #
    #     check inputs                              #
    # --------------------------------------------- #
@@ -78,7 +79,7 @@ fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = NULL, stu
                "FH" = { # This will call gs_design_wlr or gs_power_wlr
                   # if the weight is not inputted, set it as the default
                   if(!methods::hasArg(weight)){
-                     weight = function(x, arm0, arm1){gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5)}
+                     weight <- function(x, arm0, arm1){gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5)}
                   }
                   if (!is.null(power)){
                      d <- gs_design_wlr(alpha = alpha, beta = 1 - power,
@@ -109,18 +110,85 @@ fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = NULL, stu
                
                
                "MB" = {
-                  list(sum_ = tibble::tibble(Option = 3, Design = "MB"), stuff = "stuff")
+                  # check if we have rho, gamma, and tau input
+                  if(!methods::hasArg(rho)){
+                     message("fixed_design: rho is not input and the default value rho = 0 is used!")
+                  }
+                  if(!methods::hasArg(gamma)){
+                     message("fixed_design: gamma is not input and the default value gamma = 0 is used!")
+                  }
+                  if(!methods::hasArg(tau)){
+                     message("fixed_design: tau is not input and the default value tau = 6 is used!")
+                  }
+                  
+                  # check if power is NULL or not
+                  if(!is.null(power)){
+                     d <- gs_design_wlr(alpha = alpha,
+                                        beta = 1 - power,
+                                        enrollRates = enrollRates, 
+                                        failRates = failRates,
+                                        ratio = 1, 
+                                        weight = function(x, arm0, arm1){
+                                           gsdmvn:::wlr_weight_fh(x, arm0, arm1, 
+                                                                  rho = ifelse(methods::hasArg(rho), rho, 0),
+                                                                  gamma = ifelse(methods::hasArg(gamma), gamma, 0),
+                                                                  tau = ifelse(methods::hasArg(tau), tau, 6))},
+                                        upper = gs_b,
+                                        upar = qnorm(1 - alpha),
+                                        lower = gs_b,
+                                        lpar = -Inf,
+                                        analysisTimes = studyDuration) 
+                  }else{
+                     d <- gs_power_wlr(enrollRates = enrollRates, 
+                                       failRates = failRates,
+                                       ratio = 1, 
+                                       weight = function(x, arm0, arm1){
+                                          gsdmvn:::wlr_weight_fh(x, arm0, arm1, 
+                                                                 rho = ifelse(methods::hasArg(rho), rho, 0),
+                                                                 gamma = ifelse(methods::hasArg(gamma), gamma, 0),
+                                                                 tau = ifelse(methods::hasArg(tau), tau, 6))},
+                                       upper = gs_b,
+                                       upar = qnorm(1 - alpha),
+                                       lower = gs_b,
+                                       lpar = -Inf,
+                                       analysisTimes = studyDuration,
+                                       events = NULL) 
+                  }
+                  # get the output of MB
+                  ans <- tibble::tibble(Design = "MB",
+                                        N = (d$analysis %>% filter(hypothesis == "H0"))$N %>% round(1),
+                                        Events = (d$analysis %>% filter(hypothesis == "H0"))$Events %>% round(1),
+                                        Time = (d$analysis %>% filter(hypothesis == "H0"))$Time %>% round(2),
+                                        Bound = (d$bounds %>% filter(Bound == "Upper" & hypothesis == "H1"))$Z %>% round(4),
+                                        alpha = (d$bounds %>% filter(hypothesis == "H0"))$Probability %>% round(4),
+                                        Power = (d$bounds %>% filter(hypothesis == "H1"))$Probability %>% round(4))
+                  
+                  list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "MB")
+                  
+                  
                },
                
                  
                "LF" = { # Should do checks of inputs here
+                  # check the input
                   m <- length(failRates$failRate)
                   if (m == 1){S <- NULL}else{S <- failRates$duration[1:(m-1)]}
                   
-                  d <- gsDesign::nSurv(alpha = alpha, beta = ifelse(is.null(power), NULL, 1 - beta), 
-                                       ratio = ratio,
+                  if(methods::hasArg(hr)){
+                     message("fixed_design: we ignore failRates$hr since hr is input!")
+                  }else{
+                     if(length(unique(failRates$hr)) == 1){
+                        hr <- unique(failRates$hr)
+                     }else{
+                        hr <- failRates$hr[1]
+                        message("fixed_design: hr is not input and we take h <- failRates$hr[1]!")
+                     }
+                  }
+                  
+                  d <- gsDesign::nSurv(alpha = alpha, beta = 1 - power, 
+                                       ratio = ratio, hr = hr,
                                        # failRates
-                                       hr = failRates$hr,  lambdaC = failRates$failRate,
+                                       lambdaC = failRates$failRate,
                                        S = S, eta = failRates$dropoutRate,  
                                        # enrollRates
                                        gamma = enrollRates$rate, R = enrollRates$duration,
@@ -148,7 +216,6 @@ fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = NULL, stu
 }
 
 # summary function of the fixed design
-# let start with the non-S3 method first. Since we need to align how can S3 class we need later.
 summary_fix <- function(y){
-   return(y$ans$N)
+   return(y$analysis)
 }

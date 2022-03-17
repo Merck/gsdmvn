@@ -86,16 +86,43 @@ fixed_design(x = "FH", alpha = alpha, ratio = ratio,
   summary_fix()
 ```
 
+# MB
+```{r}
+fixed_design(x = "MB", 
+             ratio = ratio, 
+             alpha = alpha, power = 1 - beta,
+             enrollRates = enrollRates,
+             failRates = failRates,
+             studyDuration = studyDuration,
+             rho = 0, gamma = 0.5, tau = 6) 
+
+fixed_design(x = "MB",
+             ratio = ratio,
+             alpha = alpha,
+             enrollRates = enrollRates,
+             failRates = failRates,
+             studyDuration = studyDuration,
+             rho = 0, gamma = 0.5, tau = 6)
+```
 
 
 # LF
-I tried LF in the example of fixed_design.R, but it gives me the error. Here we need to check the enrollRates and failRates. 
-```{r, eval=FALSE}
-fixed_design(x = "LF", alpha = alpha, power = 1 - beta, ratio = ratio,
+```{r}
+# hr is not input
+fixed_design(x = "LF", alpha = alpha, power = 1 - beta, 
+             ratio = ratio,
              enrollRates = enrollRates,
              failRates = failRates,
              studyDuration = studyDuration)
+# hr is input
+fixed_design(x = "LF", alpha = alpha, power = 1- beta, 
+             ratio = ratio, hr = 0.6,
+             enrollRates = enrollRates,
+             failRates = failRates,
+             studyDuration = studyDuration)
+
 ```
+
 
 
 
