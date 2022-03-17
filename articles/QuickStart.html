@@ -117,7 +117,7 @@
 <p>The <strong>gsdmvn</strong> package will likely will likely be incorporated eventually into the <strong>gsDesign2</strong> package, resulting in a fully featured design package. However, features and implementation in <strong>gsdmvn</strong> will be allowed to change as needed during the agile rapid development phase.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://merck.github.io/gsdmvn/">gsdmvn</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">gsDesign</span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://keaven.github.io/gsDesign/" class="external-link">gsDesign</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://merck.github.io/gsDesign2/" class="external-link">gsDesign2</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://merck.github.io/simtrial/" class="external-link">simtrial</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://yihui.org/knitr/" class="external-link">knitr</a></span><span class="op">)</span>
@@ -223,7 +223,7 @@
 <span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        1 Upper    36  434.   315.  1.96         0.9 0.693 0.366  77.7  78.8</span></code></pre></div>
 <p>We note that the targeted <code>Events</code> are approximately what would be proposed with the <span class="citation">Schoenfeld (1981)</span> formula:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">gsDesign</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/gsDesign/man/nSurvival.html" class="external-link">nEvents</a></span><span class="op">(</span>hr <span class="op">=</span> <span class="va">design</span><span class="op">$</span><span class="va">bounds</span><span class="op">$</span><span class="va">AHR</span><span class="op">)</span>
+<code class="sourceCode R"><span class="fu">gsDesign</span><span class="fu">::</span><span class="fu"><a href="https://keaven.github.io/gsDesign/reference/nSurvival.html" class="external-link">nEvents</a></span><span class="op">(</span>hr <span class="op">=</span> <span class="va">design</span><span class="op">$</span><span class="va">bounds</span><span class="op">$</span><span class="va">AHR</span><span class="op">)</span>
 <span class="co">#&gt; [1] 313.535</span></code></pre></div>
 <p>The difference is that <code><a href="../reference/gs_design_ahr.html">gs_design_ahr()</a></code> accounts for both a null and alternate hypothesis variance estimate for <code>theta=log(AHR)</code> at each analysis to yield a slightly more conservative event target due to slower accumulation of statistical information under the alternate hypothesis. See <span class="citation">Lachin (2009)</span> for this approach for fixed design; to our knowledge, this has not previously been extended to group sequential design. Due to simplicity, there may be reasons to allow approaches with a single variance estimate in future releases.</p>
 <p>Finally, we note that with a shorter trial duration of 30 months, we need both a larger sample size and targeted number of events due to a larger expected AHR at the time of analysis:</p>
@@ -280,9 +280,9 @@
 <p>Perhaps the most common spending function for this approach is the <span class="citation">Lan and DeMets (1983)</span> approximation to the O’Brien-Fleming bound with</p>
 <p><span class="math display">\[f(t) = 2-2\Phi\left(\frac{\Phi^{-1}(1-\alpha/2)}{t^{1/2}}\right).\]</span></p>
 <p><img src="QuickStart_files/figure-html/unnamed-chunk-11-1.png" width="624"></p>
-<p>Suppose <span class="math inline">\(K=3\)</span> and <span class="math inline">\(t_1=0.5\)</span>, <span class="math inline">\(t_2 = 0.75\)</span>, <span class="math inline">\(t_3 = 1\)</span>. We can define bounds with the <strong>gsDesign</strong> group sequential design function <code><a href="https://rdrr.io/pkg/gsDesign/man/gsDesign.html" class="external-link">gsDesign()</a></code> and Lan-DeMets O’Brien-Fleming spending function for <span class="math inline">\(\alpha = 0.025\)</span>.</p>
+<p>Suppose <span class="math inline">\(K=3\)</span> and <span class="math inline">\(t_1=0.5\)</span>, <span class="math inline">\(t_2 = 0.75\)</span>, <span class="math inline">\(t_3 = 1\)</span>. We can define bounds with the <strong>gsDesign</strong> group sequential design function <code><a href="https://keaven.github.io/gsDesign/reference/gsDesign.html" class="external-link">gsDesign()</a></code> and Lan-DeMets O’Brien-Fleming spending function for <span class="math inline">\(\alpha = 0.025\)</span>.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">b</span> <span class="op">&lt;-</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/gsDesign/man/gsDesign.html" class="external-link">gsDesign</a></span><span class="op">(</span>k <span class="op">=</span> <span class="fl">3</span>, timing <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">1</span><span class="op">)</span>, test.type <span class="op">=</span> <span class="fl">1</span>, alpha <span class="op">=</span> <span class="fl">0.025</span>, sfu <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html" class="external-link">sfLDOF</a></span><span class="op">)</span><span class="op">$</span><span class="va">upper</span><span class="op">$</span><span class="va">bound</span>
+<code class="sourceCode R"><span class="va">b</span> <span class="op">&lt;-</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="fu"><a href="https://keaven.github.io/gsDesign/reference/gsDesign.html" class="external-link">gsDesign</a></span><span class="op">(</span>k <span class="op">=</span> <span class="fl">3</span>, timing <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">1</span><span class="op">)</span>, test.type <span class="op">=</span> <span class="fl">1</span>, alpha <span class="op">=</span> <span class="fl">0.025</span>, sfu <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://keaven.github.io/gsDesign/reference/sfLDOF.html" class="external-link">sfLDOF</a></span><span class="op">)</span><span class="op">$</span><span class="va">upper</span><span class="op">$</span><span class="va">bound</span>
 <span class="va">b</span>
 <span class="co">#&gt; [1] 2.962588 2.359018 2.014084</span></code></pre></div>
 <p>Now we can define a one-sided group sequential design under the same enrollment, failure and dropout assumptions used previously.</p>
@@ -292,7 +292,7 @@
   failRates <span class="op">=</span> <span class="va">failRates</span>,
   analysisTimes <span class="op">=</span> <span class="fl">36</span>, <span class="co"># Trial duration</span>
   upper <span class="op">=</span> <span class="va">gs_spending_bound</span>,
-  upar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html" class="external-link">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span><span class="op">)</span>,
+  upar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://keaven.github.io/gsDesign/reference/sfLDOF.html" class="external-link">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span><span class="op">)</span>,
   lower <span class="op">=</span> <span class="va">gs_b</span>,
   lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="op">-</span><span class="cn">Inf</span>, <span class="fl">3</span><span class="op">)</span>, <span class="co"># No futility bound</span>
   IF <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.5</span>, <span class="fl">.75</span>, <span class="fl">1</span><span class="op">)</span>
@@ -364,7 +364,7 @@
   enrollRates <span class="op">=</span> <span class="va">design1s</span><span class="op">$</span><span class="va">enrollRates</span>,
   failRates <span class="op">=</span> <span class="va">design1s</span><span class="op">$</span><span class="va">failRates</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>hr <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,
   upper <span class="op">=</span> <span class="va">gs_spending_bound</span>,
-  upar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html" class="external-link">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span><span class="op">)</span>,
+  upar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://keaven.github.io/gsDesign/reference/sfLDOF.html" class="external-link">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span><span class="op">)</span>,
   lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="op">-</span><span class="cn">Inf</span>, <span class="fl">3</span><span class="op">)</span>, <span class="co"># No futility bound</span>
   events <span class="op">=</span> <span class="va">design1s</span><span class="op">$</span><span class="va">bound</span><span class="op">$</span><span class="va">Events</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span>
 <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
@@ -430,9 +430,9 @@
 <div class="section level4">
 <h4 id="symmetric-2-sided-bounds">Symmetric 2-sided bounds<a class="anchor" aria-label="anchor" href="#symmetric-2-sided-bounds"></a>
 </h4>
-<p>For a symmetric design, we can again define a bound using <code><a href="https://rdrr.io/pkg/gsDesign/man/gsDesign.html" class="external-link">gsDesign::gsDesign()</a></code>. For this example, the bound is identical to <code>b</code> above to the digits calculated.</p>
+<p>For a symmetric design, we can again define a bound using <code><a href="https://keaven.github.io/gsDesign/reference/gsDesign.html" class="external-link">gsDesign::gsDesign()</a></code>. For this example, the bound is identical to <code>b</code> above to the digits calculated.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">b2</span> <span class="op">&lt;-</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/gsDesign/man/gsDesign.html" class="external-link">gsDesign</a></span><span class="op">(</span>test.type <span class="op">=</span> <span class="fl">2</span>, sfu <span class="op">=</span> <span class="va">sfLDOF</span>, alpha <span class="op">=</span> <span class="fl">0.025</span>, timing <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.5</span>, <span class="fl">.75</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">upper</span><span class="op">$</span><span class="va">bound</span>
+<code class="sourceCode R"><span class="va">b2</span> <span class="op">&lt;-</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="fu"><a href="https://keaven.github.io/gsDesign/reference/gsDesign.html" class="external-link">gsDesign</a></span><span class="op">(</span>test.type <span class="op">=</span> <span class="fl">2</span>, sfu <span class="op">=</span> <span class="va">sfLDOF</span>, alpha <span class="op">=</span> <span class="fl">0.025</span>, timing <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.5</span>, <span class="fl">.75</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">upper</span><span class="op">$</span><span class="va">bound</span>
 <span class="va">b2</span>
 <span class="co">#&gt; [1] 2.962588 2.359018 2.014084</span></code></pre></div>
 <p>Now we replicate with <code><a href="../reference/gs_design_ahr.html">gs_design_ahr()</a></code>:</p>
@@ -443,9 +443,9 @@
   analysisTimes <span class="op">=</span> <span class="fl">36</span>, <span class="co"># Trial duration</span>
   IF <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.5</span>, <span class="fl">.75</span>, <span class="fl">1</span><span class="op">)</span>, <span class="co"># Information fraction at analyses</span>
   upper <span class="op">=</span> <span class="va">gs_spending_bound</span>,
-  upar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html" class="external-link">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span><span class="op">)</span>,
+  upar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://keaven.github.io/gsDesign/reference/sfLDOF.html" class="external-link">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span><span class="op">)</span>,
   lower <span class="op">=</span> <span class="va">gs_spending_bound</span>,
-  lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/gsDesign/man/sfLDOF.html" class="external-link">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span><span class="op">)</span>,
+  lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://keaven.github.io/gsDesign/reference/sfLDOF.html" class="external-link">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span><span class="op">)</span>,
   h1_spending <span class="op">=</span> <span class="cn">FALSE</span>
 <span class="op">)</span></code></pre></div>
 <p>Design bounds are confirmed with:</p>
@@ -807,16 +807,16 @@
 <span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 3</span></span>
 <span class="co">#&gt;    nsim `Early futility (%)` `Power (%)`</span>
 <span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">1</span>   200                  0.5        88.5</span></code></pre></div>
+<span class="co">#&gt; <span style="color: #BCBCBC;">1</span>   200                    1        91.5</span></code></pre></div>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">xx</span> <span class="op">&lt;-</span> <span class="va">trialsum</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Positive <span class="op">=</span> <span class="op">(</span><span class="va">Z</span> <span class="op">&gt;=</span> <span class="va">upper</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">xx</span><span class="op">$</span><span class="va">k</span>, <span class="va">xx</span><span class="op">$</span><span class="va">Positive</span><span class="op">)</span>
 <span class="co">#&gt;    </span>
 <span class="co">#&gt;     FALSE TRUE</span>
-<span class="co">#&gt;   1     1    0</span>
-<span class="co">#&gt;   2     0    9</span>
+<span class="co">#&gt;   1     2    0</span>
+<span class="co">#&gt;   2     0   13</span>
 <span class="co">#&gt;   3     0   97</span>
-<span class="co">#&gt;   4    22   71</span></code></pre></div>
+<span class="co">#&gt;   4    15   73</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="differences-from-gsdesign">Differences From <strong>gsDesign</strong><a class="anchor" aria-label="anchor" href="#differences-from-gsdesign"></a>
@@ -877,7 +877,7 @@
 <span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  460.</span></code></pre></div>
 <p>Now we derive a design with the same targeted properties using the <strong>gsDesign</strong> package.</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/gsDesign/man/nSurv.html" class="external-link">gsSurv</a></span><span class="op">(</span>
+<code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://keaven.github.io/gsDesign/reference/nSurv.html" class="external-link">gsSurv</a></span><span class="op">(</span>
   k <span class="op">=</span> <span class="fl">3</span>,
   test.type <span class="op">=</span> <span class="fl">1</span>,
   alpha <span class="op">=</span> <span class="fl">.025</span>,
@@ -892,7 +892,7 @@
   minfup <span class="op">=</span> <span class="fl">24</span>,
   T <span class="op">=</span> <span class="fl">36</span>
 <span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/pkg/gsDesign/man/gsBoundSummary.html" class="external-link">gsBoundSummary</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span>row.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="https://keaven.github.io/gsDesign/reference/gsBoundSummary.html" class="external-link">gsBoundSummary</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span>row.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
 <table class="table">
 <thead><tr class="header">
 <th align="left">Analysis</th>
