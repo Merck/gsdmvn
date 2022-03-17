@@ -170,6 +170,11 @@ gs_power_npe <- function(
   #     check & set up parameters                 #
   # --------------------------------------------- #
   K <- length(info)
+  if(info_scale == 0){
+    info <- info0
+  }else if(info_scale == 1){
+    info <- info1
+  }
   if (is.null(info0)) info0 <- info
   if (is.null(info1)) info1 <- info
   if (length(info1) != length(info) || length(info0) != length(info)) stop("gs_power_npe: length of info, info0, info1 must be the same")
@@ -190,6 +195,7 @@ gs_power_npe <- function(
   hgm1 <- NULL
   upperProb <- rep(NA, K)
   lowerProb <- rep(NA, K)
+  
   info_used <- switch (info_scale + 1, info0, info1, info, "gs_power_npe: please input info_scale in c(0, 1, 2)!")
   
   # --------------------------------------------- #
