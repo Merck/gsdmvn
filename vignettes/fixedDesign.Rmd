@@ -1,12 +1,11 @@
 ---
 title: "Fixed Design"
 output:
-  rmarkdown::html_vignette:
-    css: "custom.css"
-    df_print: paged
-    toc: true
-    toc_depth: 2
-    number_sections: true
+  html_document:
+    code_folding: hide
+    toc: yes
+    toc_depth: 4
+    number_sections: yes
 bibliography: gsDesign.bib
 vignette: |
   %\VignetteIndexEntry{Group Sequential Bound Tables}
@@ -55,38 +54,85 @@ alpha <- 0.025
 beta <- 0.1 
 ```
 
-# AHR
+# AHR {.tabset}
 
+## under fixed power 
 ```{r}
 # fixed design with a given power
-fixed_design(x = "AHR", alpha = alpha, power = 1 - beta, ratio = ratio, 
+fixed_design(x = "AHR", 
+             alpha = alpha, power = 1 - beta, 
              enrollRates = enrollRates, failRates = failRates, 
-             studyDuration = studyDuration) %>% 
-  summary_fix() %>% gt()
-
-# fixed design with power calculated
-fixed_design(x = "AHR", alpha = alpha, ratio = ratio, 
-             enrollRates = enrollRates, failRates = failRates, 
-             studyDuration = studyDuration) %>% 
-  summary_fix() %>% gt()
+             studyDuration = studyDuration, ratio = ratio, ) %>% 
+  summary() %>% gt() %>% tab_header(title = "AHR with fixed power")
 ```
 
-# FH
+## under fixed sample size
 ```{r}
-# fixed design with a given power
-fixed_design(x = "FH", alpha = alpha, power = 1 - beta, ratio = ratio, 
+fixed_design(x = "AHR", 
+             alpha = alpha,  
              enrollRates = enrollRates, failRates = failRates, 
-             studyDuration = studyDuration) %>% 
-  summary_fix() %>% gt()
-
-# fixed design with power calculated
-fixed_design(x = "FH", alpha = alpha, ratio = ratio, 
-             enrollRates = enrollRates, failRates = failRates, 
-             studyDuration = studyDuration) %>% 
-  summary_fix() %>% gt()
+             studyDuration = studyDuration, ratio = ratio) %>% 
+  summary() %>% gt() %>% tab_header(title = "AHR with fixed sample size")
 ```
 
-# MB
+# FH {.tabset}
+
+## under fixed power (default rho/gamma)
+```{r}
+# fixed design with a given power with default rho/gamma
+fixed_design(x = "FH", 
+             alpha = alpha, power = 1 - beta, 
+             enrollRates = enrollRates, failRates = failRates, 
+             studyDuration = studyDuration, ratio = ratio) %>% 
+  summary() %>% gt() %>% tab_header(title = "FH with fixed power and default rho/gamma")
+```
+
+## under fixed power (input rho/gamma)
+```{r}
+# fixed design with a given power with input rho/gamma
+fixed_design(x = "FH", 
+             alpha = alpha, power = 1 - beta, 
+             enrollRates = enrollRates, failRates = failRates, 
+             studyDuration = studyDuration, ratio = ratio,
+             rho = 0.5, gamma = 0.5) %>% 
+  summary() %>% gt() %>% tab_header(title = "FH with fixed power and input rho/gamma")
+```
+
+## under fixed sample size (default rho/gamma)
+```{r}
+# fixed design with power calculated
+fixed_design(x = "FH", 
+             alpha = alpha,  
+             enrollRates = enrollRates, failRates = failRates, 
+             studyDuration = studyDuration, ratio = ratio) %>% 
+  summary() %>% gt() %>% tab_header(title = "FH with fixed sample size and default rho/gamma")
+```
+
+## under fixed sample size (input rho/gamma)
+```{r}
+# fixed design with power calculated
+fixed_design(x = "FH", 
+             alpha = alpha,  
+             enrollRates = enrollRates, failRates = failRates, 
+             studyDuration = studyDuration, ratio = ratio,
+             rho = 0.5, gamma = 0.5) %>% 
+  summary() %>% gt() %>% tab_header(title = "FH with fixed sample size and input rho/gamma")
+```
+
+# MB {.tabset}
+
+## under fixed power (default rho/gamma/tau)
+```{r}
+fixed_design(x = "MB", 
+             ratio = ratio, 
+             alpha = alpha, power = 1 - beta,
+             enrollRates = enrollRates,
+             failRates = failRates,
+             studyDuration = studyDuration) %>% 
+  summary %>% gt() %>% tab_header(title = "MB with fixed power and default rho/gamma/tau")
+```
+
+## under fixed power (input rho/gamma/tau)
 ```{r}
 fixed_design(x = "MB", 
              ratio = ratio, 
@@ -94,37 +140,53 @@ fixed_design(x = "MB",
              enrollRates = enrollRates,
              failRates = failRates,
              studyDuration = studyDuration,
-             rho = 0, gamma = 0.5, tau = 6) %>% 
-  summary_fix() %>% gt()
+             rho = 0.5, gamma = 0.5, tau = 4) %>% 
+  summary %>% gt() %>% tab_header(title = "MB with fixed power and input rho/gamma/tau")
+```
 
+
+## under fixed sample size (default rho/gamma/tau)
+```{r}
+fixed_design(x = "MB",
+             ratio = ratio,
+             alpha = alpha,
+             enrollRates = enrollRates,
+             failRates = failRates,
+             studyDuration = studyDuration)%>% 
+  summary %>% gt() %>% tab_header(title = "MB with fixed sample size and default rho/gamma/tau")
+```
+
+## under fixed sample size (input rho/gamma/tau)
+```{r}
 fixed_design(x = "MB",
              ratio = ratio,
              alpha = alpha,
              enrollRates = enrollRates,
              failRates = failRates,
              studyDuration = studyDuration,
-             rho = 0, gamma = 0.5, tau = 6)%>% 
-  summary_fix() %>% gt()
+             rho = 0.5, gamma = 0.5, tau = 4)%>% 
+  summary %>% gt() %>% tab_header(title = "MB with fixed sample size and input rho/gamma/tau")
 ```
 
+# LF {.tabset}
 
-# LF
+## under fixed power
 ```{r}
-# with targted power
 fixed_design(x = "LF", alpha = alpha, power = 1 - beta, 
              ratio = ratio,
              enrollRates = enrollRates,
              failRates = failRates,
              studyDuration = studyDuration) %>% 
-  summary_fix() %>% gt()
-# without targted power
+  summary %>% gt() %>% tab_header(title = "LF with fixed power")
+```
+
+```{r}
 fixed_design(x = "LF", alpha = alpha,  
              ratio = ratio, 
              enrollRates = enrollRates,
              failRates = failRates,
              studyDuration = studyDuration)%>% 
-  summary_fix() %>% gt()
-
+  summary %>% gt() %>% tab_header(title = "LF with fixed sample size")
 ```
 
 

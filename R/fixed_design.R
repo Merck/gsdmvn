@@ -28,7 +28,8 @@
 #'                   failRates = tibble::tibble(Stratum = "All", duration = 100, failRate = log(2) / 12, hr = .7, dropoutRate = .001),
 #'                   studyDuration = 36)
 #' 
-fixed_design <- function(x = "AHR", alpha = 0.025, power = NULL, ratio = NULL, studyDuration = NULL, ...){
+fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD"), 
+                         alpha = 0.025, power = NULL, ratio = 1, studyDuration = 36, ...){
    # --------------------------------------------- #
    #     check inputs                              #
    # --------------------------------------------- #
@@ -39,14 +40,7 @@ fixed_design <- function(x = "AHR", alpha = 0.025, power = NULL, ratio = NULL, s
       stop("fixed_design: please input failRates!")
    }
    
-   if(is.null(ratio)){
-      ratio <- 1
-      message("fixed_design: the default 1:1 randomization ratio is used!")
-   }
-   if(is.null(studyDuration)){
-      studyDuration <- 36
-      message("fixed_design: the default 36 months study duration is used!")
-   }
+   x <- match.arg(x)
    
    y <- switch(x, 
                "AHR" = {
@@ -76,10 +70,17 @@ fixed_design <- function(x = "AHR", alpha = 0.025, power = NULL, ratio = NULL, s
                   list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "AHR")
                   },
                
-               "FH" = { # This will call gs_design_wlr or gs_power_wlr
-                  # if the weight is not inputted, set it as the default
-                  if(!methods::hasArg(weight)){
+               "FH" = {
+                  temp1 <- methods::hasArg(weight)
+                  temp2 <- methods::hasArg(rho)
+                  temp3 <- methods::hasArg(gamma)
+                  if(temp2 + temp3 == 0 & temp1 == 0){
                      weight <- function(x, arm0, arm1){gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5)}
+                  }
+                  if(temp2 + temp3 >=1 & temp1 == 0){
+                     weight <- function(x, arm0, arm1){gsdmvn:::wlr_weight_fh(x, arm0, arm1, 
+                                                                              rho = ifelse(methods::hasArg(rho), rho, 0), 
+                                                                              gamma =ifelse(methods::hasArg(gamma), gamma, 0.5))}
                   }
                   if (!is.null(power)){
                      d <- gs_design_wlr(alpha = alpha, beta = 1 - power,
@@ -111,17 +112,6 @@ fixed_design <- function(x = "AHR", alpha = 0.025, power = NULL, ratio = NULL, s
                
                
                "MB" = {
-                  # check if we have rho, gamma, and tau input
-                  if(!methods::hasArg(rho)){
-                     message("fixed_design: rho is not input and the default value rho = 0 is used!")
-                  }
-                  if(!methods::hasArg(gamma)){
-                     message("fixed_design: gamma is not input and the default value gamma = 0 is used!")
-                  }
-                  if(!methods::hasArg(tau)){
-                     message("fixed_design: tau is not input and the default value tau = 6 is used!")
-                  }
-                  
                   # check if power is NULL or not
                   if(!is.null(power)){
                      d <- gs_design_wlr(alpha = alpha,
@@ -224,6 +214,6 @@ fixed_design <- function(x = "AHR", alpha = 0.025, power = NULL, ratio = NULL, s
 }
 
 # summary function of the fixed design
-summary_fix <- function(y){
+summary <- function(y){
    return(y$analysis)
 }
