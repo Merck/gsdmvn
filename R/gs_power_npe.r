@@ -157,11 +157,10 @@ NULL
 #'   upar = (x %>% filter(Bound=="Upper"))$Z,
 #'   lpar = -(x %>% filter(Bound=="Upper"))$Z)
 
-
 gs_power_npe <- function(
   theta = .1, theta1 = NULL,
   info = 1, info1 = NULL, info0 = NULL,
-  info_scale = 2,
+  info_scale = c(0, 1, 2),
   binding = FALSE,
   upper = gs_b, upar = qnorm(.975), test_upper = TRUE,
   lower = gs_b, lpar = -Inf, test_lower = TRUE,
@@ -170,13 +169,17 @@ gs_power_npe <- function(
   #     check & set up parameters                 #
   # --------------------------------------------- #
   K <- length(info)
+  if(is.null(info0)) info0 <- info
+  if(is.null(info1)) info1 <- info
+  
+  info_scale <- match.arg(info_scale)
   if(info_scale == 0){
     info <- info0
   }else if(info_scale == 1){
     info <- info1
+  }else if(info_scale != 2){
+    info_sacle = 2
   }
-  if (is.null(info0)) info0 <- info
-  if (is.null(info1)) info1 <- info
   if (length(info1) != length(info) || length(info0) != length(info)) stop("gs_power_npe: length of info, info0, info1 must be the same")
   
   if (length(theta) == 1 && K > 1) theta <- rep(theta, K)
@@ -196,8 +199,6 @@ gs_power_npe <- function(
   upperProb <- rep(NA, K)
   lowerProb <- rep(NA, K)
   
-  info_used <- switch (info_scale + 1, info0, info1, info, "gs_power_npe: please input info_scale in c(0, 1, 2)!")
-  
   # --------------------------------------------- #
   #     calculate crossing probability            #
   #    under the alternative hypothesis           #
@@ -214,8 +215,8 @@ gs_power_npe <- function(
     
     if(k == 1){
       # compute the probability to cross upper/lower bound
-      upperProb[1] <- if(b[1] < Inf) {pnorm(b[1], mean = sqrt(info_used[1]) * theta[1], lower.tail = FALSE)}else{0}
-      lowerProb[1] <- if(a[1] > -Inf){pnorm(a[1], mean = sqrt(info_used[1]) * theta[1])}else{0}
+      upperProb[1] <- if(b[1] < Inf) {pnorm(b[1], mean = sqrt(info[1]) * theta[1], lower.tail = FALSE)}else{0}
+      lowerProb[1] <- if(a[1] > -Inf){pnorm(a[1], mean = sqrt(info[1]) * theta[1])}else{0}
       # update the grids
       hgm1_0 <- h1(r = r, theta = 0,         I = info0[1], a = if(binding){a[1]}else{-Inf}, b = b[1])
       hgm1_1 <- h1(r = r, theta = theta1[1], I = info1[1], a = a[1], b = b[1])
@@ -223,13 +224,13 @@ gs_power_npe <- function(
     }else{
       # compute the probability to cross upper bound
       upperProb[k] <- if(b[k]< Inf){
-        hupdate(r = r, theta = theta[k], I = info_used[k], a = b[k], b = Inf,
-                thetam1 = theta[k - 1], Im1 = info_used[k - 1], gm1 = hgm1) %>% summarise(sum(h)) %>% as.numeric()
+        hupdate(r = r, theta = theta[k], I = info[k], a = b[k], b = Inf,
+                thetam1 = theta[k - 1], Im1 = info[k - 1], gm1 = hgm1) %>% summarise(sum(h)) %>% as.numeric()
       }else{0}
       # compute the probability to cross lower bound
       lowerProb[k] <- if(a[k] > -Inf){
-        hupdate(r = r, theta = theta[k], I = info_used[k], a = -Inf, b = a[k],
-                thetam1 = theta[k - 1], Im1 = info_used[k - 1], gm1 = hgm1) %>% summarise(sum(h)) %>% as.numeric()
+        hupdate(r = r, theta = theta[k], I = info[k], a = -Inf, b = a[k],
+                thetam1 = theta[k - 1], Im1 = info[k - 1], gm1 = hgm1) %>% summarise(sum(h)) %>% as.numeric()
       }else{0}
       
       # update the grids
@@ -251,7 +252,7 @@ gs_power_npe <- function(
     Probability = c(cumsum(upperProb), cumsum(lowerProb)),
     theta = rep(theta, 2),
     theta1 = rep(theta1, 2),
-    IF = rep(info_used / max(info_used), 2),
+    IF = rep(info / max(info), 2),
     info = rep(info, 2),
     info0 = rep(info0, 2),
     info1 = rep(info1, 2),
@@ -269,21 +270,21 @@ gs_power_npe <- function(
     if(k == 1){
       upperProb[1] <- if(b[1] < Inf) {pnorm(b[1], mean = 0, lower.tail = FALSE)}else{0}
       lowerProb[1] <- if(a[1] > -Inf){pnorm(a[1], mean = 0)}else{0}
-      hgm1 <- h1(r = r, theta = 0, I = info_used[1],  a = a[1], b = b[1])
+      hgm1 <- h1(r = r, theta = 0, I = info[1],  a = a[1], b = b[1])
     }else{
       # calculate the probability to cross upper bound
       upperProb[k] <- if(b[k] < Inf){
-        hupdate(r = r, theta = 0, I = info_used[k], a = b[k], b = Inf,
-                thetam1 = 0, Im1 = info_used[k - 1], gm1 = hgm1) %>% summarise(sum(h)) %>% as.numeric()
+        hupdate(r = r, theta = 0, I = info[k], a = b[k], b = Inf,
+                thetam1 = 0, Im1 = info[k - 1], gm1 = hgm1) %>% summarise(sum(h)) %>% as.numeric()
       }else{0}
       # calculate the probability to cross lower bound
       lowerProb[k] <- if(a[k] > -Inf){
-        hupdate(r = r, theta = 0, I = info_used[k], a = -Inf, b = a[k],
-                thetam1 = 0, Im1 = info_used[k - 1], gm1 = hgm1) %>% summarise(sum(h)) %>% as.numeric()
+        hupdate(r = r, theta = 0, I = info[k], a = -Inf, b = a[k],
+                thetam1 = 0, Im1 = info[k - 1], gm1 = hgm1) %>% summarise(sum(h)) %>% as.numeric()
       }else{0}
       
       if(k < K){
-        hgm1 <- hupdate(r = r, theta = 0, thetam1 = 0, I = info_used[k], Im1 = info_used[k-1],  
+        hgm1 <- hupdate(r = r, theta = 0, thetam1 = 0, I = info[k], Im1 = info[k-1],  
                         a = a[k], b = b[k], gm1 = hgm1)
       }
     }
@@ -296,7 +297,7 @@ gs_power_npe <- function(
     Probability = c(cumsum(upperProb), cumsum(lowerProb)),
     theta = rep(rep(0, K), 2),
     theta1 = rep(rep(0, K), 2),
-    IF = rep(info_used / max(info_used), 2),
+    IF = rep(info / max(info), 2),
     info = rep(info, 2),  
     info0 = rep(info0, 2),
     info1 = rep(info1, 2),
