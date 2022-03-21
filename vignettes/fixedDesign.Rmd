@@ -25,6 +25,53 @@ library(gt)
 # it will finally be replaced by `libraray(gsdmvn)`
 devtools::load_all()
 ```
+```{r}
+summary <- function(x, ...) UseMethod("summary", x)
+
+summary.fixed_design <- function(x, as_gt = FALSE, gt_footnote = NULL, gt_title = NULL){
+  if(as_gt == FALSE) return(x$analysis)
+  
+  # set the title
+  if(is.null(gt_title)){
+    gt_title <- switch(x$design, 
+                       "AHR" = { "Fixed Design under AHR Method"},
+                       "FH" = {"Fixed Design under Fleming-Harrington Method"},
+                       "MB" = {"Fixed Design under Magirr-Burman Method"},  
+                       "LF" = {"Fixed Design under Lachin-Foulkes Method"},
+                       "RD" = {"Fixed Design of Risk Difference under Farrington-Manning Method"},
+                       "MaxCombo" = {"Fixed Design under Max Combo Method"})
+  }
+  
+  # set the footnote
+  if(is.null(gt_footnote)){
+    gt_footnote <- switch(x$design, 
+                          "AHR" = { "Power computed with average hazard ratio method."},
+                          "FH" = {
+                            paste0(
+                              "Power for Fleming-Harrington test with (rho = ", x$design_par$rho, 
+                              ", gamma = ", gamma = x$design_par$gamma, 
+                              ") using method of Yung and Liu.")},
+                          "MB" = {
+                            paste0("Power for Fleming-Harrington test with (rho = ", x$design_par$rho, 
+                                   ", gamma = ",  x$design_par$gamma, 
+                                   ", tau =  ", x$design_par$tau, 
+                                   ") computed with method of Yung and Liu.")},  
+                          "LF" = {"Power using Lachin and Foulkes method applied using expected average hazard ratio (AHR) at time of planned analysis."},
+                          "RD" = {"Risk difference power without continuity correction using method of Farrington and Manning."},
+                          "MaxCombo" = {
+                            paste0("Power for MaxCombo test comprised of 2 Fleming-Harrington weighted logrank tests with (rho, gamma, tau) = (",
+                                   paste(apply(do.call(rbind, x$design_par), 2 , paste , collapse = "," ), collapse = " and "), ".")})
+    
+  }
+  ans <- x$analysis %>% 
+    gt::gt() %>% 
+    gt::tab_header(title = gt_title) %>%     
+    gt::tab_footnote(footnote = gt_footnote, locations = gt::cells_title(group = "title"))
+  
+  return(ans)
+}
+```
+
 
 # Parameters
 ```{r}
@@ -52,6 +99,10 @@ ratio <- 1
 alpha <- 0.025 
 # Type II error (1 - power)
 beta <- 0.1 
+
+# max combo tests
+max_combo_test <- data.frame(rho = 0, gamma = c(0, .5), tau = -1, 
+                             test = 1, Analysis = 1, analysisTimes = studyDuration)
 ```
 
 # AHR {.tabset}
@@ -62,8 +113,8 @@ beta <- 0.1
 fixed_design(x = "AHR", 
              alpha = alpha, power = 1 - beta, 
              enrollRates = enrollRates, failRates = failRates, 
-             studyDuration = studyDuration, ratio = ratio, ) %>% 
-  summary() %>% gt() %>% tab_header(title = "AHR with fixed power")
+             studyDuration = studyDuration, ratio = ratio) %>% 
+  summary(as_gt = TRUE) 
 ```
 
 ## under fixed sample size
@@ -72,7 +123,7 @@ fixed_design(x = "AHR",
              alpha = alpha,  
              enrollRates = enrollRates, failRates = failRates, 
              studyDuration = studyDuration, ratio = ratio) %>% 
-  summary() %>% gt() %>% tab_header(title = "AHR with fixed sample size")
+  summary(as_gt = TRUE)
 ```
 
 # FH {.tabset}
@@ -84,7 +135,7 @@ fixed_design(x = "FH",
              alpha = alpha, power = 1 - beta, 
              enrollRates = enrollRates, failRates = failRates, 
              studyDuration = studyDuration, ratio = ratio) %>% 
-  summary() %>% gt() %>% tab_header(title = "FH with fixed power and default rho/gamma")
+  summary(as_gt = TRUE)
 ```
 
 ## under fixed power (input rho/gamma)
@@ -95,8 +146,9 @@ fixed_design(x = "FH",
              enrollRates = enrollRates, failRates = failRates, 
              studyDuration = studyDuration, ratio = ratio,
              rho = 0.5, gamma = 0.5) %>% 
-  summary() %>% gt() %>% tab_header(title = "FH with fixed power and input rho/gamma")
+  summary(as_gt = TRUE)
 ```
+
 
 ## under fixed sample size (default rho/gamma)
 ```{r}
@@ -105,7 +157,7 @@ fixed_design(x = "FH",
              alpha = alpha,  
              enrollRates = enrollRates, failRates = failRates, 
              studyDuration = studyDuration, ratio = ratio) %>% 
-  summary() %>% gt() %>% tab_header(title = "FH with fixed sample size and default rho/gamma")
+  summary(as_gt = TRUE)
 ```
 
 ## under fixed sample size (input rho/gamma)
@@ -116,7 +168,7 @@ fixed_design(x = "FH",
              enrollRates = enrollRates, failRates = failRates, 
              studyDuration = studyDuration, ratio = ratio,
              rho = 0.5, gamma = 0.5) %>% 
-  summary() %>% gt() %>% tab_header(title = "FH with fixed sample size and input rho/gamma")
+  summary(as_gt = TRUE)
 ```
 
 # MB {.tabset}
@@ -129,7 +181,7 @@ fixed_design(x = "MB",
              enrollRates = enrollRates,
              failRates = failRates,
              studyDuration = studyDuration) %>% 
-  summary %>% gt() %>% tab_header(title = "MB with fixed power and default rho/gamma/tau")
+  summary(as_gt = TRUE)
 ```
 
 ## under fixed power (input rho/gamma/tau)
@@ -141,7 +193,7 @@ fixed_design(x = "MB",
              failRates = failRates,
              studyDuration = studyDuration,
              rho = 0.5, gamma = 0.5, tau = 4) %>% 
-  summary %>% gt() %>% tab_header(title = "MB with fixed power and input rho/gamma/tau")
+  summary(as_gt = TRUE)
 ```
 
 
@@ -153,7 +205,7 @@ fixed_design(x = "MB",
              enrollRates = enrollRates,
              failRates = failRates,
              studyDuration = studyDuration)%>% 
-  summary %>% gt() %>% tab_header(title = "MB with fixed sample size and default rho/gamma/tau")
+  summary(as_gt = TRUE) 
 ```
 
 ## under fixed sample size (input rho/gamma/tau)
@@ -165,7 +217,7 @@ fixed_design(x = "MB",
              failRates = failRates,
              studyDuration = studyDuration,
              rho = 0.5, gamma = 0.5, tau = 4)%>% 
-  summary %>% gt() %>% tab_header(title = "MB with fixed sample size and input rho/gamma/tau")
+  summary(as_gt = TRUE)
 ```
 
 # LF {.tabset}
@@ -177,7 +229,7 @@ fixed_design(x = "LF", alpha = alpha, power = 1 - beta,
              enrollRates = enrollRates,
              failRates = failRates,
              studyDuration = studyDuration) %>% 
-  summary %>% gt() %>% tab_header(title = "LF with fixed power")
+  summary(as_gt = TRUE)
 ```
 
 ```{r}
@@ -186,9 +238,35 @@ fixed_design(x = "LF", alpha = alpha,
              enrollRates = enrollRates,
              failRates = failRates,
              studyDuration = studyDuration)%>% 
-  summary %>% gt() %>% tab_header(title = "LF with fixed sample size")
+  summary(as_gt = TRUE)
+```
+
+# MaxCombo
+```{r}
+fixed_design(x = "MaxCombo", alpha = alpha, power = 1 - beta,
+             ratio = ratio, 
+             enrollRates = enrollRates,
+             failRates = failRates, 
+             max_combo_test = max_combo_test) %>% 
+  summary(as_gt = TRUE)
 ```
 
 
+# Multiple Designs
 
+```{r}
+x_AHR <- fixed_design(x = "AHR", alpha = alpha, ratio = ratio,
+                      enrollRates = enrollRates, failRates = failRates, 
+                      studyDuration = studyDuration)
+x_FH <- fixed_design(x = "FH", alpha = alpha, ratio = ratio, 
+                     enrollRates = enrollRates, failRates = failRates, studyDuration = studyDuration,
+                     rho = 0.5, gamma = 0.5) 
+x_MB <- fixed_design(x = "MB", alpha = alpha, ratio = ratio, 
+                     enrollRates = enrollRates,failRates = failRates, studyDuration = studyDuration, rho = 0.5, gamma = 0.5, tau = 4)
+
+x_LF <- fixed_design(x = "LF", alpha = alpha, ratio = ratio, 
+                     enrollRates = enrollRates, failRates = failRates, studyDuration = studyDuration)
+
+rbind(summary(x_AHR), summary(x_FH), summary(x_MB), summary(x_LF)) %>% gt()
+```
 
