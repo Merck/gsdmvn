@@ -59,7 +59,7 @@ summary.fixed_design <- function(x, as_gt = FALSE, gt_footnote = NULL, gt_title 
                           "LF" = {"Power using Lachin and Foulkes method applied using expected average hazard ratio (AHR) at time of planned analysis."},
                           "RD" = {"Risk difference power without continuity correction using method of Farrington and Manning."},
                           "MaxCombo" = {
-                            paste0("Power for MaxCombo test comprised of 2 Fleming-Harrington weighted logrank tests with (rho, gamma, tau) = (",
+                            paste0("Power for MaxCombo test with Fleming-Harrington tests (rho, gamma, tau) = (",
                                    paste(apply(do.call(rbind, x$design_par), 2 , paste , collapse = "," ), collapse = " and "), ".")})
     
   }
@@ -242,7 +242,7 @@ fixed_design(x = "LF", alpha = alpha,
 ```
 
 # MaxCombo
-```{r}
+```{r, eval=FALSE}
 fixed_design(x = "MaxCombo", alpha = alpha, power = 1 - beta,
              ratio = ratio, 
              enrollRates = enrollRates,
