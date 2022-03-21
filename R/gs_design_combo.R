@@ -185,9 +185,9 @@ gs_design_combo <- function(
                              corr = corr_fh,
                              algorithm = algorithm, ...)
   
-  if(binding == FALSE){
-    prob_null$Probability[prob_null$Bound == "Lower"] <- NA
-  }
+  # if(binding == FALSE){
+  #   prob_null$Probability[prob_null$Bound == "Lower"] <- NA
+  # }
   
   prob$Probability_Null <- prob_null$Probability
   

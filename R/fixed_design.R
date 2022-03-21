@@ -138,9 +138,9 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                                         ratio = 1, 
                                         weight = function(x, arm0, arm1){
                                            gsdmvn:::wlr_weight_fh(x, arm0, arm1, 
-                                                                  rho = ifelse(methods::hasArg(rho), args$rho, 0),
-                                                                  gamma = ifelse(methods::hasArg(gamma), args$gamma, 0),
-                                                                  tau = ifelse(methods::hasArg(tau), args$tau, 6))},
+                                                                  rho = ifelse(has_rho, args$rho, 0),
+                                                                  gamma = ifelse(has_gamma, args$gamma, 0),
+                                                                  tau = ifelse(has_tau, args$tau, 6))},
                                         upper = gs_b,
                                         upar = qnorm(1 - alpha),
                                         lower = gs_b,
@@ -216,6 +216,11 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                
                
                "MaxCombo" = {
+                  max_combo_test = data.frame(rho = if(has_rho){args$rho}else{c(0, 0)},
+                                              gamma = if(has_gamma){args$gamma}else{c(0, 0.5)},
+                                              tau = if(has_tau){args$tau}else{c(-1, -1)},
+                                              test = 1, Analysis = 1,
+                                              analysisTime = studyDuration)
                   # check if power is NULL or not
                   if(!is.null(power)){
                      d <- gs_design_combo(alpha = alpha, beta = 1 - power, ratio = ratio, 
@@ -232,7 +237,7 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                                          lower = gs_b, lpar = -Inf) 
                   }
                   
-                  # get the output of MB
+                  # get the output of max combo
                   ans <- tibble::tibble(Design = "MaxCombo",
                                         N = (d$analysis %>% filter(hypothesis == "H0"))$N,
                                         Events = (d$analysis %>% filter(hypothesis == "H0"))$Events,
@@ -242,9 +247,9 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                                         Power = (d$bounds %>% filter(hypothesis == "H1", Bound == "Upper"))$Probability)
                   
                   list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, 
-                       design = "MaxCombo", design_par = list(rho = args$max_combo_test$rho,
-                                                              gamma = args$max_combo_test$gamma,
-                                                              tau = args$max_combo_test$tau))
+                       design = "MaxCombo", design_par = list(rho = if(has_rho){args$rho}else{c(0, 0)},
+                                                              gamma = if(has_gamma){args$gamma}else{c(0, 0.5)},
+                                                              tau = if(has_tau){args$tau}else{c(-1, -1)}))
                },
                
                "RD" = {

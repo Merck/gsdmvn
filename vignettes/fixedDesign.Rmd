@@ -242,7 +242,7 @@ fixed_design(x = "LF", alpha = alpha,
 ```
 
 # MaxCombo
-```{r, eval=FALSE}
+```{r}
 fixed_design(x = "MaxCombo", alpha = alpha, power = 1 - beta,
              ratio = ratio, 
              enrollRates = enrollRates,
