@@ -13,9 +13,6 @@ vignette: |
   %\VignetteEngine{knitr::rmarkdown}
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 ```{r, message=FALSE, warning=FALSE}
 library(gsDesign)

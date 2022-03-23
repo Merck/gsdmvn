@@ -216,11 +216,10 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                
                
                "MaxCombo" = {
-                  max_combo_test = data.frame(rho = if(has_rho){args$rho}else{c(0, 0)},
+                  max_combo_test <- data.frame(rho = if(has_rho){args$rho}else{c(0, 0)},
                                               gamma = if(has_gamma){args$gamma}else{c(0, 0.5)},
-                                              tau = if(has_tau){args$tau}else{c(-1, -1)},
-                                              test = 1, Analysis = 1,
-                                              analysisTime = studyDuration)
+                                              tau = if(has_tau){args$tau}else{c(-1, -1)}) %>% 
+                     mutate(test = seq(1, length(rho)), Analysis = 1, analysisTimes = studyDuration)
                   # check if power is NULL or not
                   if(!is.null(power)){
                      d <- gs_design_combo(alpha = alpha, beta = 1 - power, ratio = ratio, 
