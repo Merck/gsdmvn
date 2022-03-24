@@ -216,10 +216,12 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                
                
                "MaxCombo" = {
+                  # organize the tests in max combo
                   max_combo_test <- data.frame(rho = if(has_rho){args$rho}else{c(0, 0)},
                                               gamma = if(has_gamma){args$gamma}else{c(0, 0.5)},
                                               tau = if(has_tau){args$tau}else{c(-1, -1)}) %>% 
                      mutate(test = seq(1, length(rho)), Analysis = 1, analysisTimes = studyDuration)
+                  
                   # check if power is NULL or not
                   if(!is.null(power)){
                      d <- gs_design_combo(alpha = alpha, beta = 1 - power, ratio = ratio, 
@@ -229,8 +231,9 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                                           upper = gs_b, upar = qnorm(1 - alpha),
                                           lower = gs_b, lpar = -Inf) 
                   }else{
-                     d <- gs_power_combo(enrollRates = enrollRates,  
-                                         failRates = failRates, ratio = 1, 
+                     d <- gs_power_combo(ratio = ratio,
+                                         enrollRates = enrollRates,  
+                                         failRates = failRates,  
                                          fh_test = max_combo_test, 
                                          upper = gs_b, upar = qnorm(1 - alpha),
                                          lower = gs_b, lpar = -Inf) 

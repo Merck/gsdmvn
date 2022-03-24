@@ -84,7 +84,13 @@ gs_power_combo <- function(enrollRates,
   # Currently only support user defined lower and upper bound
   stopifnot( identical(upper, gs_b) | identical(upper, gs_spending_combo) )
   stopifnot( identical(lower, gs_b) | identical(lower, gs_spending_combo) )
-
+  
+  # --------------------------------------------- #
+  #     get the number of analysis/test           #
+  # --------------------------------------------- #
+  n_analysis <- length(unique(fh_test$Analysis))
+  n_test <- max(fh_test$test)
+  
   # Obtain utilities
   utility <- gs_utility_combo(enrollRates = enrollRates,
                               failRates = failRates,
@@ -104,9 +110,7 @@ gs_power_combo <- function(enrollRates,
   if(length(unique(fh_test$Analysis)) == 1){
     # Fixed design
     min_info_frac <- 1
-
   }else{
-
     info_frac <- tapply(info$info0, info$test, function(x) x / max(x))
     min_info_frac <- apply(do.call(rbind, info_frac), 2, min)
   }
@@ -124,7 +128,7 @@ gs_power_combo <- function(enrollRates,
                     ...)
 
 
-  # Probability Cross Boundary uner Alternative
+  # Probability Cross Boundary under Alternative
   prob <- gs_prob_combo(upper_bound = bound$upper,
                         lower_bound = bound$lower,
                         analysis = info_fh$Analysis,
@@ -140,17 +144,93 @@ gs_power_combo <- function(enrollRates,
                              corr = corr_fh,
                              algorithm = algorithm, ...)
 
-  if(binding == FALSE){
-    prob_null$Probability[prob_null$Bound == "Lower"] <- NA
-  }
+  # if(binding == FALSE){
+  #   prob_null$Probability[prob_null$Bound == "Lower"] <- NA
+  # }
 
   prob$Probability_Null <- prob_null$Probability
-
+  
   # Prepare output
-  db <- merge(data.frame(Analysis = 1:(nrow(prob)/2), prob, Z = unlist(bound)),
-              unique(info_fh[, c("Analysis", "Time", "N", "Events")])
-  )
+  db <- merge(
+    data.frame(Analysis = 1:(nrow(prob)/2), prob, Z = unlist(bound)),
+    info_fh  %>% 
+      tibble::as_tibble() %>% 
+      select(Analysis, Time, N, Events) %>% 
+      unique()) %>% 
+    arrange(desc(Bound))
+  
+  out <- db %>% 
+    dplyr::select(Analysis, Bound, Time, N, Events, Z, Probability, Probability_Null)
+  
+  out_H1 <- out %>% 
+    dplyr::select(Analysis, Bound, Time, N, Events, Z, Probability) %>% 
+    dplyr::mutate(hypothesis = "H1",
+                  `Nominal p` = pnorm(Z * (-1)))
+  
+  out_H0 <- out %>% 
+    dplyr::select(Analysis, Bound, Time, N, Events, Z, Probability_Null) %>% 
+    dplyr::rename(Probability = Probability_Null) %>% 
+    dplyr::mutate(hypothesis = "H0",
+                  `Nominal p` = pnorm(Z * (-1)))
 
-  db[order(db$Bound, decreasing = TRUE), c("Analysis", "Bound", "Time", "N", "Events", "Z", "Probability", "Probability_Null")]
-
+  #db[order(db$Bound, decreasing = TRUE), c("Analysis", "Bound", "Time", "N", "Events", "Z", "Probability", "Probability_Null")]
+  
+  # --------------------------------------------- #
+  #     get bounds to output                      #
+  # --------------------------------------------- #
+  bounds <- rbind(out_H1, out_H0) %>% 
+    select(Analysis, Bound, Probability, hypothesis, Z, `Nominal p`)
+  
+  # --------------------------------------------- #
+  #     get analysis summary to output            #
+  # --------------------------------------------- #
+  # check if rho, gamma = 0 is included in fh_test
+  tmp <- fh_test %>% 
+    filter(rho == 0 & gamma == 0 & tau == -1) %>% 
+    select(test) %>% 
+    unlist() %>% 
+    as.numeric() %>% 
+    unique()
+  if(length(tmp) != 0){
+    AHR_dis <- utility$info_all %>% 
+      filter(test == tmp) %>% 
+      select(AHR) %>% 
+      unlist() %>% 
+      as.numeric()
+  }else{
+    AHR_dis <- gs_info_wlr(
+      enrollRates, 
+      failRates, 
+      ratio, 
+      events = unique(utility$info_all$Events), 
+      analysisTimes = unique(utility$info_all$Time), 
+      weight = eval(parse(text = get_combo_weight(rho = 0, gamma = 0, tau = -1))))$AHR
+  }
+  
+  analysis <- rbind(
+    utility$info_all %>% select(Analysis, test, Time, N, Events), 
+    utility$info_all %>% select(Analysis, test, Time, N, Events)) %>% 
+    
+    mutate(hypothesis = rep(c("H1", "H0"), each = n_analysis * n_test),
+           theta = c(utility$info_all$theta, rep(0, n_analysis * n_test)),
+           EF = Events/tapply(Events, test, function(x) max(x)) %>% unlist() %>% as.numeric()
+    ) %>% 
+    select(Analysis, Time, N, Events, # AHR, theta, info, 
+           EF, hypothesis) %>% 
+    unique() %>% 
+    mutate(AHR = rep(AHR_dis, 2)) %>% 
+    mutate(N = N *n / max(info_fh$N),
+           Events = Events * n / max(info_fh$N))
+  
+  # --------------------------------------------- #
+  #     output                                    #
+  # --------------------------------------------- #
+  message("The AHR reported in the `analysis` table is under the log-rank test.")
+  output <- list(
+    enrollRates = enrollRates %>% mutate(rate = rate * max(analysis$N) / sum(rate * duration) ),
+    failRates = failRates,
+    bounds = bounds, 
+    analysis = analysis)
+  class(output) <- c("combo", class(output))
+  return(output)
 }
