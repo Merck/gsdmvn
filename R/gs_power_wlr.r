@@ -156,7 +156,7 @@ gs_power_wlr <- function(
     bounds = bounds,
     analysis = analysis)
   
-  class(output) <- c("wlr", class(output))
+  class(output) <- c("wlr", "gs_design", class(output))
   
   return(output)
 }

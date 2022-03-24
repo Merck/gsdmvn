@@ -231,6 +231,6 @@ gs_power_combo <- function(enrollRates,
     failRates = failRates,
     bounds = bounds, 
     analysis = analysis)
-  class(output) <- c("combo", class(output))
+  class(output) <- c("combo", "gs_design", class(output))
   return(output)
 }

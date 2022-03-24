@@ -88,30 +88,6 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #' This is the function to format the bounds summary table into gt style.
 #'
 #' @param x an object returned by \code{summary_bound}
@@ -134,25 +110,25 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
 #' @examples 
 #' # the default output 
 #' gs_design_ahr() %>% 
-#'   summary_bound() %>% 
+#'   summary() %>% 
 #'   as_gt()
 #'   
 #' gs_power_ahr() %>% 
-#'   summary_bound() %>% 
+#'   summary() %>% 
 #'   as_gt()
 #'   
 #' gs_design_wlr() %>% 
-#'   summary_bound() %>% 
+#'   summary() %>% 
 #'   as_gt()
 #'   
 #' gs_power_wlr() %>%
-#'   summary_bound() %>%
+#'   summary() %>%
 #'   as_gt()
 #' 
 #' # usage of \code{title = ..., subtitle = ...}
 #' # to edit the title/subtitle 
 #' gs_power_wlr() %>% 
-#'   summary_bound() %>%
+#'   summary() %>%
 #'   as_gt(
 #'     title = "Bound Summary",
 #'     subtitle = "from gs_power_wlr")
@@ -160,7 +136,7 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
 #'# usage of \code{colname_spanner = ..., colname_spannersub = ...}
 #'# to edit the spanner and its sub-spanner
 #' gs_power_wlr() %>% 
-#'   summary_bound() %>%
+#'   summary() %>%
 #'   as_gt(
 #'     colname_spanner = "Cumulative probability to cross boundaries",
 #'     colname_spannersub = c("under H1", "under H0"))
@@ -168,7 +144,7 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
 #'# usage of \code{footnote = ...}
 #'# to edit the footnote
 #' gs_power_wlr() %>% 
-#'   summary_bound() %>%
+#'   summary() %>%
 #'   as_gt(
 #'     footnote = list(content = c("approximate weighted hazard ratio to cross bound.", 
 #'                                 "wAHR is the weighted AHR.",
@@ -180,13 +156,13 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
 #' # usage of \code{display_bound = ...}
 #' # to either show efficacy bound or futility bound, or both(default) 
 #' gs_power_wlr() %>% 
-#'   summary_bound() %>% 
+#'   summary() %>% 
 #'   as_gt(display_bound = "Efficacy")
 #'   
 #' # usage of \code{display_columns = ...}
 #' # to select the columns to display in the summary table
 #' gs_power_wlr() %>%
-#'   summary_bound() %>%
+#'   summary() %>%
 #'   as_gt(display_columns = c("Analysis", "Bound", "Nominal p", "Z", "Probability"))
 #'
 as_gt.gs_design <- function(

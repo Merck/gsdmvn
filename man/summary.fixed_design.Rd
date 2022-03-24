@@ -12,5 +12,5 @@
 \item{...}{additional arguments}
 }
 \description{
-Title
+summary function to fixed_design class
 }
