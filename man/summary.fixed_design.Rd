@@ -14,3 +14,13 @@
 \description{
 summary function to fixed_design class
 }
+\examples{
+fixed_design(x = "AHR", 
+             alpha = alpha,  
+             enrollRates = enrollRates, 
+             failRates = failRates, 
+             studyDuration = studyDuration, 
+             ratio = ratio
+             ) \%>\% 
+             summary()
+}

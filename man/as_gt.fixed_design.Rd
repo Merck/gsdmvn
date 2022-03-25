@@ -20,5 +20,12 @@
 This is the function to format the bounds summary table of fixed design into gt style.
 }
 \examples{
-
+fixed_design(x = "AHR", 
+             alpha = alpha,  
+             enrollRates = enrollRates, 
+             failRates = failRates, 
+             studyDuration = studyDuration, 
+             ratio = ratio
+             ) \%>\% 
+             summary()
 }

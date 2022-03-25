@@ -82,9 +82,9 @@ x_ahr <- gs_design_ahr(
   lower = lower,
   lpar = lpar
   )
-x_ahr \%>\% summary_bound()
-x_ahr \%>\% summary_bound(analysis_vars = c("Time", "Events", "IF"), analysis_decimals = c(1, 0, 2))
-x_ahr \%>\% summary_bound(bound_names = c("A is better", "B is better"))
+x_ahr \%>\% summary()
+x_ahr \%>\% summary(analysis_vars = c("Time", "Events", "IF"), analysis_decimals = c(1, 0, 2))
+x_ahr \%>\% summary(bound_names = c("A is better", "B is better"))
 
 # ---------------------------- #
 #         wlr                  #
@@ -103,7 +103,7 @@ x_wlr <- gs_design_wlr(
   lower = lower,
   lpar = lpar
   )
-summary_bound(x_wlr)
+summary(x_wlr)
 
 # ---------------------------- #
 #         max combo            #
@@ -120,6 +120,6 @@ x_combo <- gsdmvn::gs_design_combo(
   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
   lower = gsdmvn::gs_spending_combo,
   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.2))
-summary_bound(x_combo)
+summary(x_combo)
 
 }

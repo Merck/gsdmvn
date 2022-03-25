@@ -14,7 +14,6 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 as_gt <- function(x, ...) {
   UseMethod("as_gt", x)
 }
@@ -28,7 +27,14 @@ as_gt <- function(x, ...) {
 #' @export as_gt.fixed_design
 #' @exportS3Method 
 #' @examples
-#' 
+#' fixed_design(x = "AHR", 
+#'              alpha = alpha,  
+#'              enrollRates = enrollRates, 
+#'              failRates = failRates, 
+#'              studyDuration = studyDuration, 
+#'              ratio = ratio
+#'              ) %>% 
+#'              summary()
 as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
   # get the design method 
   if("AHR" %in% class(x)){
