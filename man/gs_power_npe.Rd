@@ -10,7 +10,7 @@ gs_power_npe(
   info = 1,
   info1 = NULL,
   info0 = NULL,
-  info_scale = 2,
+  info_scale = c(0, 1, 2),
   binding = FALSE,
   upper = gs_b,
   upar = qnorm(0.975),

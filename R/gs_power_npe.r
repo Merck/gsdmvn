@@ -165,22 +165,21 @@ gs_power_npe <- function(
   upper = gs_b, upar = qnorm(.975), test_upper = TRUE,
   lower = gs_b, lpar = -Inf, test_lower = TRUE,
   r = 18, tol = 1e-6){
+  
   # --------------------------------------------- #
   #     check & set up parameters                 #
   # --------------------------------------------- #
   K <- length(info)
   if(is.null(info0)) info0 <- info
   if(is.null(info1)) info1 <- info
+  if (length(info1) != length(info) || length(info0) != length(info)) stop("gs_power_npe: length of info, info0, info1 must be the same")
   
-  info_scale <- match.arg(info_scale)
+  info_scale <- match.arg(as.character(info_scale), choices = 0:2)
   if(info_scale == 0){
     info <- info0
   }else if(info_scale == 1){
     info <- info1
-  }else if(info_scale != 2){
-    info_sacle = 2
   }
-  if (length(info1) != length(info) || length(info0) != length(info)) stop("gs_power_npe: length of info, info0, info1 must be the same")
   
   if (length(theta) == 1 && K > 1) theta <- rep(theta, K)
   if (is.null(theta1)){theta1 <- theta}else if (length(theta1)==1) theta1 <- rep(theta1, K)
@@ -237,7 +236,7 @@ gs_power_npe <- function(
       if(k < K){
         hgm1_0 <- hupdate(r = r, theta = 0, thetam1 = 0, I = info0[k], Im1 = info0[k-1],
                           a = if(binding){a[k]}else{-Inf}, b = b[k], gm1 = hgm1_0)
-        hgm1_1 <- hupdate(r = r, theta = theta1[k], thetam1 = theta1[k-1],I = info1[k], Im1 = info1[k-1],
+        hgm1_1 <- hupdate(r = r, theta = theta1[k], thetam1 = theta1[k-1], I = info1[k], Im1 = info1[k-1],
                           a = a[k], b = b[k], gm1 = hgm1_1)
         hgm1   <- hupdate(r = r, theta = theta[k], thetam1 = theta[k-1], I = info[k],  Im1 = info[k-1],
                           a = a[k], b = b[k], gm1 = hgm1)
@@ -263,6 +262,11 @@ gs_power_npe <- function(
   #       under the null hypothesis               #
   #            i.e., theta == 0                   #
   # --------------------------------------------- #
+  hgm1_0 <- NULL
+  hgm1_1 <- NULL
+  hgm1 <- NULL
+  upperProb <- rep(NA, K)
+  lowerProb <- rep(NA, K)
   for(k in 1:K){
     # calculate/update the lower/upper bound
     a[k] <- gsdmvn::gs_b(k = k, par = a)

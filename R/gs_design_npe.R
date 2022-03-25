@@ -283,6 +283,7 @@ gs_design_npe <- function(
   minpwr <- gs_power_npe(
     theta = theta, theta1 = theta1,
     info = info * minx, info1 = info * minx, info0 = info0 * minx,
+    info_scale = 2,
     binding = binding,
     upper = upper, upar = upar, test_upper = test_upper,
     lower = lower, lpar = lpar, test_lower = test_lower,
@@ -310,6 +311,7 @@ gs_design_npe <- function(
       maxpwr <- gs_power_npe(
         theta = theta, theta1 = theta1,
         info = info * maxx, info1 = info * maxx, info0 = info0 * maxx,
+        info_scale = 2,
         binding = binding,
         upper = upper, upar = upar, test_upper = test_upper, 
         lower = lower, lpar= lpar, test_lower = test_lower,
@@ -337,8 +339,9 @@ gs_design_npe <- function(
       if (1  - beta < gs_power_npe(
         theta = theta, theta1 = theta1,
         info = info * minx, info1 = info1 * minx, info0 = info0 * minx,
+        info_scale = 2,
         binding = binding,
-        upper=upper, lower=lower, upar = upar, lpar= lpar,
+        upper = upper, lower = lower, upar = upar, lpar= lpar,
         test_upper = test_upper, test_lower = test_lower,
         r = r, tol = tol
       ) %>% 
@@ -389,6 +392,7 @@ gs_design_npe <- function(
   out <- gs_power_npe(
     theta = theta, theta1 = theta1,
     info = info * res$root, info1 = info1 * res$root, info0 = info0 * res$root,
+    info_scale = 2,
     binding = binding,
     upper = upper, upar = upar, test_upper = test_upper,
     lower = lower, lpar = lpar, test_lower = test_lower,
@@ -411,6 +415,7 @@ errbeta <- function(x = 1, K = 1,
     beta -
     gs_power_npe(theta = theta, theta1 = theta1,
                   info = info * x, info1 = info1 * x, info0 = info0 * x, binding = binding,
+                 info_scale = 2,
                   upper = Zupper, lower = Zlower, upar = upar, lpar= lpar,
                   test_upper = test_upper, test_lower = test_lower,
                   r = r, tol = tol

@@ -1,5 +1,5 @@
 ---
-title: "Info_scale in `gs_power_npe`"
+title: "`info_scale` in `gs_power_npe`"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   html_document:
@@ -16,6 +16,109 @@ library(gt)
 library(testthat)
 devtools::load_all()
 ```
+```{r}
+tibble::tibble(argument =         c("theta", "theta1", "info", "info0", "info1"),
+               `efficacy bound` = c("-",     "-",      "-",    "-",     "-"),
+               `futility bound` = c("-",     "Yes",    "-",    "-",     "Yes"),
+               power =            c("Yes",   "-",      "-",    "-",     "-"),
+               type1_error =      c("-",     "-",      "-",    "-",     "-"),
+               IF =               c("-",     "-",      "-",    "-",     "-")) %>% gt()
+
+tibble::tibble(`if` = c("info_scale = 0", "info_scale = 1", "info_scale = 2"),
+               `then` = c("info = info0", "info = info1",   "info = info"),
+               `calculation of IF` = c("info0/max(info0)", "info1/max(info1)", "info/max(info)") ) %>% gt()
+
+```
+
+- No matter what `info_scale` is, the lower and upper bound are decide by `info1` and `info0` under both H1 and H0, respectively.
+- The `info_scale` will affect 
+  + the power by `gs_power_ahr`, `gs_power_wlr`, `gs_power_combo`
+
+# Application to AHR {.tabset}
+```{r}
+hr <- .6
+alpha <- 0.0125
+beta <- .1
+ratio <- 1
+analysisTimes <- 1:2
+K <- 2
+n_per_arm <- 140
+enroll_duration <- .0001
+median_tte <- 0.75
+enrollRates <- tibble::tibble(Stratum = "All", duration = enroll_duration, rate = 2 * n_per_arm / enroll_duration)
+failRates <- tibble::tibble(Stratum = "All",
+                            duration = 1,
+                            failRate = log(2) / median_tte,
+                            hr = .6,
+                            dropoutRate = 0)
+upper <- gs_spending_bound
+upar <- list(sf = gsDesign::sfLDPocock, total_spend = alpha, param = NULL, timing = NULL, max_info = NULL)
+lower <- gs_b
+lpar <- rep(-Inf, 2)
+
+x <- gs_info_ahr(
+    enrollRates = enrollRates,
+    failRates = failRates,
+    ratio = ratio,
+    events = NULL,
+    analysisTimes = analysisTimes)
+```
+
+## `info_scale = 0`
+```{r}
+gs_power_npe(
+    theta = x$theta, 
+    info = x$info, 
+    info0 = x$info0,
+    info_scale = 0,
+    binding = FALSE,
+    upper = upper, 
+    upar = upar,
+    test_upper = TRUE,
+    lower = lower, 
+    lpar = lpar,
+    test_lower = TRUE,
+    r = 18, 
+    tol = 1e-6) %>% gt() %>% tab_header("info_scale = 0")
+```
+
+## `info_scale = 1`
+```{r}
+gs_power_npe(
+    theta = x$theta, 
+    info = x$info, 
+    info0 = x$info0,
+    info_scale = 1,
+    binding = FALSE,
+    upper = upper, 
+    upar = upar,
+    test_upper = TRUE,
+    lower = lower, 
+    lpar = lpar,
+    test_lower = TRUE,
+    r = 18, 
+    tol = 1e-6) %>% gt() %>% tab_header("info_scale = 1")
+```
+
+## `info_scale = 2`
+```{r}
+gs_power_npe(
+    theta = x$theta, 
+    info = x$info, 
+    info0 = x$info0,
+    info_scale = 2,
+    binding = FALSE,
+    upper = upper, 
+    upar = upar,
+    test_upper = TRUE,
+    lower = lower, 
+    lpar = lpar,
+    test_lower = TRUE,
+    r = 18, 
+    tol = 1e-6) %>% gt() %>% tab_header("info_scale = 2")
+```
+
+
 
 # Implementation of `gs_power_npe`
 
@@ -32,17 +135,17 @@ In this case, since `info` = `info1` = `info0`, so the above 3 outputs are the s
 
 ### info_scale = 2
 ```{r}
-gs_power_npe(info_scale = "2") %>% gt() %>% tab_header(title = "info_scale = 2")
+gs_power_npe(info_scale = 2) %>% gt() %>% tab_header(title = "info_scale = 2")
 ```
 
 ### info_scale = 1
 ```{r}
-gs_power_npe(info_scale = "1") %>% gt() %>% tab_header(title = "info_scale = 1")
+gs_power_npe(info_scale = 1) %>% gt() %>% tab_header(title = "info_scale = 1")
 ```
 
 ### info_scale = 0
 ```{r}
-gs_power_npe(info_scale = "0") %>% gt() %>% tab_header(title = "info_scale = 0")
+gs_power_npe(info_scale = 0) %>% gt() %>% tab_header(title = "info_scale = 0")
 ```
 
 ## Fixed Bound {.tabset}
@@ -58,7 +161,7 @@ x <- gs_power_npe(
   info = (1:3) * 40, 
   info0 = (1:3) * 30,
   info1 = (1:3) * 50,
-  info_scale = "2",
+  info_scale = 2,
   upper = gs_b,
   upar = gsDesign::gsDesign(k = 3, sfu = gsDesign::sfLDOF)$upper$bound,
   lower = gs_b, 
@@ -75,7 +178,7 @@ x <- gs_power_npe(
   info = (1:3) * 40, 
   info0 = (1:3) * 30,
   info1 = (1:3) * 50,
-  info_scale = "1",
+  info_scale = 1,
   upper = gs_b,
   upar = gsDesign::gsDesign(k = 3, sfu = gsDesign::sfLDOF)$upper$bound,
   lower = gs_b, 
@@ -92,7 +195,7 @@ x <- gs_power_npe(
   info = (1:3) * 40, 
   info0 = (1:3) * 30,
   info1 = (1:3) * 50,
-  info_scale = "0",
+  info_scale = 0,
   upper = gs_b,
   upar = gsDesign::gsDesign(k = 3, sfu = gsDesign::sfLDOF)$upper$bound,
   lower = gs_b, 
@@ -111,7 +214,7 @@ x <- gs_power_npe(
   info = (1:3) * 40,
   info0 = (1:3) * 30,
   info1 = (1:3) * 50,
-  info_scale = "2",
+  info_scale = 2,
   upper = gs_spending_bound,
   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
   lower = gs_spending_bound,
@@ -128,7 +231,7 @@ x <- gs_power_npe(
   info = (1:3) * 40,
   info0 = (1:3) * 30,
   info1 = (1:3) * 50,
-  info_scale = "1",
+  info_scale = 1,
   upper = gs_spending_bound,
   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
   lower = gs_spending_bound,
@@ -145,7 +248,7 @@ x <- gs_power_npe(
   info = (1:3) * 40,
   info0 = (1:3) * 30,
   info1 = (1:3) * 50,
-  info_scale = "1",
+  info_scale = 1,
   upper = gs_spending_bound,
   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
   lower = gs_spending_bound,
@@ -167,7 +270,7 @@ info <- c(40, 100)
 x <- gs_power_npe(theta = 0,
                   info = info,
                   info0 = NULL,
-                  info_scale = "1",
+                  info_scale = 1,
                   binding = FALSE,
                   upper = gs_spending_bound,
                   upar = list(sf = gsDesign::sfLDOF, param = NULL, total_spend = 0.025),
@@ -227,7 +330,7 @@ x1 <- tibble::tibble(
   ) 
   
 x2 <- gs_power_npe(
-    theta = .1, info = x$n.I, info_scale = "2",
+    theta = .1, info = x$n.I, info_scale = 2,
     upper= gs_spending_bound, upar = list(sf = gsDesign::sfLDOF, param = NULL, total_spend = 0.025),
     lower=  gs_spending_bound, lpar = list(sf = gsDesign::sfHSD, param = -2, total_spend = 0.1))  
 
