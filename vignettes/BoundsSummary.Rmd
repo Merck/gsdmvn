@@ -1,12 +1,11 @@
 ---
 title: "Group Sequential Bound Tables"
 output:
-  rmarkdown::html_vignette:
-    css: "custom.css"
-    df_print: paged
-    toc: true
-    toc_depth: 2
-    number_sections: true
+  html_document:
+    code_folding: hide
+    toc: yes
+    toc_depth: 4
+    number_sections: yes
 bibliography: gsDesign.bib
 vignette: |
   %\VignetteIndexEntry{Group Sequential Bound Tables}
