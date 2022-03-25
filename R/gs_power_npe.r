@@ -177,8 +177,10 @@ gs_power_npe <- function(
   info_scale <- match.arg(as.character(info_scale), choices = 0:2)
   if(info_scale == 0){
     info <- info0
+    info1 <- info0
   }else if(info_scale == 1){
     info <- info1
+    info0 <- info1
   }
   
   if (length(theta) == 1 && K > 1) theta <- rep(theta, K)
