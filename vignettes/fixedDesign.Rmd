@@ -126,7 +126,7 @@ fixed_design(x = "FH",
 
 # MB {.tabset}
 
-## under fixed power (default rho/gamma/tau)
+## under fixed power (default tau)
 ```{r}
 x <- fixed_design(x = "MB", 
              ratio = ratio, 
@@ -138,7 +138,7 @@ x %>% summary()
 x %>% summary() %>% as_gt()
 ```
 
-## under fixed power (custom rho/gamma/tau)
+## under fixed power (custom tau)
 ```{r}
 fixed_design(x = "MB", 
              ratio = ratio, 
@@ -146,13 +146,13 @@ fixed_design(x = "MB",
              enrollRates = enrollRates,
              failRates = failRates,
              studyDuration = studyDuration,
-             rho = 0.5, gamma = 0.5, tau = 4) %>% 
+             tau = 4) %>% 
   summary() %>%  
   as_gt()
 ```
 
 
-## under fixed sample size (default rho/gamma/tau)
+## under fixed sample size (default tau)
 ```{r}
 fixed_design(x = "MB",
              ratio = ratio,
@@ -164,7 +164,7 @@ fixed_design(x = "MB",
   as_gt()
 ```
 
-## under fixed sample size (custom rho/gamma/tau)
+## under fixed sample size (custom tau)
 ```{r}
 fixed_design(x = "MB",
              ratio = ratio,
@@ -172,7 +172,7 @@ fixed_design(x = "MB",
              enrollRates = enrollRates,
              failRates = failRates,
              studyDuration = studyDuration,
-             rho = 0.5, gamma = 0.5, tau = 4) %>% 
+             tau = 4) %>% 
   summary() %>%  
   as_gt()
 ```
@@ -271,7 +271,7 @@ x_FH <- fixed_design(x = "FH", alpha = alpha, ratio = ratio,
 
 x_MB <- fixed_design(x = "MB", alpha = alpha, ratio = ratio, 
                      enrollRates = enrollRates,failRates = failRates, studyDuration = studyDuration, 
-                     rho = 0.5, gamma = 0.5, tau = 4)
+                     tau = 4)
 
 x_LF <- fixed_design(x = "LF", alpha = alpha, ratio = ratio, 
                      enrollRates = enrollRates, failRates = failRates, studyDuration = studyDuration)
