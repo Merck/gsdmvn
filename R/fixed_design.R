@@ -49,14 +49,21 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
    has_tau <- "tau" %in% names(args)
    
    if(has_rho & length(args$rho) > 1 & x %in% c("FH", "MB")){
-      stop("multiple rho can not be used in Fleming-Harrington or Magirr-Burman method!")
+      stop("fixed_design: multiple rho can not be used in Fleming-Harrington or Magirr-Burman method!")
    }
    if(has_gamma & length(args$gamma) > 1 & x %in% c("FH", "MB")){
-      stop("multiple gamma can not be used in Fleming-Harrington or Magirr-Burman method!")
+      stop("fixed_design: multiple gamma can not be used in Fleming-Harrington or Magirr-Burman method!")
    }
    if(has_tau & length(args$tau) > 1 & x %in% c("FH", "MB")){
-      stop("multiple tau can not be used in Fleming-Harrington or Magirr-Burman method!")
+      stop("fixed_design: multiple tau can not be used in Fleming-Harrington or Magirr-Burman method!")
    }
+   if(has_tau & x == "FH"){
+      stop("fixed_design: tau is not needed for Fleming-Harrington (FH) method!")
+   }
+   if(has_rho & has_gamma & x == "MB"){
+      stop("fixed_design: rho and gamma are not needed for Magirr-Burman (MB) method!")
+   }
+   
    
    y <- switch(x, 
                "AHR" = {
@@ -137,9 +144,7 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                                         failRates = failRates,
                                         ratio = 1, 
                                         weight = function(x, arm0, arm1){
-                                           gsdmvn:::wlr_weight_fh(x, arm0, arm1, 
-                                                                  rho = ifelse(has_rho, args$rho, 0),
-                                                                  gamma = ifelse(has_gamma, args$gamma, 0),
+                                           gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0,
                                                                   tau = ifelse(has_tau, args$tau, 6))},
                                         upper = gs_b,
                                         upar = qnorm(1 - alpha),
@@ -151,9 +156,7 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                                        failRates = failRates,
                                        ratio = 1, 
                                        weight = function(x, arm0, arm1){
-                                          gsdmvn:::wlr_weight_fh(x, arm0, arm1, 
-                                                                 rho = ifelse(has_rho, args$rho, 0),
-                                                                 gamma = ifelse(has_gamma, args$gamma, 0),
+                                          gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0,
                                                                  tau = ifelse(has_tau, args$tau, 6))},
                                        upper = gs_b,
                                        upar = qnorm(1 - alpha),
@@ -173,9 +176,7 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                                         Power = (d$bounds %>% filter(hypothesis == "H1", Bound == "Upper"))$Probability)
                   
                   list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, 
-                       design = "MB", design_par = list(rho = ifelse(has_rho, args$rho, 0),
-                                                        gamma = ifelse(has_gamma, args$gamma, 0),
-                                                        tau = ifelse(has_tau, args$tau, 6)))
+                       design = "MB", design_par = list(tau = ifelse(has_tau, args$tau, 6)))
                   
                   
                },
@@ -218,8 +219,8 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                "MaxCombo" = {
                   # organize the tests in max combo
                   max_combo_test <- data.frame(rho = if(has_rho){args$rho}else{c(0, 0)},
-                                              gamma = if(has_gamma){args$gamma}else{c(0, 0.5)},
-                                              tau = if(has_tau){args$tau}else{c(-1, -1)}) %>% 
+                                               gamma = if(has_gamma){args$gamma}else{c(0, 0.5)},
+                                               tau = if(has_tau){args$tau}else{c(-1, -1)}) %>% 
                      mutate(test = seq(1, length(rho)), Analysis = 1, analysisTimes = studyDuration)
                   
                   # check if power is NULL or not
