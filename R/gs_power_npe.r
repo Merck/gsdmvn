@@ -174,7 +174,11 @@ gs_power_npe <- function(
   if(is.null(info1)) info1 <- info
   if (length(info1) != length(info) || length(info0) != length(info)) stop("gs_power_npe: length of info, info0, info1 must be the same")
   
-  info_scale <- match.arg(as.character(info_scale), choices = 0:2)
+  if(methods::missingArg(info_scale)){
+    info_scale <- 2
+  }else{
+    info_scale <- match.arg(as.character(info_scale), choices = 0:2)
+  }
   if(info_scale == 0){
     info <- info0
     info1 <- info0
@@ -253,8 +257,8 @@ gs_power_npe <- function(
     Probability = c(cumsum(upperProb), cumsum(lowerProb)),
     theta = rep(theta, 2),
     theta1 = rep(theta1, 2),
-    IF = rep(info / max(info), 2),
-    info = rep(info, 2),
+    IF = rep(info1 / max(info1), 2),
+    info = rep(info1, 2),
     info0 = rep(info0, 2),
     info1 = rep(info1, 2),
     hypothesis = rep("H1", 2*K)) %>% filter(abs(Z) < Inf)
@@ -271,21 +275,21 @@ gs_power_npe <- function(
     if(k == 1){
       upperProb[1] <- if(b[1] < Inf) {pnorm(b[1], mean = 0, lower.tail = FALSE)}else{0}
       lowerProb[1] <- if(a[1] > -Inf){pnorm(a[1], mean = 0)}else{0}
-      hgm1 <- h1(r = r, theta = 0, I = info[1],  a = a[1], b = b[1])
+      hgm1 <- h1(r = r, theta = 0, I = info0[1],  a = a[1], b = b[1])
     }else{
       # calculate the probability to cross upper bound
       upperProb[k] <- if(b[k] < Inf){
-        hupdate(r = r, theta = 0, I = info[k], a = b[k], b = Inf,
-                thetam1 = 0, Im1 = info[k - 1], gm1 = hgm1) %>% summarise(sum(h)) %>% as.numeric()
+        hupdate(r = r, theta = 0, I = info0[k], a = b[k], b = Inf,
+                thetam1 = 0, Im1 = info0[k - 1], gm1 = hgm1) %>% summarise(sum(h)) %>% as.numeric()
       }else{0}
       # calculate the probability to cross lower bound
       lowerProb[k] <- if(a[k] > -Inf){
-        hupdate(r = r, theta = 0, I = info[k], a = -Inf, b = a[k],
-                thetam1 = 0, Im1 = info[k - 1], gm1 = hgm1) %>% summarise(sum(h)) %>% as.numeric()
+        hupdate(r = r, theta = 0, I = info0[k], a = -Inf, b = a[k],
+                thetam1 = 0, Im1 = info0[k - 1], gm1 = hgm1) %>% summarise(sum(h)) %>% as.numeric()
       }else{0}
       
       if(k < K){
-        hgm1 <- hupdate(r = r, theta = 0, thetam1 = 0, I = info[k], Im1 = info[k-1],  
+        hgm1 <- hupdate(r = r, theta = 0, thetam1 = 0, I = info0[k], Im1 = info0[k-1],  
                         a = a[k], b = b[k], gm1 = hgm1)
       }
     }
@@ -299,7 +303,7 @@ gs_power_npe <- function(
     theta = rep(rep(0, K), 2),
     theta1 = rep(rep(0, K), 2),
     IF = rep(info / max(info), 2),
-    info = rep(info, 2),  
+    info = rep(info0, 2),  
     info0 = rep(info0, 2),
     info1 = rep(info1, 2),
     hypothesis = rep("H0", 2*K)) %>% filter(abs(Z) < Inf)
