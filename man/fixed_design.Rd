@@ -7,9 +7,10 @@
 fixed_design(
   x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
   alpha = 0.025,
-  power = NULL,
-  ratio = 1,
-  studyDuration = 36,
+  power = 0.9,
+  ratio = NULL,
+  studyDuration = NULL,
+  hr,
   ...
 )
 }
@@ -23,6 +24,8 @@ fixed_design(
 \item{ratio}{Experimental:Control randomization ratio}
 
 \item{studyDuration}{study duration}
+
+\item{hr}{hazard ratio, input if "LF" is used}
 
 \item{...}{}
 }
