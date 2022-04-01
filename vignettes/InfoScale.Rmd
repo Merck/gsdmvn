@@ -14,8 +14,10 @@ library(gsDesign)
 library(dplyr)
 library(gt)
 library(testthat)
+library(tibble)
 devtools::load_all()
 ```
+
 ```{r}
 tibble::tibble(argument =         c("theta", "theta1", "info", "info0", "info1"),
                `efficacy bound` = c("-",     "-",      "-",    "-",     "-"),
@@ -36,32 +38,19 @@ tibble::tibble(`if` = c("info_scale = 0", "info_scale = 1", "info_scale = 2"),
 
 # Application to AHR {.tabset}
 ```{r}
-hr <- .6
-alpha <- 0.0125
-beta <- .1
-ratio <- 1
-analysisTimes <- 1:2
 K <- 2
 n_per_arm <- 140
 enroll_duration <- .0001
 median_tte <- 0.75
-enrollRates <- tibble::tibble(Stratum = "All", duration = enroll_duration, rate = 2 * n_per_arm / enroll_duration)
-failRates <- tibble::tibble(Stratum = "All",
-                            duration = 1,
-                            failRate = log(2) / median_tte,
-                            hr = .6,
-                            dropoutRate = 0)
-upper <- gs_spending_bound
-upar <- list(sf = gsDesign::sfLDPocock, total_spend = alpha, param = NULL, timing = NULL, max_info = NULL)
-lower <- gs_b
-lpar <- rep(-Inf, 2)
-
+enrollRates <- tibble(Stratum = "All", duration = enroll_duration, rate = 2 * n_per_arm / enroll_duration)
+failRates <- tibble(Stratum = "All", duration = 1, failRate = log(2) / median_tte, hr = .6, dropoutRate = 0)
 x <- gs_info_ahr(
     enrollRates = enrollRates,
     failRates = failRates,
-    ratio = ratio,
+    ratio = 1,
     events = NULL,
-    analysisTimes = analysisTimes)
+    analysisTimes = 1:2)
+x
 ```
 
 ## `info_scale = 0`
@@ -72,11 +61,11 @@ gs_power_npe(
     info0 = x$info0,
     info_scale = 0,
     binding = FALSE,
-    upper = upper, 
-    upar = upar,
+    upper = gs_spending_bound, 
+    upar = list(sf = gsDesign::sfLDPocock, total_spend = 0.0125, param = NULL, timing = NULL, max_info = NULL),
     test_upper = TRUE,
-    lower = lower, 
-    lpar = lpar,
+    lower = gs_b, 
+    lpar = rep(-Inf, 2),
     test_lower = TRUE,
     r = 18, 
     tol = 1e-6) %>% gt() %>% tab_header("info_scale = 0")
@@ -90,11 +79,11 @@ gs_power_npe(
     info0 = x$info0,
     info_scale = 1,
     binding = FALSE,
-    upper = upper, 
-    upar = upar,
+    upper = gs_spending_bound, 
+    upar = list(sf = gsDesign::sfLDPocock, total_spend = 0.0125, param = NULL, timing = NULL, max_info = NULL),
     test_upper = TRUE,
-    lower = lower, 
-    lpar = lpar,
+    lower = gs_b, 
+    lpar = rep(-Inf, 2),
     test_lower = TRUE,
     r = 18, 
     tol = 1e-6) %>% gt() %>% tab_header("info_scale = 1")
@@ -108,17 +97,103 @@ gs_power_npe(
     info0 = x$info0,
     info_scale = 2,
     binding = FALSE,
-    upper = upper, 
-    upar = upar,
+    upper = gs_spending_bound, 
+    upar = list(sf = gsDesign::sfLDPocock, total_spend = 0.0125, param = NULL, timing = NULL, max_info = NULL),
     test_upper = TRUE,
-    lower = lower, 
-    lpar = lpar,
+    lower = gs_b, 
+    lpar = rep(-Inf, 2),
     test_lower = TRUE,
     r = 18, 
     tol = 1e-6) %>% gt() %>% tab_header("info_scale = 2")
 ```
 
+```{r}
+gs_power_npe(
+    theta = x$theta, 
+    info = x$info, 
+    info0 = x$info0 - 2,
+    info_scale = 2,
+    binding = FALSE,
+    upper = gs_spending_bound, 
+    upar = list(sf = gsDesign::sfLDPocock, total_spend = 0.0125, param = NULL, timing = NULL, max_info = NULL),
+    test_upper = TRUE,
+    lower = gs_b, 
+    lpar = rep(-Inf, 2),
+    test_lower = TRUE,
+    r = 18, 
+    tol = 1e-6) %>% gt() %>% tab_header("info_scale = 2")
+```
 
+# Implementation in Binary Endpoints {.tabset}
+
+Comparison with the old gsdmvn: https://merck.github.io/gsdmvn/articles/PowerEvaluationWithSpending.html. 
+
+```{r}
+gs_info_binomial <- function(p1, p2, xi1, n, delta = NULL){
+  if (is.null(delta)) delta <- p1 - p2
+  # Compute (constant) effect size at each analysis theta
+  theta <- rep(p1 - p2, length(n))
+  # compute null hypothesis rate, p0
+  p0 <- xi1 * p1 + (1 - xi1) * p2
+  # compute information based on p1, p2
+  info <-  n / (p1 * (1 - p1) / xi1 + p2 * (1 - p2) / (1 - xi1))
+  # compute information based on null hypothesis rate of p0
+  info0 <- n / (p0 * (1 - p0)*(1 / xi1 + 1 / (1 - xi1)))
+  # compute information based on H1 rates of p1star, p2star
+  p1star <- p0 + delta * xi1
+  p2star <- p0 - delta * (1 - xi1)
+  info1 <-  n / (p1star * (1 - p1star) / xi1 + p2star * (1 - p2star) / (1 - xi1))
+  return(tibble(Analysis = 1:length(n),
+                n = n,
+                theta = theta,
+                theta1 = rep(delta, length(n)),
+                info = info,
+                info0 = info0,
+                info1 = info1))
+}
+
+h1 <- gs_info_binomial(p1 = .15, p2 = .1, xi1 = .5, n = c(350, 700, 1400))
+h1
+```
+
+## `info_scale = 0`
+
+```{r}
+gs_power_npe(theta = h1$theta, theta1 = h1$theta, 
+             info = h1$info, info0 = h1$info0, info1 = h1$info1,
+             upper = gs_spending_bound,
+             upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+             lower = gs_spending_bound,
+             lpar = list(sf = gsDesign::sfHSD, param = -2, total_spend = 0.2),
+             info_scale = 0
+)
+```
+
+## `info_scale = 1`
+
+```{r}
+gs_power_npe(theta = h1$theta, theta1 = h1$theta, 
+             info = h1$info, info0 = h1$info0, info1 = h1$info1,
+             upper = gs_spending_bound,
+             upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+             lower = gs_spending_bound,
+             lpar = list(sf = gsDesign::sfHSD, param = -2, total_spend = 0.2),
+             info_scale = 1
+)
+```
+
+## `info_scale = 2`
+
+```{r}
+gs_power_npe(theta = h1$theta, theta1 = h1$theta, 
+             info = h1$info, info0 = h1$info0, info1 = h1$info1,
+             upper = gs_spending_bound,
+             upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+             lower = gs_spending_bound,
+             lpar = list(sf = gsDesign::sfHSD, param = -2, total_spend = 0.2),
+             info_scale = 2
+)
+```
 
 # Implementation of `gs_power_npe`
 

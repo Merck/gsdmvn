@@ -264,15 +264,10 @@ gs_power_npe <- function(
   #       under the null hypothesis               #
   #            i.e., theta == 0                   #
   # --------------------------------------------- #
-  hgm1_0 <- NULL
-  hgm1_1 <- NULL
   hgm1 <- NULL
   upperProb <- rep(NA, K)
   lowerProb <- rep(NA, K)
   for(k in 1:K){
-    # calculate/update the lower/upper bound
-    a[k] <- gsdmvn::gs_b(k = k, par = a)
-    b[k] <- gsdmvn::gs_b(k = k, par = b)
     if(k == 1){
       upperProb[1] <- if(b[1] < Inf) {pnorm(b[1], mean = 0, lower.tail = FALSE)}else{0}
       lowerProb[1] <- if(a[1] > -Inf){pnorm(a[1], mean = 0)}else{0}
@@ -313,5 +308,6 @@ gs_power_npe <- function(
     table_H1,
     table_H0
     ) %>% arrange(desc(hypothesis), desc(Bound), Analysis)
+  
   return(out)
 }
