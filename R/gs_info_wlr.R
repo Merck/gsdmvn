@@ -103,7 +103,7 @@ gs_delta_wlr <- function(arm0,
       term  <- ifelse(is.na(term), 0, term)
       weight(x, arm0, arm1) *  term * ( npsurvSS::hsurv(x, arm1) - npsurvSS::hsurv(x, arm0) )},
       lower=0,
-      upper= tmax, rel.tol = 1e-10)$value
+      upper= tmax, rel.tol = 1e-5)$value
 
 
   } else if (approx == "generalized schoenfeld") {

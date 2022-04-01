@@ -1,12 +1,11 @@
 ---
 title: "Fixed Design"
 output:
-  rmarkdown::html_vignette:
-    css: "custom.css"
-    df_print: paged
-    toc: true
-    toc_depth: 2
-    number_sections: true
+  html_document:
+    code_folding: hide
+    toc: yes
+    toc_depth: 4
+    number_sections: yes
 bibliography: gsDesign.bib
 vignette: |
   %\VignetteIndexEntry{Group Sequential Bound Tables}
@@ -14,9 +13,6 @@ vignette: |
   %\VignetteEngine{knitr::rmarkdown}
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 ```{r, message=FALSE, warning=FALSE}
 library(gsDesign)
@@ -33,7 +29,7 @@ devtools::load_all()
 enrollRates <- tibble::tibble(
    Stratum = "All", 
    duration = 18, 
-   rate = 1)
+   rate = 20)
 
 # Failure rates
 failRates <- tibble::tibble(
@@ -55,38 +51,94 @@ alpha <- 0.025
 beta <- 0.1 
 ```
 
-# AHR
+# AHR {.tabset}
 
+## under fixed power 
 ```{r}
-# fixed design with a given power
-fixed_design(x = "AHR", alpha = alpha, power = 1 - beta, ratio = ratio, 
+x <- fixed_design(x = "AHR", 
+             alpha = alpha, power = 1 - beta, 
              enrollRates = enrollRates, failRates = failRates, 
-             studyDuration = studyDuration) %>% 
-  summary_fix()
+             studyDuration = studyDuration, ratio = ratio) 
 
-# fixed design with power calculated
-fixed_design(x = "AHR", alpha = alpha, ratio = ratio, 
-             enrollRates = enrollRates, failRates = failRates, 
-             studyDuration = studyDuration) %>% 
-  summary_fix()
+x %>% summary()
+
+x %>% summary() %>% as_gt()
 ```
 
-# FH
+## under fixed sample size
 ```{r}
-# fixed design with a given power
-fixed_design(x = "FH", alpha = alpha, power = 1 - beta, ratio = ratio, 
+fixed_design(x = "AHR", 
+             alpha = alpha,  
              enrollRates = enrollRates, failRates = failRates, 
-             studyDuration = studyDuration) %>% 
-  summary_fix()
-
-# fixed design with power calculated
-fixed_design(x = "FH", alpha = alpha, ratio = ratio, 
-             enrollRates = enrollRates, failRates = failRates, 
-             studyDuration = studyDuration) %>% 
-  summary_fix()
+             studyDuration = studyDuration, ratio = ratio) %>% 
+  summary() %>% 
+  as_gt()
 ```
 
-# MB
+# FH {.tabset}
+
+## under fixed power (default rho/gamma)
+```{r}
+# fixed design with a given power with default rho/gamma
+x <- fixed_design(x = "FH", 
+             alpha = alpha, power = 1 - beta, 
+             enrollRates = enrollRates, failRates = failRates, 
+             studyDuration = studyDuration, ratio = ratio) 
+x %>% summary() 
+x %>% summary() %>% as_gt()
+```
+
+## under fixed power (custom rho/gamma)
+```{r}
+# fixed design with a given power with input rho/gamma
+fixed_design(x = "FH", 
+             alpha = alpha, power = 1 - beta, 
+             enrollRates = enrollRates, failRates = failRates, 
+             studyDuration = studyDuration, ratio = ratio,
+             rho = 0.5, gamma = 0.5) %>% 
+  summary() %>%  
+  as_gt()
+```
+
+
+## under fixed sample size (default rho/gamma)
+```{r}
+# fixed design with power calculated
+fixed_design(x = "FH", 
+             alpha = alpha,  
+             enrollRates = enrollRates, failRates = failRates, 
+             studyDuration = studyDuration, ratio = ratio) %>% 
+  summary() %>%  
+  as_gt()
+```
+
+## under fixed sample size (custom rho/gamma)
+```{r}
+# fixed design with power calculated
+fixed_design(x = "FH", 
+             alpha = alpha,  
+             enrollRates = enrollRates, failRates = failRates, 
+             studyDuration = studyDuration, ratio = ratio,
+             rho = 0.5, gamma = 0.5) %>% 
+  summary() %>%  
+  as_gt()
+```
+
+# MB {.tabset}
+
+## under fixed power (default rho/gamma/tau)
+```{r}
+x <- fixed_design(x = "MB", 
+             ratio = ratio, 
+             alpha = alpha, power = 1 - beta,
+             enrollRates = enrollRates,
+             failRates = failRates,
+             studyDuration = studyDuration) 
+x %>% summary() 
+x %>% summary() %>% as_gt()
+```
+
+## under fixed power (custom rho/gamma/tau)
 ```{r}
 fixed_design(x = "MB", 
              ratio = ratio, 
@@ -94,35 +146,140 @@ fixed_design(x = "MB",
              enrollRates = enrollRates,
              failRates = failRates,
              studyDuration = studyDuration,
-             rho = 0, gamma = 0.5, tau = 6) 
+             rho = 0.5, gamma = 0.5, tau = 4) %>% 
+  summary() %>%  
+  as_gt()
+```
 
+
+## under fixed sample size (default rho/gamma/tau)
+```{r}
+fixed_design(x = "MB",
+             ratio = ratio,
+             alpha = alpha,
+             enrollRates = enrollRates,
+             failRates = failRates,
+             studyDuration = studyDuration) %>% 
+  summary() %>%  
+  as_gt()
+```
+
+## under fixed sample size (custom rho/gamma/tau)
+```{r}
 fixed_design(x = "MB",
              ratio = ratio,
              alpha = alpha,
              enrollRates = enrollRates,
              failRates = failRates,
              studyDuration = studyDuration,
-             rho = 0, gamma = 0.5, tau = 6)
+             rho = 0.5, gamma = 0.5, tau = 4) %>% 
+  summary() %>%  
+  as_gt()
 ```
 
+# LF {.tabset}
 
-# LF
+## under fixed power
 ```{r}
-# hr is not input
 fixed_design(x = "LF", alpha = alpha, power = 1 - beta, 
              ratio = ratio,
              enrollRates = enrollRates,
              failRates = failRates,
-             studyDuration = studyDuration)
-# hr is input
-fixed_design(x = "LF", alpha = alpha, power = 1- beta, 
-             ratio = ratio, hr = 0.6,
-             enrollRates = enrollRates,
-             failRates = failRates,
-             studyDuration = studyDuration)
-
+             studyDuration = studyDuration) %>% 
+  summary() %>%  
+  as_gt()
 ```
 
 
+## under sample size
+```{r}
+fixed_design(x = "LF", alpha = alpha,  
+             ratio = ratio, 
+             enrollRates = enrollRates,
+             failRates = failRates,
+             studyDuration = studyDuration) %>% 
+  summary() %>%  
+  as_gt()
+```
 
+# MaxCombo {.tabset}
+
+## under fixed power (default rho/gamma/tau)
+```{r}
+x <- fixed_design(x = "MaxCombo", alpha = alpha, power = 1 - beta,
+             ratio = ratio, 
+             enrollRates = enrollRates,
+             failRates = failRates,
+             studyDuration = studyDuration) 
+x %>% summary() 
+x %>% summary() %>% as_gt()
+```
+
+## under fixed power (custom rho/gamma/tau)
+```{r}
+fixed_design(x = "MaxCombo", alpha = alpha, power = 1 - beta,
+             ratio = ratio, 
+             enrollRates = enrollRates,
+             failRates = failRates,
+             studyDuration = studyDuration,
+             rho = c(0, 0.5, 0.5),
+             gamma = c(0, 0, 0.5),
+             tau = c(-1, 4, 6)) %>% 
+  summary() %>% 
+  as_gt()
+```
+
+
+## under sample size (default rho/gamma/tau)
+
+```{r}
+fixed_design(x = "MaxCombo", alpha = alpha, 
+             ratio = ratio, 
+             enrollRates = enrollRates,
+             failRates = failRates,
+             studyDuration = studyDuration) %>% 
+  summary() %>% 
+  as_gt()
+```
+
+
+## under sample size (custom rho/gamma/tau)
+```{r}
+fixed_design(x = "MaxCombo", alpha = alpha, 
+             ratio = ratio, 
+             enrollRates = enrollRates,
+             failRates = failRates, 
+             studyDuration = studyDuration,
+             rho = c(0, 0.5, 0.5),
+             gamma = c(0, 0, 0.5),
+             tau = c(-1, 4, 6)) %>% 
+  summary() %>% 
+  as_gt()
+```
+
+
+# Multiple Designs
+
+```{r, message = FALSE}
+x_AHR <- fixed_design(x = "AHR", alpha = alpha, ratio = ratio,
+                      enrollRates = enrollRates, failRates = failRates, 
+                      studyDuration = studyDuration)
+
+x_FH <- fixed_design(x = "FH", alpha = alpha, ratio = ratio, 
+                     enrollRates = enrollRates, failRates = failRates, studyDuration = studyDuration,
+                     rho = 0.5, gamma = 0.5) 
+
+x_MB <- fixed_design(x = "MB", alpha = alpha, ratio = ratio, 
+                     enrollRates = enrollRates,failRates = failRates, studyDuration = studyDuration, 
+                     rho = 0.5, gamma = 0.5, tau = 4)
+
+x_LF <- fixed_design(x = "LF", alpha = alpha, ratio = ratio, 
+                     enrollRates = enrollRates, failRates = failRates, studyDuration = studyDuration)
+
+x_MaxCombo <- fixed_design(x = "MaxCombo", alpha = alpha, ratio = ratio, 
+                           enrollRates = enrollRates, failRates = failRates, studyDuration = studyDuration,
+                           rho = c(0, 0.5, 0.5), gamma = c(0, 0, 0.5), tau = c(-1, 4, 6))
+
+rbind(summary(x_AHR), summary(x_FH), summary(x_MB), summary(x_LF), summary(x_MaxCombo)) %>% gt()
+```
 

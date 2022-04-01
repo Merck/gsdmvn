@@ -5,7 +5,7 @@
 \title{Fixed design sample size}
 \usage{
 fixed_design(
-  x = "AHR",
+  x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
   alpha = 0.025,
   power = 0.9,
   ratio = NULL,

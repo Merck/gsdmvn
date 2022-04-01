@@ -300,7 +300,7 @@ gs_design_ahr <- function(
     failRates = failRates,
     bounds = bounds,
     analysis = analysis)
-  class(output) <- c("ahr", class(output))
+  class(output) <- c("ahr", "gs_design", class(output))
   return(output)
   
 }

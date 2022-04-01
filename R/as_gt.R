@@ -14,6 +14,85 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+as_gt <- function(x, ...) {
+  UseMethod("as_gt", x)
+}
+
+#' This is the function to format the bounds summary table of fixed design into gt style.
+#'
+#' @param x 
+#' @param title 
+#' @param footnote 
+#' @return
+#' @export as_gt.fixed_design
+#' @exportS3Method 
+#' @examples
+#' fixed_design(x = "AHR", 
+#'              alpha = alpha,  
+#'              enrollRates = enrollRates, 
+#'              failRates = failRates, 
+#'              studyDuration = studyDuration, 
+#'              ratio = ratio
+#'              ) %>% 
+#'              summary()
+as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
+  # get the design method 
+  if("AHR" %in% class(x)){
+    design_mtd <- "AHR"
+  }else if("FH" %in% class(x)){
+    design_mtd <- "FH"
+  }else if("MB" %in% class(x)){
+    design_mtd <- "MB"
+  }else if("LF" %in% class(x)){
+    design_mtd <- "LF"
+  }else if("RD" %in% class(x)){
+    design_mtd <- "RD"
+  }else if("MaxCombo" %in% class(x)){
+    design_mtd <- "MaxCombo"
+  }
+  
+  
+  # set the default title
+  if(is.null(title)){
+    title <- switch (design_mtd,
+                     "AHR" = {"Fixed Design under AHR Method"},
+                     "FH" = {"Fixed Design under Fleming-Harrington Method"},
+                     "MB" = {"Fixed Design under Magirr-Burman Method"},
+                     "LF" = {"Fixed Design under Lachin and Foulkes Method"},
+                     "RD" = {"Fixed Design of Risk Difference under Farrington-Manning Method"},
+                     "MaxCombo" = {"Fixed Design under Max Combo Method"}
+                     )
+  }
+  
+  
+  # set the default footnote
+  if(is.null(footnote)){
+    footnote <- switch (design_mtd,
+                        "AHR" = {"Power computed with average hazard ratio method."},
+                        "FH" = {paste0("Power for Fleming-Harrington test",
+                                       substr(x$Design, 3, nchar(x$Design)),
+                                       " using method of Yung and Liu.")},
+                        "MB" = {paste0("Power for Fleming-Harrington test",
+                                       substr(x$Design, 3, nchar(x$Design)),
+                                       " computed with method of Yung and Liu.")},
+                        "LF" = {"Power using Lachin and Foulkes method applied using expected average hazard ratio (AHR) at time of planned analysis."},
+                        "RD" = {"Risk difference power without continuity correction using method of Farrington and Manning."},
+                        "MaxCombo" = {paste0("Power for MaxCombo test with Fleming-Harrington tests",
+                                             substr(x$Design, 9, nchar(x$Design)), "."
+                                             # paste(apply(do.call(rbind, x$design_par), 2 , paste , collapse = "," ), collapse = ") and ("),
+                                             )}
+    )  
+  }
+  
+  ans <- x %>% 
+    mutate(Design = design_mtd) %>% 
+    gt::gt() %>% 
+    gt::tab_header(title = title) %>%     
+    gt::tab_footnote(footnote = footnote, locations = gt::cells_title(group = "title"))
+  
+  return(ans)
+}
+
 
 #' This is the function to format the bounds summary table into gt style.
 #'
@@ -32,30 +111,30 @@
 #' @param display_inf_bound a logic value (TRUE or FALSE) whether to display the +-inf bound
 #' 
 #' @return a gt table summarizing the bounds table in group sequential designs
-#' @export
-#'
+#' @export as_gt.gs_design
+#' @exportS3Method
 #' @examples 
 #' # the default output 
 #' gs_design_ahr() %>% 
-#'   summary_bound() %>% 
+#'   summary() %>% 
 #'   as_gt()
 #'   
 #' gs_power_ahr() %>% 
-#'   summary_bound() %>% 
+#'   summary() %>% 
 #'   as_gt()
 #'   
 #' gs_design_wlr() %>% 
-#'   summary_bound() %>% 
+#'   summary() %>% 
 #'   as_gt()
 #'   
 #' gs_power_wlr() %>%
-#'   summary_bound() %>%
+#'   summary() %>%
 #'   as_gt()
 #' 
 #' # usage of \code{title = ..., subtitle = ...}
 #' # to edit the title/subtitle 
 #' gs_power_wlr() %>% 
-#'   summary_bound() %>%
+#'   summary() %>%
 #'   as_gt(
 #'     title = "Bound Summary",
 #'     subtitle = "from gs_power_wlr")
@@ -63,7 +142,7 @@
 #'# usage of \code{colname_spanner = ..., colname_spannersub = ...}
 #'# to edit the spanner and its sub-spanner
 #' gs_power_wlr() %>% 
-#'   summary_bound() %>%
+#'   summary() %>%
 #'   as_gt(
 #'     colname_spanner = "Cumulative probability to cross boundaries",
 #'     colname_spannersub = c("under H1", "under H0"))
@@ -71,7 +150,7 @@
 #'# usage of \code{footnote = ...}
 #'# to edit the footnote
 #' gs_power_wlr() %>% 
-#'   summary_bound() %>%
+#'   summary() %>%
 #'   as_gt(
 #'     footnote = list(content = c("approximate weighted hazard ratio to cross bound.", 
 #'                                 "wAHR is the weighted AHR.",
@@ -83,16 +162,16 @@
 #' # usage of \code{display_bound = ...}
 #' # to either show efficacy bound or futility bound, or both(default) 
 #' gs_power_wlr() %>% 
-#'   summary_bound() %>% 
+#'   summary() %>% 
 #'   as_gt(display_bound = "Efficacy")
 #'   
 #' # usage of \code{display_columns = ...}
 #' # to select the columns to display in the summary table
 #' gs_power_wlr() %>%
-#'   summary_bound() %>%
+#'   summary() %>%
 #'   as_gt(display_columns = c("Analysis", "Bound", "Nominal p", "Z", "Probability"))
 #'
-as_gt <- function(
+as_gt.gs_design <- function(
   x,
   title = NULL,
   subtitle = NULL,

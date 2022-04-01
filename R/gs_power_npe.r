@@ -308,7 +308,7 @@ gs_power_npe <- function(
     info1 = rep(info1, 2),
     hypothesis = rep("H0", 2*K)) %>% filter(abs(Z) < Inf)
   
-  out <- union_all(
+  out <- dplyr::union_all(
     table_H1,
     table_H0
     ) %>% arrange(desc(hypothesis), desc(Bound), Analysis)

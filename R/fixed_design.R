@@ -7,7 +7,6 @@
 #' @param power Power (`NULL` to compute power or strictly between 0 and `1 - alpha` otherwise)
 #' @param ratio Experimental:Control randomization ratio
 #' @param studyDuration study duration
-#' @param hr hazard ratio, input if "LF" is used
 #' @param ...
 #' 
 #' @return
@@ -29,7 +28,8 @@
 #'                   failRates = tibble::tibble(Stratum = "All", duration = 100, failRate = log(2) / 12, hr = .7, dropoutRate = .001),
 #'                   studyDuration = 36)
 #' 
-fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = NULL, studyDuration = NULL, hr, ...){
+fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"), 
+                         alpha = 0.025, power = NULL, ratio = 1, studyDuration = 36, ...){
    # --------------------------------------------- #
    #     check inputs                              #
    # --------------------------------------------- #
@@ -40,13 +40,22 @@ fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = NULL, stu
       stop("fixed_design: please input failRates!")
    }
    
-   if(is.null(ratio)){
-      ratio <- 1
-      message("fixed_design: the default 1:1 randomization ratio is used!")
+   x <- match.arg(x)
+   args <- list(...)
+   
+   has_weight <- "weight" %in% names(args)
+   has_rho <- "rho" %in% names(args)
+   has_gamma <- "gamma" %in% names(args)
+   has_tau <- "tau" %in% names(args)
+   
+   if(has_rho & length(args$rho) > 1 & x %in% c("FH", "MB")){
+      stop("multiple rho can not be used in Fleming-Harrington or Magirr-Burman method!")
    }
-   if(is.null(studyDuration)){
-      studyDuration <- 36
-      message("fixed_design: the default 36 months study duration is used!")
+   if(has_gamma & length(args$gamma) > 1 & x %in% c("FH", "MB")){
+      stop("multiple gamma can not be used in Fleming-Harrington or Magirr-Burman method!")
+   }
+   if(has_tau & length(args$tau) > 1 & x %in% c("FH", "MB")){
+      stop("multiple tau can not be used in Fleming-Harrington or Magirr-Burman method!")
    }
    
    y <- switch(x, 
@@ -63,23 +72,29 @@ fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = NULL, stu
                                        enrollRates = enrollRates,
                                        failRates = failRates,
                                        ratio  = ratio, 
-                                       analysisTimes = studyDuration)
+                                       analysisTimes = studyDuration,
+                                       events = NULL)
                   }
-                  ans <- tibble::tibble(Design = "FH",
-                                        N = (d$analysis %>% filter(hypothesis == "H0"))$N %>% round(1),
-                                        Events = (d$analysis %>% filter(hypothesis == "H0"))$Events %>% round(1),
-                                        Time = (d$analysis %>% filter(hypothesis == "H0"))$Time %>% round(2),
-                                        Bound = (d$bounds %>% filter(Bound == "Upper" & hypothesis == "H1"))$Z %>% round(4),
-                                        alpha = (d$bounds %>% filter(hypothesis == "H0"))$Probability %>% round(4),
-                                        Power = (d$bounds %>% filter(hypothesis == "H1"))$Probability %>% round(4))
+                  ans <- tibble::tibble(Design = "AHR",
+                                        N = (d$analysis %>% filter(hypothesis == "H0"))$N,
+                                        Events = (d$analysis %>% filter(hypothesis == "H0"))$Events,
+                                        Time = (d$analysis %>% filter(hypothesis == "H0"))$Time,
+                                        Bound = (d$bounds %>% filter(Bound == "Upper" & hypothesis == "H1"))$Z,
+                                        alpha = (d$bounds %>% filter(hypothesis == "H0", Bound == "Upper"))$Probability,
+                                        Power = (d$bounds %>% filter(hypothesis == "H1", Bound == "Upper"))$Probability)
                   
                   list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "AHR")
                   },
                
-               "FH" = { # This will call gs_design_wlr or gs_power_wlr
-                  # if the weight is not inputted, set it as the default
-                  if(!methods::hasArg(weight)){
+               "FH" = {
+                
+                  if(has_weight + has_rho + has_gamma == 0){
                      weight <- function(x, arm0, arm1){gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5)}
+                  }
+                  if(has_weight == 0 & has_rho + has_gamma >= 1){
+                     weight <- function(x, arm0, arm1){gsdmvn:::wlr_weight_fh(x, arm0, arm1, 
+                                                                              rho = ifelse(has_rho, args$rho, 0), 
+                                                                              gamma = ifelse(has_gamma, args$gamma, 0.5))}
                   }
                   if (!is.null(power)){
                      d <- gs_design_wlr(alpha = alpha, beta = 1 - power,
@@ -95,32 +110,25 @@ fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = NULL, stu
                                        failRates = failRates,
                                        ratio = ratio, 
                                        weight = weight,
-                                       analysisTimes = studyDuration)
+                                       analysisTimes = studyDuration,
+                                       events = NULL)
                   }
                   ans <- tibble::tibble(Design = "FH",
-                                        N = (d$analysis %>% filter(hypothesis == "H0"))$N %>% round(1),
-                                        Events = (d$analysis %>% filter(hypothesis == "H0"))$Events %>% round(1),
-                                        Time = (d$analysis %>% filter(hypothesis == "H0"))$Time %>% round(2),
-                                        Bound = (d$bounds %>% filter(Bound == "Upper" & hypothesis == "H1"))$Z %>% round(4),
-                                        alpha = (d$bounds %>% filter(hypothesis == "H0"))$Probability %>% round(4),
-                                        Power = (d$bounds %>% filter(hypothesis == "H1"))$Probability %>% round(4))
+                                        N = (d$analysis %>% filter(hypothesis == "H0"))$N,
+                                        Events = (d$analysis %>% filter(hypothesis == "H0"))$Events,
+                                        Time = (d$analysis %>% filter(hypothesis == "H0"))$Time,
+                                        Bound = (d$bounds %>% filter(Bound == "Upper" & hypothesis == "H1"))$Z,
+                                        alpha = (d$bounds %>% filter(hypothesis == "H0", Bound == "Upper"))$Probability,
+                                        Power = (d$bounds %>% filter(hypothesis == "H1", Bound == "Upper"))$Probability)
                   
-                  list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "FH")
+                  list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, 
+                       design = "FH", design_par = list(rho = if(has_rho){args$rho}else{0}, 
+                                                        gamma = if(has_gamma){args$gamma}else{0.5})
+                       )
                   },
                
                
                "MB" = {
-                  # check if we have rho, gamma, and tau input
-                  if(!methods::hasArg(rho)){
-                     message("fixed_design: rho is not input and the default value rho = 0 is used!")
-                  }
-                  if(!methods::hasArg(gamma)){
-                     message("fixed_design: gamma is not input and the default value gamma = 0 is used!")
-                  }
-                  if(!methods::hasArg(tau)){
-                     message("fixed_design: tau is not input and the default value tau = 6 is used!")
-                  }
-                  
                   # check if power is NULL or not
                   if(!is.null(power)){
                      d <- gs_design_wlr(alpha = alpha,
@@ -130,9 +138,9 @@ fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = NULL, stu
                                         ratio = 1, 
                                         weight = function(x, arm0, arm1){
                                            gsdmvn:::wlr_weight_fh(x, arm0, arm1, 
-                                                                  rho = ifelse(methods::hasArg(rho), rho, 0),
-                                                                  gamma = ifelse(methods::hasArg(gamma), gamma, 0),
-                                                                  tau = ifelse(methods::hasArg(tau), tau, 6))},
+                                                                  rho = ifelse(has_rho, args$rho, 0),
+                                                                  gamma = ifelse(has_gamma, args$gamma, 0),
+                                                                  tau = ifelse(has_tau, args$tau, 6))},
                                         upper = gs_b,
                                         upar = qnorm(1 - alpha),
                                         lower = gs_b,
@@ -144,9 +152,9 @@ fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = NULL, stu
                                        ratio = 1, 
                                        weight = function(x, arm0, arm1){
                                           gsdmvn:::wlr_weight_fh(x, arm0, arm1, 
-                                                                 rho = ifelse(methods::hasArg(rho), rho, 0),
-                                                                 gamma = ifelse(methods::hasArg(gamma), gamma, 0),
-                                                                 tau = ifelse(methods::hasArg(tau), tau, 6))},
+                                                                 rho = ifelse(has_rho, args$rho, 0),
+                                                                 gamma = ifelse(has_gamma, args$gamma, 0),
+                                                                 tau = ifelse(has_tau, args$tau, 6))},
                                        upper = gs_b,
                                        upar = qnorm(1 - alpha),
                                        lower = gs_b,
@@ -154,39 +162,41 @@ fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = NULL, stu
                                        analysisTimes = studyDuration,
                                        events = NULL) 
                   }
+                  
                   # get the output of MB
                   ans <- tibble::tibble(Design = "MB",
-                                        N = (d$analysis %>% filter(hypothesis == "H0"))$N %>% round(1),
-                                        Events = (d$analysis %>% filter(hypothesis == "H0"))$Events %>% round(1),
-                                        Time = (d$analysis %>% filter(hypothesis == "H0"))$Time %>% round(2),
-                                        Bound = (d$bounds %>% filter(Bound == "Upper" & hypothesis == "H1"))$Z %>% round(4),
-                                        alpha = (d$bounds %>% filter(hypothesis == "H0"))$Probability %>% round(4),
-                                        Power = (d$bounds %>% filter(hypothesis == "H1"))$Probability %>% round(4))
+                                        N = (d$analysis %>% filter(hypothesis == "H0"))$N,
+                                        Events = (d$analysis %>% filter(hypothesis == "H0"))$Events,
+                                        Time = (d$analysis %>% filter(hypothesis == "H0"))$Time,
+                                        Bound = (d$bounds %>% filter(Bound == "Upper" & hypothesis == "H1"))$Z,
+                                        alpha = (d$bounds %>% filter(hypothesis == "H0", Bound == "Upper"))$Probability,
+                                        Power = (d$bounds %>% filter(hypothesis == "H1", Bound == "Upper"))$Probability)
                   
-                  list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "MB")
+                  list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, 
+                       design = "MB", design_par = list(rho = ifelse(has_rho, args$rho, 0),
+                                                        gamma = ifelse(has_gamma, args$gamma, 0),
+                                                        tau = ifelse(has_tau, args$tau, 6)))
                   
                   
                },
                
                  
-               "LF" = { # Should do checks of inputs here
-                  # check the input
-                  m <- length(failRates$failRate)
-                  if (m == 1){S <- NULL}else{S <- failRates$duration[1:(m-1)]}
-                  
-                  if(methods::hasArg(hr)){
-                     message("fixed_design: we ignore failRates$hr since hr is input!")
-                  }else{
-                     if(length(unique(failRates$hr)) == 1){
-                        hr <- unique(failRates$hr)
-                     }else{
-                        hr <- failRates$hr[1]
-                        message("fixed_design: hr is not input and we take h <- failRates$hr[1]!")
-                     }
+               "LF" = { 
+                  # check if it is stratum
+                  if(length(unique(enrollRates$Stratum)) != 1 | length(unique(failRates$Stratum)) != 1){
+                     warning("Lachin-Foulkes is not recommended for stratified designs!")
                   }
                   
-                  d <- gsDesign::nSurv(alpha = alpha, beta = 1 - power, 
-                                       ratio = ratio, hr = hr,
+                  # calculate the S: duration of piecewise constant event rates 
+                  m <- length(failRates$failRate)
+                  if (m == 1){S <- NULL}else{S <- failRates$duration[1:(m-1)]}
+
+                  # calculate the ahr as the hr in nSurv
+                  dd <- gsDesign2::AHR(enrollRates = enrollRates, failRates = failRates, totalDuration = studyDuration, ratio = ratio)
+                  
+                  # use nSuve to develop the design
+                  d <- gsDesign::nSurv(alpha = alpha, beta = if(is.null(power)){NULL}else{1 - power}, 
+                                       ratio = ratio, hr = dd$AHR,
                                        # failRates
                                        lambdaC = failRates$failRate,
                                        S = S, eta = failRates$dropoutRate,  
@@ -195,14 +205,54 @@ fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = NULL, stu
                                        T = studyDuration, minfup = studyDuration - sum(enrollRates$duration))
                   
                   ans <- tibble::tibble(Design = "LF",
-                                        N = d$n %>% round(1),
-                                        Events = d$d %>% round(1),
-                                        Time = d$T %>% round(2),
-                                        alpha = d$alpha %>% round(4),
-                                        Power = d$power %>% round(4))
-                  list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "FH")
+                                        N = d$n,
+                                        Events = d$d,
+                                        Time = d$T,
+                                        Bound = qnorm(1 - alpha),
+                                        alpha = d$alpha,
+                                        Power = d$power)
+                  list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "LF")
                   },
                
+               
+               "MaxCombo" = {
+                  # organize the tests in max combo
+                  max_combo_test <- data.frame(rho = if(has_rho){args$rho}else{c(0, 0)},
+                                              gamma = if(has_gamma){args$gamma}else{c(0, 0.5)},
+                                              tau = if(has_tau){args$tau}else{c(-1, -1)}) %>% 
+                     mutate(test = seq(1, length(rho)), Analysis = 1, analysisTimes = studyDuration)
+                  
+                  # check if power is NULL or not
+                  if(!is.null(power)){
+                     d <- gs_design_combo(alpha = alpha, beta = 1 - power, ratio = ratio, 
+                                          enrollRates = enrollRates, 
+                                          failRates = failRates,
+                                          fh_test = max_combo_test, 
+                                          upper = gs_b, upar = qnorm(1 - alpha),
+                                          lower = gs_b, lpar = -Inf) 
+                  }else{
+                     d <- gs_power_combo(ratio = ratio,
+                                         enrollRates = enrollRates,  
+                                         failRates = failRates,  
+                                         fh_test = max_combo_test, 
+                                         upper = gs_b, upar = qnorm(1 - alpha),
+                                         lower = gs_b, lpar = -Inf) 
+                  }
+                  
+                  # get the output of max combo
+                  ans <- tibble::tibble(Design = "MaxCombo",
+                                        N = (d$analysis %>% filter(hypothesis == "H0"))$N,
+                                        Events = (d$analysis %>% filter(hypothesis == "H0"))$Events,
+                                        Time = (d$analysis %>% filter(hypothesis == "H0"))$Time,
+                                        Bound = (d$bounds %>% filter(Bound == "Upper" & hypothesis == "H1"))$Z,
+                                        alpha = (d$bounds %>% filter(hypothesis == "H0", Bound == "Upper"))$Probability,
+                                        Power = (d$bounds %>% filter(hypothesis == "H1", Bound == "Upper"))$Probability)
+                  
+                  list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, 
+                       design = "MaxCombo", design_par = list(rho = if(has_rho){args$rho}else{c(0, 0)},
+                                                              gamma = if(has_gamma){args$gamma}else{c(0, 0.5)},
+                                                              tau = if(has_tau){args$tau}else{c(-1, -1)}))
+               },
                
                "RD" = {
                   list(sum_ = tibble::tibble(Option = 5, Design = "RD") # everything that needs to be returned should be in the tibble (p_C, p_E, N, alpha, and power)
@@ -211,11 +261,7 @@ fixed_design <- function(x = "AHR", alpha = 0.025, power = .9, ratio = NULL, stu
                
                list(sum_= tibble::tibble(Option = 99, Design = "Not implemented"),
                                            x = "Enter implemented design type in x"))
-   class(y) <- "fixed_design"
+   class(y) <- c("fixed_design", class(y))
    return(y)    
 }
 
-# summary function of the fixed design
-summary_fix <- function(y){
-   return(y$analysis)
-}

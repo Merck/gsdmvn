@@ -185,16 +185,16 @@ gs_design_combo <- function(
                              corr = corr_fh,
                              algorithm = algorithm, ...)
   
-  if(binding == FALSE){
-    prob_null$Probability[prob_null$Bound == "Lower"] <- NA
-  }
+  # if(binding == FALSE){
+  #   prob_null$Probability[prob_null$Bound == "Lower"] <- NA
+  # }
   
   prob$Probability_Null <- prob_null$Probability
   
   # Prepare output
   db <- merge(
     data.frame(Analysis = 1:(nrow(prob)/2), prob, Z = unlist(bound)),
-    info_fh %>% # unique(info_fh[, c("Analysis", "Time", "N", "Events")])
+    info_fh %>% 
       tibble::as_tibble() %>% 
       select(Analysis, Time, N, Events) %>% 
       unique()) %>% 
@@ -202,7 +202,7 @@ gs_design_combo <- function(
     mutate(
       Events = Events * n / max(N),
       N = N * n / max(N)) %>% 
-    # arrage the dataset by Upper bound first and then Lower bound
+    # arrange the dataset by Upper bound first and then Lower bound
     arrange(desc(Bound))
   
   
@@ -233,7 +233,7 @@ gs_design_combo <- function(
   # --------------------------------------------- #
   # check if rho, gamma = 0 is included in fh_test
   tmp <- fh_test %>% 
-    filter(rho == 0 & gamma == 0) %>% 
+    filter(rho == 0 & gamma == 0 & tau == -1) %>% 
     select(test) %>% 
     unlist() %>% 
     as.numeric() %>% 
@@ -280,6 +280,6 @@ gs_design_combo <- function(
     failRates = failRates,
     bounds = bounds, 
     analysis = analysis)
-  class(output) <- c("combo", class(output))
+  class(output) <- c("combo", "gs_design", class(output))
   return(output)
 }
