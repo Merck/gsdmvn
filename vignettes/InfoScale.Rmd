@@ -1,0 +1,421 @@
+---
+title: "`info_scale` in `gs_power_npe`"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    code_folding: hide
+    toc: yes
+    toc_depth: 4
+    number_sections: yes
+---
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+library(gsDesign)
+library(dplyr)
+library(gt)
+library(testthat)
+library(tibble)
+devtools::load_all()
+```
+
+```{r}
+tibble::tibble(argument =         c("theta", "theta1", "info", "info0", "info1"),
+               `efficacy bound` = c("-",     "-",      "-",    "-",     "-"),
+               `futility bound` = c("-",     "Yes",    "-",    "-",     "Yes"),
+               power =            c("Yes",   "-",      "-",    "-",     "-"),
+               type1_error =      c("-",     "-",      "-",    "-",     "-"),
+               IF =               c("-",     "-",      "-",    "-",     "-")) %>% gt()
+
+tibble::tibble(`if` = c("info_scale = 0", "info_scale = 1", "info_scale = 2"),
+               `then` = c("info = info0", "info = info1",   "info = info"),
+               `calculation of IF` = c("info0/max(info0)", "info1/max(info1)", "info/max(info)") ) %>% gt()
+
+```
+
+- No matter what `info_scale` is, the lower and upper bound are decide by `info1` and `info0` under both H1 and H0, respectively.
+- The `info_scale` will affect 
+  + the power by `gs_power_ahr`, `gs_power_wlr`, `gs_power_combo`
+
+# Application to AHR {.tabset}
+```{r}
+K <- 2
+n_per_arm <- 140
+enroll_duration <- .0001
+median_tte <- 0.75
+enrollRates <- tibble(Stratum = "All", duration = enroll_duration, rate = 2 * n_per_arm / enroll_duration)
+failRates <- tibble(Stratum = "All", duration = 1, failRate = log(2) / median_tte, hr = .6, dropoutRate = 0)
+x <- gs_info_ahr(
+    enrollRates = enrollRates,
+    failRates = failRates,
+    ratio = 1,
+    events = NULL,
+    analysisTimes = 1:2)
+x
+```
+
+## `info_scale = 0`
+```{r}
+gs_power_npe(
+    theta = x$theta, 
+    info = x$info, 
+    info0 = x$info0,
+    info_scale = 0,
+    binding = FALSE,
+    upper = gs_spending_bound, 
+    upar = list(sf = gsDesign::sfLDPocock, total_spend = 0.0125, param = NULL, timing = NULL, max_info = NULL),
+    test_upper = TRUE,
+    lower = gs_b, 
+    lpar = rep(-Inf, 2),
+    test_lower = TRUE,
+    r = 18, 
+    tol = 1e-6) %>% gt() %>% tab_header("info_scale = 0")
+```
+
+## `info_scale = 1`
+```{r}
+gs_power_npe(
+    theta = x$theta, 
+    info = x$info, 
+    info0 = x$info0,
+    info_scale = 1,
+    binding = FALSE,
+    upper = gs_spending_bound, 
+    upar = list(sf = gsDesign::sfLDPocock, total_spend = 0.0125, param = NULL, timing = NULL, max_info = NULL),
+    test_upper = TRUE,
+    lower = gs_b, 
+    lpar = rep(-Inf, 2),
+    test_lower = TRUE,
+    r = 18, 
+    tol = 1e-6) %>% gt() %>% tab_header("info_scale = 1")
+```
+
+## `info_scale = 2`
+```{r}
+gs_power_npe(
+    theta = x$theta, 
+    info = x$info, 
+    info0 = x$info0,
+    info_scale = 2,
+    binding = FALSE,
+    upper = gs_spending_bound, 
+    upar = list(sf = gsDesign::sfLDPocock, total_spend = 0.0125, param = NULL, timing = NULL, max_info = NULL),
+    test_upper = TRUE,
+    lower = gs_b, 
+    lpar = rep(-Inf, 2),
+    test_lower = TRUE,
+    r = 18, 
+    tol = 1e-6) %>% gt() %>% tab_header("info_scale = 2")
+```
+
+```{r}
+gs_power_npe(
+    theta = x$theta, 
+    info = x$info, 
+    info0 = x$info0 - 2,
+    info_scale = 2,
+    binding = FALSE,
+    upper = gs_spending_bound, 
+    upar = list(sf = gsDesign::sfLDPocock, total_spend = 0.0125, param = NULL, timing = NULL, max_info = NULL),
+    test_upper = TRUE,
+    lower = gs_b, 
+    lpar = rep(-Inf, 2),
+    test_lower = TRUE,
+    r = 18, 
+    tol = 1e-6) %>% gt() %>% tab_header("info_scale = 2")
+```
+
+# Implementation in Binary Endpoints {.tabset}
+
+Comparison with the old gsdmvn: https://merck.github.io/gsdmvn/articles/PowerEvaluationWithSpending.html. 
+
+```{r}
+gs_info_binomial <- function(p1, p2, xi1, n, delta = NULL){
+  if (is.null(delta)) delta <- p1 - p2
+  # Compute (constant) effect size at each analysis theta
+  theta <- rep(p1 - p2, length(n))
+  # compute null hypothesis rate, p0
+  p0 <- xi1 * p1 + (1 - xi1) * p2
+  # compute information based on p1, p2
+  info <-  n / (p1 * (1 - p1) / xi1 + p2 * (1 - p2) / (1 - xi1))
+  # compute information based on null hypothesis rate of p0
+  info0 <- n / (p0 * (1 - p0)*(1 / xi1 + 1 / (1 - xi1)))
+  # compute information based on H1 rates of p1star, p2star
+  p1star <- p0 + delta * xi1
+  p2star <- p0 - delta * (1 - xi1)
+  info1 <-  n / (p1star * (1 - p1star) / xi1 + p2star * (1 - p2star) / (1 - xi1))
+  return(tibble(Analysis = 1:length(n),
+                n = n,
+                theta = theta,
+                theta1 = rep(delta, length(n)),
+                info = info,
+                info0 = info0,
+                info1 = info1))
+}
+
+h1 <- gs_info_binomial(p1 = .15, p2 = .1, xi1 = .5, n = c(350, 700, 1400))
+h1
+```
+
+## `info_scale = 0`
+
+```{r}
+gs_power_npe(theta = h1$theta, theta1 = h1$theta, 
+             info = h1$info, info0 = h1$info0, info1 = h1$info1,
+             upper = gs_spending_bound,
+             upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+             lower = gs_spending_bound,
+             lpar = list(sf = gsDesign::sfHSD, param = -2, total_spend = 0.2),
+             info_scale = 0
+)
+```
+
+## `info_scale = 1`
+
+```{r}
+gs_power_npe(theta = h1$theta, theta1 = h1$theta, 
+             info = h1$info, info0 = h1$info0, info1 = h1$info1,
+             upper = gs_spending_bound,
+             upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+             lower = gs_spending_bound,
+             lpar = list(sf = gsDesign::sfHSD, param = -2, total_spend = 0.2),
+             info_scale = 1
+)
+```
+
+## `info_scale = 2`
+
+```{r}
+gs_power_npe(theta = h1$theta, theta1 = h1$theta, 
+             info = h1$info, info0 = h1$info0, info1 = h1$info1,
+             upper = gs_spending_bound,
+             upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+             lower = gs_spending_bound,
+             lpar = list(sf = gsDesign::sfHSD, param = -2, total_spend = 0.2),
+             info_scale = 2
+)
+```
+
+# Implementation of `gs_power_npe`
+
+## Default {.tabset}
+
+The default is a single analysis with type I error controlled:
+
+- `theta` = `theta1` = 0.1
+- `info` = `info1` = `info0` = 1
+- upper bound is `qnorm(.975)`
+- lower bound is `-Inf` and it is non-binding.
+
+In this case, since `info` = `info1` = `info0`, so the above 3 outputs are the same.
+
+### info_scale = 2
+```{r}
+gs_power_npe(info_scale = 2) %>% gt() %>% tab_header(title = "info_scale = 2")
+```
+
+### info_scale = 1
+```{r}
+gs_power_npe(info_scale = 1) %>% gt() %>% tab_header(title = "info_scale = 1")
+```
+
+### info_scale = 0
+```{r}
+gs_power_npe(info_scale = 0) %>% gt() %>% tab_header(title = "info_scale = 0")
+```
+
+## Fixed Bound {.tabset}
+
+In the following example, we investigate a design with 3 analysis. 
+The upper boundary is fixed and calculated from `gsDesign`.
+The lower boundary is `(-1, 0, 0)`.
+
+### info_scale = 2
+```{r}
+x <- gs_power_npe(
+  theta = c(.1, .2, .3),
+  info = (1:3) * 40, 
+  info0 = (1:3) * 30,
+  info1 = (1:3) * 50,
+  info_scale = 2,
+  upper = gs_b,
+  upar = gsDesign::gsDesign(k = 3, sfu = gsDesign::sfLDOF)$upper$bound,
+  lower = gs_b, 
+  lpar = c(-1, 0, 0)) 
+
+x %>% subset(Bound == "Upper") %>% gt() %>% tab_header(title = "upper bound under info_scale = 2")
+x %>% subset(Bound == "Lower") %>% gt() %>% tab_header(title = "lower bound under info_scale = 2")
+```
+
+### info_scale = 1
+```{r}
+x <- gs_power_npe(
+  theta = c(.1, .2, .3),
+  info = (1:3) * 40, 
+  info0 = (1:3) * 30,
+  info1 = (1:3) * 50,
+  info_scale = 1,
+  upper = gs_b,
+  upar = gsDesign::gsDesign(k = 3, sfu = gsDesign::sfLDOF)$upper$bound,
+  lower = gs_b, 
+  lpar = c(-1, 0, 0)) 
+
+x %>% subset(Bound == "Upper") %>% gt() %>% tab_header(title = "upper bound under info_scale = 1")
+x %>% subset(Bound == "Lower") %>% gt() %>% tab_header(title = "lower bound under info_scale = 1")
+```
+
+### info_scale = 0
+```{r}
+x <- gs_power_npe(
+  theta = c(.1, .2, .3),
+  info = (1:3) * 40, 
+  info0 = (1:3) * 30,
+  info1 = (1:3) * 50,
+  info_scale = 0,
+  upper = gs_b,
+  upar = gsDesign::gsDesign(k = 3, sfu = gsDesign::sfLDOF)$upper$bound,
+  lower = gs_b, 
+  lpar = c(-1, 0, 0))
+
+x %>% subset(Bound == "Upper") %>% gt() %>% tab_header(title = "upper bound under info_scale = 0")
+x %>% subset(Bound == "Lower") %>% gt() %>% tab_header(title = "lower bound under info_scale = 0")
+```
+
+## Spending Function Bounds {.tabset}
+
+### info_scale = 2 
+```{r}
+x <- gs_power_npe(
+  theta = c(.1, .2, .3),
+  info = (1:3) * 40,
+  info0 = (1:3) * 30,
+  info1 = (1:3) * 50,
+  info_scale = 2,
+  upper = gs_spending_bound,
+  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+  lower = gs_spending_bound,
+  lpar = list(sf = gsDesign::sfHSD, total_spend = 0.1, param = -1, timing = NULL)) 
+
+x %>% subset(Bound == "Upper") %>% gt() %>% tab_header(title = "upper bound under info_scale = 2")
+x %>% subset(Bound == "Lower") %>% gt() %>% tab_header(title = "lower bound under info_scale = 2")
+```
+
+### info_scale = 1
+```{r}
+x <- gs_power_npe(
+  theta = c(.1, .2, .3),
+  info = (1:3) * 40,
+  info0 = (1:3) * 30,
+  info1 = (1:3) * 50,
+  info_scale = 1,
+  upper = gs_spending_bound,
+  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+  lower = gs_spending_bound,
+  lpar = list(sf = gsDesign::sfHSD, total_spend = 0.1, param = -1, timing = NULL)) 
+
+x %>% subset(Bound == "Upper") %>% gt() %>% tab_header(title = "upper bound under info_scale = 1")
+x %>% subset(Bound == "Lower") %>% gt() %>% tab_header(title = "lower bound under info_scale = 1")
+```
+
+### info_scale = 0
+```{r}
+x <- gs_power_npe(
+  theta = c(.1, .2, .3),
+  info = (1:3) * 40,
+  info0 = (1:3) * 30,
+  info1 = (1:3) * 50,
+  info_scale = 1,
+  upper = gs_spending_bound,
+  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+  lower = gs_spending_bound,
+  lpar = list(sf = gsDesign::sfHSD, total_spend = 0.1, param = -1, timing = NULL)) 
+
+x %>% subset(Bound == "Upper") %>% gt() %>% tab_header(title = "upper bound under info_scale = 0")
+x %>% subset(Bound == "Lower") %>% gt() %>% tab_header(title = "lower bound under info_scale = 0")
+```
+
+
+
+
+# Tests of `gs_power_npe`
+
+## Compare with `mvtnorm`
+```{r}
+# from gs_power_npe()
+info <- c(40, 100)
+x <- gs_power_npe(theta = 0,
+                  info = info,
+                  info0 = NULL,
+                  info_scale = 1,
+                  binding = FALSE,
+                  upper = gs_spending_bound,
+                  upar = list(sf = gsDesign::sfLDOF, param = NULL, total_spend = 0.025),
+                  lower = gs_spending_bound,
+                  lpar = list(sf = gsDesign::sfLDOF, param = NULL, total_spend = 0.02))
+
+x_upper <- x %>% filter(Bound == "Upper", hypothesis == "H1")
+x_lower <- x %>% filter(Bound == "Lower", hypothesis == "H1")
+
+# from mvtnorm - lower bound
+alpha.t <- 0.025
+r <- info[1]/info[2]
+b.ia <- gsDesign::sfLDOF(alpha = alpha.t, t = r)
+alpha.ia <- b.ia$spend
+
+Pb <- function(alpha.t, alpha.ia, r, b){
+  temp = mvtnorm::pmvnorm(lower = c(-Inf, b), 
+                          upper = c(qnorm(1 - alpha.ia), Inf),
+                          corr = rbind(c(1, sqrt(r)), c(sqrt(r), 1)))
+  return(alpha.t - alpha.ia - temp)
+}
+b <- uniroot(Pb, c(1.96, 4), alpha.t = alpha.t, alpha.ia = alpha.ia, r = r)
+pb <- 1- pnorm(b$root)
+
+# from mvtnorm - upper bound
+beta.t <- 0.02
+a.ia <- gsDesign::sfLDOF(alpha = beta.t, t = r)
+beta.ia <- a.ia$spend
+
+Pa <- function(beta.t, beta.ia,  r, a){
+  temp <- mvtnorm::pmvnorm(lower = c(-Inf, qnorm(beta.ia)), 
+                           upper = c(a, Inf),
+                           corr = rbind(c(1, sqrt(r)), c(sqrt(r), 1)))
+  return(beta.t -  beta.ia - temp)
+  }
+a <- uniroot(Pa, c(-4, 1.96), beta.t = beta.t, beta.ia = beta.ia, r = r)
+pa <- pnorm(a$root)
+
+# compare  
+expect_equal(x_upper$Probability, cumsum(c(b.ia$spend, pb)), tolerance = 1e-3)
+expect_equal(x_lower$Probability, cumsum(c(a.ia$spend, pa)), tolerance = 1e-3)
+```
+
+## Compare with `gsDesign`
+```{r}
+x <- gsDesign(
+    k = 3, delta = 0.1, test.type = 4, 
+    alpha = 0.025, beta = 0.1, timing = c(.5, .75),
+    sfu = sfLDOF, sfupar = NULL, sfl = sfHSD, sflpar = -2)
+
+x1 <- tibble::tibble(
+    Analysis = rep(1:3,2), Bound = c(rep("Upper", 3), rep("Lower", 3)),
+    Z = c(x$upper$bound,x$lower$bound),
+    Probability = c(cumsum(x$upper$prob[,2]), cumsum(x$lower$prob[,2])),
+    theta = rep(x$delta, 6),
+    info = rep(x$n.I, 2)
+  ) 
+  
+x2 <- gs_power_npe(
+    theta = .1, info = x$n.I, info_scale = 2,
+    upper= gs_spending_bound, upar = list(sf = gsDesign::sfLDOF, param = NULL, total_spend = 0.025),
+    lower=  gs_spending_bound, lpar = list(sf = gsDesign::sfHSD, param = -2, total_spend = 0.1))  
+
+# compare upper prob
+prob_x1 <- (x1 %>% filter(Bound == "Upper"))$Probability
+prob_x2 <- (x2 %>% filter(Bound == "Upper", hypothesis == "H1"))$Probability
+expect_equal(prob_x1, prob_x2, tol = 1e-5)
+
+# compare lower prob
+prob_x1 <- (x1 %>% filter(Bound == "Lower"))$Probability
+prob_x2 <- (x2 %>% filter(Bound == "Lower", hypothesis == "H1"))$Probability
+expect_equal(prob_x1, prob_x2, tol = 1e-5)
+```

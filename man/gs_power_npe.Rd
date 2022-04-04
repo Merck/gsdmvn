@@ -10,6 +10,7 @@ gs_power_npe(
   info = 1,
   info1 = NULL,
   info0 = NULL,
+  info_scale = c(0, 1, 2),
   binding = FALSE,
   upper = gs_b,
   upar = qnorm(0.975),
@@ -34,6 +35,10 @@ expected incremental drift at all analyses; used for power calculation}
 
 \item{info0}{statistical information under null hypothesis, if different than \code{info};
 impacts null hypothesis bound calculation}
+
+\item{info_scale}{\code{2} (default): do calculations as currently specified. Since this is default, all will be backwards compatible.
+\code{0}: use null hypothesis info0 for all calculations
+\code{1}: use alternate hypothesis info1 for all calculations}
 
 \item{binding}{indicator of whether futility bound is binding; default of FALSE is recommended}
 
@@ -104,7 +109,7 @@ library(gsDesign)
 library(dplyr)
 
 # Default (single analysis; Type I error controlled)
-gs_power_npe2(theta = 0) \%>\% 
+gs_power_npe(theta = 0) \%>\% 
   filter(Bound == "Upper")
 
 # Fixed bound
