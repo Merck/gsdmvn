@@ -402,6 +402,7 @@ gs_design_npe <- function(
     lower = lower, lpar = lpar, test_lower = test_lower,
     r = r, tol = tol)
   # get the bounds from out_H1
+  suppressMessages(
   bound_H1 <- out_H1 %>% 
     select(Analysis, Bound, Z) %>%
     rename(Z1 = Z) %>% 
@@ -409,6 +410,7 @@ gs_design_npe <- function(
     mutate(Z = coalesce(Z1, Z2)) %>% 
     select(Analysis, Bound, Z) %>% 
     arrange(desc(Bound), Analysis)
+  )
   # calculate the probability under H0
   out_H0 <- gs_power_npe(
     theta = 0, 
@@ -420,10 +422,12 @@ gs_design_npe <- function(
     lower = gs_b, lpar = (bound_H1 %>% filter(Bound == "Lower"))$Z, test_lower = test_lower,
     r = r, tol = tol)
   # combine probability  under H0 and H1
+  suppressMessages(
   out <- out_H1 %>% 
     full_join(out_H0 %>% select(Analysis, Bound, Z, Probability) %>% rename(Probability0 = Probability)) %>% 
     select(Analysis, Bound, Z, Probability, Probability0, theta, IF, info, info0) %>% 
     arrange(desc(Bound), Analysis)
+  )
   
   return(out)
   
