@@ -174,6 +174,7 @@ gs_design_ahr <- function(
     ratio = ratio, 
     events = NULL,
     analysisTimes = analysisTimes)
+  
   finalEvents <- y$Events[nrow(y)]
   IFalt <- y$Events / finalEvents
   
@@ -215,7 +216,7 @@ gs_design_ahr <- function(
     }
   }
   
-  # update `y` with 
+  # update `y` (an object from `gs_power_ahr`) with 
   # 1) analysis NO.
   # 2) the accrual sample size, i.e., `N`
   # 3) `theta1` and `info1`
@@ -234,8 +235,8 @@ gs_design_ahr <- function(
   # --------------------------------------------- #
   suppressMessages(
   allout <- gs_design_npe(
-    theta = y$theta, theta1 = theta1,
-    info = y$info, info0 = y$info0, info1 = info1,
+    theta = y$theta, #theta1 = theta1,
+    info = y$info, info0 = y$info0, #info1 = info1,
     alpha = alpha, beta = beta, binding = binding,
     upper = upper, upar = upar, test_upper = test_upper,
     lower = lower, lpar = lpar, test_lower = test_lower,
@@ -259,18 +260,16 @@ gs_design_ahr <- function(
     # select variables to be output
     select(
       c("Analysis", "Bound", "Time", "N", "Events", 
-        "Z", "Probability", "AHR", "theta", 
-        "info", # "info0", "info1", 
+        "Z", "Probability", "Probability0", "AHR", "theta", 
+        "info", "info0", #"info1", 
         "IF", 
-        "hypothesis",
+        #"hypothesis",
         "~HR at bound", "Nominal p" #, "HR generic (H0)", "HR generic (H1)" 
         )
     ) %>% # "AHR", "theta", "info", "info0")) %>%
     
     # arrange the output table
-    arrange(
-      desc(hypothesis), desc(Bound), Analysis
-    )   # arrange(desc(Bound), Analysis, desc(hypothesis))
+    arrange(desc(Bound), Analysis)
   )
   
   allout$Events <- allout$Events * allout$info[K] / y$info[K]
@@ -280,16 +279,16 @@ gs_design_ahr <- function(
   #     get bounds to output                      #
   # --------------------------------------------- #
   bounds <- allout %>% 
-    select(all_of(c("Analysis", "Bound", "Probability", "hypothesis", "Z",
+    select(all_of(c("Analysis", "Bound", "Probability", "Probability0", "Z",
                     "~HR at bound", "Nominal p" #,"HR generic (H0)", "HR generic (H1)" 
-                    )))
+                    ))) %>% 
+    rename(`Probability under H0` = Probability0) %>% 
+    rename(`Probability under H1` = Probability)
   # --------------------------------------------- #
   #     get analysis summary to output            #
   # --------------------------------------------- #
   analysis <- allout %>% 
-    select(Analysis, Time, N, Events, AHR, theta, info, 
-           # info0, info1, 
-           IF, hypothesis) %>% 
+    select(Analysis, Time, N, Events, AHR, theta, info, info0, IF) %>% 
     unique()
   
   # --------------------------------------------- #

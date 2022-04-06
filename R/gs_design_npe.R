@@ -263,14 +263,15 @@ gs_design_npe <- function(
       Analysis = 1,
       Bound = "Upper",
       Z = qnorm(1 - alpha),
-      Probability = c(1 - beta, alpha),
-      theta = c(theta, 0),
+      Probability = 1 - beta,
+      Probability0 = alpha,
+      theta = theta,
       info = info * minx,
       info0 = info0 * minx,
       #info1 = info1 * minx,
-      IF = info / max(info),
+      IF = info / max(info)
       #IF = info1 / max(info1),
-      hypothesis = c("H1", "H0"))
+      )
     
     return(out)
   } 
