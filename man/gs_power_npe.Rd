@@ -6,9 +6,7 @@
 \usage{
 gs_power_npe(
   theta = 0.1,
-  theta1 = NULL,
   info = 1,
-  info1 = NULL,
   info0 = NULL,
   info_scale = c(0, 1, 2),
   binding = FALSE,
@@ -26,12 +24,7 @@ gs_power_npe(
 \item{theta}{natural parameter for group sequential design representing
 expected incremental drift at all analyses; used for power calculation}
 
-\item{theta1}{natural parameter for alternate hypothesis, if needed for lower bound computation}
-
 \item{info}{statistical information at all analyses for input \code{theta}}
-
-\item{info1}{statistical information under hypothesis used for futility bound calculation if different from
-\code{info}; impacts futility hypothesis bound calculation}
 
 \item{info0}{statistical information under null hypothesis, if different than \code{info};
 impacts null hypothesis bound calculation}
@@ -82,8 +75,7 @@ are not supported by \code{gs_power_npe()}.
  \itemize{
    \item Extract the length of input info as the number of interim analysis.
    \item Validate if input info0 is NULL, so set it equal to info.
-   \item Validate if input info1 is NULL, so set it equal to info.
-   \item Validate if the length of inputs info, info0, and info1 are the same.
+   \item Validate if the length of inputs info and info0 are the same.
    \item Validate if input theta is a scalar, so replicate the value for all k interim analysis.
    \item Validate if input theta1 is NULL and if it is a scalar. If it is NULL,
    set it equal to input theta. If it is a scalar, replicate the value for all k interim analysis.
@@ -98,7 +90,7 @@ are not supported by \code{gs_power_npe()}.
    using \code{h1()}.
    \item Compute cross upper and lower bound probabilities using \code{hupdate()} and \code{h1()}.
    \item Return a tibble of analysis number, Bounds, Z-values, Probability of crossing bounds,
-   theta, theta1, info, info0, and info1
+   theta, theta1, info, and info0.
   }
 }
 \if{html}{The contents of this section are shown in PDF user manual only.}
@@ -148,7 +140,6 @@ gs_power_npe(
 # Same bounds, but power under different theta
 gs_power_npe(
   theta = c(.15, .25, .35), 
-  theta1 = c(.1, .2, .3), 
   info = (1:3) * 40,
   upper = gs_spending_bound,
   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
@@ -159,7 +150,6 @@ gs_power_npe(
 # Typically, 2-sided bounds are binding
 x <- gs_power_npe(
   theta = rep(0, 3), 
-  theta1 = rep(0, 3), 
   info = (1:3) * 40,
   binding = TRUE,
   upper = gs_spending_bound,
@@ -170,7 +160,8 @@ x <- gs_power_npe(
 # Re-use these bounds under alternate hypothesis
 # Always use binding = TRUE for power calculations
 gs_power_npe(
-  theta = c(.1, .2, .3), info = (1:3) * 40,
+  theta = c(.1, .2, .3), 
+  info = (1:3) * 40,
   binding = TRUE,
   upar = (x \%>\% filter(Bound=="Upper"))$Z,
   lpar = -(x \%>\% filter(Bound=="Upper"))$Z)

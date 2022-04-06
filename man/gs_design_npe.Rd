@@ -6,10 +6,8 @@
 \usage{
 gs_design_npe(
   theta = 0.1,
-  theta1 = NULL,
   info = 1,
   info0 = NULL,
-  info1 = NULL,
   alpha = 0.025,
   beta = 0.1,
   binding = FALSE,
@@ -27,15 +25,9 @@ gs_design_npe(
 \item{theta}{natural parameter for group sequential design representing expected incremental drift at all analyses;
 used for power calculation}
 
-\item{theta1}{natural parameter used for lower bound spending; if \code{NULL}, this will be set to \code{theta}
-which yields the usual beta-spending. If set to 0, spending is 2-sided under null hypothesis.}
-
 \item{info}{proportionate statistical information at all analyses for input \code{theta}}
 
 \item{info0}{proportionate statistical information under null hypothesis, if different than alternative;
-impacts null hypothesis bound calculation}
-
-\item{info1}{proportionate statistical information under alternate hypothesis;
 impacts null hypothesis bound calculation}
 
 \item{alpha}{One-sided Type I error}
@@ -62,6 +54,12 @@ lower bound}
 \item{r}{Integer, at least 2; default of 18 recommended by Jennison and Turnbull}
 
 \item{tol}{Tolerance parameter for boundary convergence (on Z-scale)}
+
+\item{theta1}{natural parameter used for lower bound spending; if \code{NULL}, this will be set to \code{theta}
+which yields the usual beta-spending. If set to 0, spending is 2-sided under null hypothesis.}
+
+\item{info1}{proportionate statistical information under alternate hypothesis;
+impacts null hypothesis bound calculation}
 }
 \value{
 a \code{tibble} with columns Analysis, Bound, Z, Probability,  theta, info, info0
@@ -117,6 +115,7 @@ The bound specifications in \code{upper, lower, upar, lpar} will be used to ensu
 \examples{
 library(gsDesign)
 library(dplyr)
+
 # Single analysis
 # Lachin book p 71 difference of proportions example
 pc <- .28 # Control response rate
@@ -124,37 +123,30 @@ pe <- .40 # Experimental response rate
 p0 <- (pc + pe) / 2 # Ave response rate under H0
 # Information per increment of 1 in sample size
 info0 <- 1 / (p0 * (1 - p0) * 4)
-info1 <- 1 / (pc * (1 - pc) * 2 + pe * (1 - pe) * 2)
+info <- 1 / (pc * (1 - pc) * 2 + pe * (1 - pe) * 2)
 # Result should round up to next even number = 652
 # Divide information needed under H1 by information per patient added
-gs_design_npe(
-  theta = pe - pc, 
-  info = info1, 
-  info0 = info0) \%>\% 
-  filter(hypothesis == "H1") \%>\% 
-  select(info) \%>\% 
-  unlist() \%>\% 
-  as.numeric() / info1
+gs_design_npe(theta = pe - pc, info = info, info0 = info0) 
 
 # Fixed bound
 x <- gs_design_npe(
-  theta = c(.1, .2, .3), 
+  theta = c(.1, .2, .3),
   info = (1:3) * 80,
-  info0 = (1:3) * 80, 
-  info1 = (1:3) * 80,
-  upper = gs_b, 
-  upar = gsDesign::gsDesign(k = 3,sfu = gsDesign::sfLDOF)$upper$bound,
-  lower = gs_b, 
+  info0 = (1:3) * 80,
+  upper = gs_b,
+  upar = gsDesign::gsDesign(k = 3, sfu = gsDesign::sfLDOF)$upper$bound,
+  lower = gs_b,
   lpar = c(-1, 0, 0))
 x
 
 # Same upper bound; this represents non-binding Type I error and will total 0.025
 gs_power_npe(
-  theta = rep(0, 3), 
-  info = x \%>\% filter(hypothesis == "H1" & Bound == "Upper") \%>\% select(info0) \%>\% unlist() \%>\% as.numeric(),
-  upar = x \%>\% filter(hypothesis == "H1" & Bound == "Upper") \%>\% select(Z) \%>\% unlist() \%>\% as.numeric(), 
-  lpar = rep(-Inf, 3)) \%>\%
-  filter(Bound == "Upper")
+  theta = rep(0, 3),
+  info = (x \%>\% filter(Bound == "Upper"))$info,
+  upper = gs_b,
+  upar = (x \%>\% filter(Bound == "Upper"))$Z,
+  lower = gs_b,
+  lpar = rep(-Inf, 3)) 
 
 # Spending bound examples
 # Design with futility only at analysis 1; efficacy only at analyses 2, 3
@@ -162,19 +154,20 @@ gs_power_npe(
 # NOTE: test_upper and test_lower DO NOT WORK with gs_b; must explicitly make bounds infinite
 # test_upper and test_lower DO WORK with gs_spending_bound
 gs_design_npe(
-  theta = c(.1, .2, .3), 
-  info = (1:3) * 40, 
+  theta = c(.1, .2, .3),
+  info = (1:3) * 40,
   info0 = (1:3) * 40,
   upper = gs_spending_bound,
   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
-  lower = gs_b, lpar = c(-1, -Inf, -Inf),
+  lower = gs_b, 
+  lpar = c(-1, -Inf, -Inf),
   test_upper = c(FALSE, TRUE, TRUE))
 
 # Spending function bounds
 # 2-sided asymmetric bounds
 # Lower spending based on non-zero effect
 gs_design_npe(
-  theta = c(.1, .2, .3), 
+  theta = c(.1, .2, .3),
   info = (1:3) * 40,
   upper = gs_spending_bound,
   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
@@ -184,8 +177,7 @@ gs_design_npe(
 # Two-sided symmetric spend, O'Brien-Fleming spending
 # Typically, 2-sided bounds are binding
 xx <- gs_design_npe(
-  theta = c(.1, .2, .3), 
-  theta1 = rep(0, 3), 
+  theta = c(.1, .2, .3),
   info = (1:3) * 40,
   binding = TRUE,
   upper = gs_spending_bound,
@@ -196,9 +188,9 @@ xx
 
 # Re-use these bounds under alternate hypothesis
 # Always use binding = TRUE for power calculations
-upar <- (xx \%>\% filter(Bound == "Upper" & hypothesis == "H1"))$Z
+upar <- (xx \%>\% filter(Bound == "Upper"))$Z
 gs_power_npe(
-  theta = c(.1, .2, .3), 
+  theta = c(.1, .2, .3),
   info = (1:3) * 40,
   binding = TRUE,
   upar = upar,
