@@ -100,8 +100,7 @@ gs_power_wlr(
   upper = gs_b,
   upar = gsDesign::gsDesign(k = length(traget_events), test.type = 1, n.I = traget_events, maxn.IPlan = max(traget_events), sfu = sfLDOF, sfupar = NULL)$upper$bound,
   lower = gs_b,           
-  lpar = c(qnorm(.1), rep(-Inf, length(events) - 1))) \%>\% 
-  summary_bound()
+  lpar = c(qnorm(.1), rep(-Inf, length(events) - 1))) 
   
 # calculate the power for targeted analysis time
 gs_power_wlr(
@@ -110,8 +109,7 @@ gs_power_wlr(
   upper = gs_b,
   upar = gsDesign::gsDesign(k = length(traget_events), test.type = 1, n.I = traget_events, maxn.IPlan = max(traget_events), sfu = sfLDOF, sfupar = NULL)$upper$bound,
   lower = gs_b,           
-  lpar = c(qnorm(.1), rep(-Inf, length(events) - 1))) \%>\% 
-  summary_bound()
+  lpar = c(qnorm(.1), rep(-Inf, length(events) - 1))) 
 
 # calculate the power for targeted analysis time & number of events
 gs_power_wlr(
@@ -120,7 +118,6 @@ gs_power_wlr(
   upper = gs_b,
   upar = gsDesign::gsDesign(k = length(traget_events), test.type = 1, n.I = traget_events, maxn.IPlan = max(traget_events), sfu = sfLDOF, sfupar = NULL)$upper$bound,
   lower = gs_b,           
-  lpar = c(qnorm(.1), rep(-Inf, length(events) - 1))) \%>\% 
-  summary_bound()
+  lpar = c(qnorm(.1), rep(-Inf, length(events) - 1))) 
   
 }

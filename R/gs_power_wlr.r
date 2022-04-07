@@ -43,8 +43,7 @@
 #'   upper = gs_b,
 #'   upar = gsDesign::gsDesign(k = length(traget_events), test.type = 1, n.I = traget_events, maxn.IPlan = max(traget_events), sfu = sfLDOF, sfupar = NULL)$upper$bound,
 #'   lower = gs_b,           
-#'   lpar = c(qnorm(.1), rep(-Inf, length(events) - 1))) %>% 
-#'   summary_bound()
+#'   lpar = c(qnorm(.1), rep(-Inf, length(events) - 1))) 
 #'   
 #' # calculate the power for targeted analysis time
 #' gs_power_wlr(
@@ -53,8 +52,7 @@
 #'   upper = gs_b,
 #'   upar = gsDesign::gsDesign(k = length(traget_events), test.type = 1, n.I = traget_events, maxn.IPlan = max(traget_events), sfu = sfLDOF, sfupar = NULL)$upper$bound,
 #'   lower = gs_b,           
-#'   lpar = c(qnorm(.1), rep(-Inf, length(events) - 1))) %>% 
-#'   summary_bound()
+#'   lpar = c(qnorm(.1), rep(-Inf, length(events) - 1))) 
 #' 
 #' # calculate the power for targeted analysis time & number of events
 #' gs_power_wlr(
@@ -63,8 +61,7 @@
 #'   upper = gs_b,
 #'   upar = gsDesign::gsDesign(k = length(traget_events), test.type = 1, n.I = traget_events, maxn.IPlan = max(traget_events), sfu = sfLDOF, sfupar = NULL)$upper$bound,
 #'   lower = gs_b,           
-#'   lpar = c(qnorm(.1), rep(-Inf, length(events) - 1))) %>% 
-#'   summary_bound()
+#'   lpar = c(qnorm(.1), rep(-Inf, length(events) - 1))) 
 #'   
 gs_power_wlr <- function(
   enrollRates = tibble::tibble(
@@ -138,7 +135,7 @@ gs_power_wlr <- function(
       `~HR at bound` = gsDesign::zn2hr(z = Z, n = Events, ratio = ratio),
       `Nominal p` = pnorm(-Z)
     ) %>% 
-    select(Analysis, Bound, Probability, hypothesis, Z, `~HR at bound`, `Nominal p`)
+    select(Analysis, Bound, Probability, Z, `~HR at bound`, `Nominal p`)
   )
   
   # summarize the analysis
@@ -147,7 +144,7 @@ gs_power_wlr <- function(
     select(Analysis, Time, Events, AHR) %>% 
     mutate(N = gsDesign2::eAccrual(x = x$Time, enrollRates = enrollRates)) %>% 
     left_join(y) %>% 
-    select(Analysis, Time, N, Events, AHR, theta, info, IF, hypothesis)
+    select(Analysis, Time, N, Events, AHR, theta, info, IF)
   )
   
   output <- list(
