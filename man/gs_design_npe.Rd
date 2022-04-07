@@ -8,14 +8,15 @@ gs_design_npe(
   theta = 0.1,
   info = 1,
   info0 = NULL,
+  info_scale = c(0, 1, 2),
   alpha = 0.025,
   beta = 0.1,
   binding = FALSE,
   upper = gs_b,
-  upar = qnorm(0.975),
+  upar = list(par = qnorm(0.975)),
   test_upper = TRUE,
   lower = gs_b,
-  lpar = -Inf,
+  lpar = list(par = -Inf),
   test_lower = TRUE,
   r = 18,
   tol = 1e-06
@@ -113,11 +114,8 @@ The bound specifications in \code{upper, lower, upar, lpar} will be used to ensu
 }
 
 \examples{
-library(gsDesign)
-library(dplyr)
-
-# Single analysis
-# Lachin book p 71 difference of proportions example
+Single analysis
+Lachin book p 71 difference of proportions example
 pc <- .28 # Control response rate
 pe <- .40 # Experimental response rate
 p0 <- (pc + pe) / 2 # Ave response rate under H0
@@ -126,7 +124,7 @@ info0 <- 1 / (p0 * (1 - p0) * 4)
 info <- 1 / (pc * (1 - pc) * 2 + pe * (1 - pe) * 2)
 # Result should round up to next even number = 652
 # Divide information needed under H1 by information per patient added
-gs_design_npe(theta = pe - pc, info = info, info0 = info0) 
+gs_design_npe(theta = pe - pc, info = info, info0 = info0)
 
 # Fixed bound
 x <- gs_design_npe(
@@ -134,9 +132,9 @@ x <- gs_design_npe(
   info = (1:3) * 80,
   info0 = (1:3) * 80,
   upper = gs_b,
-  upar = gsDesign::gsDesign(k = 3, sfu = gsDesign::sfLDOF)$upper$bound,
+  upar = list(par = gsDesign::gsDesign(k = 3, sfu = gsDesign::sfLDOF)$upper$bound),
   lower = gs_b,
-  lpar = c(-1, 0, 0))
+  lpar = list(par = c(-1, 0, 0)))
 x
 
 # Same upper bound; this represents non-binding Type I error and will total 0.025
@@ -144,9 +142,9 @@ gs_power_npe(
   theta = rep(0, 3),
   info = (x \%>\% filter(Bound == "Upper"))$info,
   upper = gs_b,
-  upar = (x \%>\% filter(Bound == "Upper"))$Z,
+  upar = list(par = (x \%>\% filter(Bound == "Upper"))$Z),
   lower = gs_b,
-  lpar = rep(-Inf, 3)) 
+  lpar = list(par = rep(-Inf, 3)))
 
 # Spending bound examples
 # Design with futility only at analysis 1; efficacy only at analyses 2, 3
@@ -158,9 +156,9 @@ gs_design_npe(
   info = (1:3) * 40,
   info0 = (1:3) * 40,
   upper = gs_spending_bound,
-  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
-  lower = gs_b, 
-  lpar = c(-1, -Inf, -Inf),
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  lower = gs_b,
+  lpar = list(par = c(-1, -Inf, -Inf)),
   test_upper = c(FALSE, TRUE, TRUE))
 
 # Spending function bounds
@@ -170,32 +168,31 @@ gs_design_npe(
   theta = c(.1, .2, .3),
   info = (1:3) * 40,
   upper = gs_spending_bound,
-  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
   lower = gs_spending_bound,
-  lpar = list(sf = gsDesign::sfHSD, total_spend = 0.1, param = -1, timing = NULL))
+  lpar = list(par = list(sf = gsDesign::sfHSD, total_spend = 0.1, param = -1, timing = NULL)))
 
 # Two-sided symmetric spend, O'Brien-Fleming spending
 # Typically, 2-sided bounds are binding
 xx <- gs_design_npe(
   theta = c(.1, .2, .3),
-  info = (1:3) * 40,
+ info = (1:3) * 40,
   binding = TRUE,
   upper = gs_spending_bound,
-  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
   lower = gs_spending_bound,
-  lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL))
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)))
 xx
 
 # Re-use these bounds under alternate hypothesis
 # Always use binding = TRUE for power calculations
-upar <- (xx \%>\% filter(Bound == "Upper"))$Z
 gs_power_npe(
   theta = c(.1, .2, .3),
   info = (1:3) * 40,
   binding = TRUE,
-  upar = upar,
-  lpar = -upar)
-  
+  upar = list(par = (xx \%>\% filter(Bound == "Upper"))$Z),
+  lpar = list(par = -(xx \%>\% filter(Bound == "Upper"))$Z)) 
+    
 }
 \author{
 Keaven Anderson \email{keaven\_anderson@merck.}

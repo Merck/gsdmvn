@@ -92,11 +92,8 @@ NULL
 #' @export
 #'
 #' @examples
-#' library(gsDesign)
-#' library(dplyr)
-#' 
-#' # Single analysis
-#' # Lachin book p 71 difference of proportions example
+#' Single analysis
+#' Lachin book p 71 difference of proportions example
 #' pc <- .28 # Control response rate
 #' pe <- .40 # Experimental response rate
 #' p0 <- (pc + pe) / 2 # Ave response rate under H0
@@ -105,7 +102,7 @@ NULL
 #' info <- 1 / (pc * (1 - pc) * 2 + pe * (1 - pe) * 2)
 #' # Result should round up to next even number = 652
 #' # Divide information needed under H1 by information per patient added
-#' gs_design_npe(theta = pe - pc, info = info, info0 = info0) 
+#' gs_design_npe(theta = pe - pc, info = info, info0 = info0)
 #' 
 #' # Fixed bound
 #' x <- gs_design_npe(
@@ -113,9 +110,9 @@ NULL
 #'   info = (1:3) * 80,
 #'   info0 = (1:3) * 80,
 #'   upper = gs_b,
-#'   upar = gsDesign::gsDesign(k = 3, sfu = gsDesign::sfLDOF)$upper$bound,
+#'   upar = list(par = gsDesign::gsDesign(k = 3, sfu = gsDesign::sfLDOF)$upper$bound),
 #'   lower = gs_b,
-#'   lpar = c(-1, 0, 0))
+#'   lpar = list(par = c(-1, 0, 0)))
 #' x
 #' 
 #' # Same upper bound; this represents non-binding Type I error and will total 0.025
@@ -123,9 +120,9 @@ NULL
 #'   theta = rep(0, 3),
 #'   info = (x %>% filter(Bound == "Upper"))$info,
 #'   upper = gs_b,
-#'   upar = (x %>% filter(Bound == "Upper"))$Z,
+#'   upar = list(par = (x %>% filter(Bound == "Upper"))$Z),
 #'   lower = gs_b,
-#'   lpar = rep(-Inf, 3)) 
+#'   lpar = list(par = rep(-Inf, 3)))
 #' 
 #' # Spending bound examples
 #' # Design with futility only at analysis 1; efficacy only at analyses 2, 3
@@ -137,9 +134,9 @@ NULL
 #'   info = (1:3) * 40,
 #'   info0 = (1:3) * 40,
 #'   upper = gs_spending_bound,
-#'   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
-#'   lower = gs_b, 
-#'   lpar = c(-1, -Inf, -Inf),
+#'   upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+#'   lower = gs_b,
+#'   lpar = list(par = c(-1, -Inf, -Inf)),
 #'   test_upper = c(FALSE, TRUE, TRUE))
 #' 
 #' # Spending function bounds
@@ -149,39 +146,39 @@ NULL
 #'   theta = c(.1, .2, .3),
 #'   info = (1:3) * 40,
 #'   upper = gs_spending_bound,
-#'   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+#'   upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
 #'   lower = gs_spending_bound,
-#'   lpar = list(sf = gsDesign::sfHSD, total_spend = 0.1, param = -1, timing = NULL))
+#'   lpar = list(par = list(sf = gsDesign::sfHSD, total_spend = 0.1, param = -1, timing = NULL)))
 #' 
 #' # Two-sided symmetric spend, O'Brien-Fleming spending
 #' # Typically, 2-sided bounds are binding
 #' xx <- gs_design_npe(
 #'   theta = c(.1, .2, .3),
-#'   info = (1:3) * 40,
+#'  info = (1:3) * 40,
 #'   binding = TRUE,
 #'   upper = gs_spending_bound,
-#'   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+#'   upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
 #'   lower = gs_spending_bound,
-#'   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL))
+#'   lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)))
 #' xx
 #' 
 #' # Re-use these bounds under alternate hypothesis
 #' # Always use binding = TRUE for power calculations
-#' upar <- (xx %>% filter(Bound == "Upper"))$Z
 #' gs_power_npe(
 #'   theta = c(.1, .2, .3),
 #'   info = (1:3) * 40,
 #'   binding = TRUE,
-#'   upar = upar,
-#'   lpar = -upar)
-#'   
+#'   upar = list(par = (xx %>% filter(Bound == "Upper"))$Z),
+#'   lpar = list(par = -(xx %>% filter(Bound == "Upper"))$Z)) 
+#'     
 gs_design_npe <- function(
-  theta = .1, #theta1 = NULL, 
-  info = 1, info0 = NULL, #info1 = NULL,
+  theta = .1, 
+  info = 1, info0 = NULL, 
+  info_scale = c(0, 1, 2),
   alpha = 0.025, beta = .1, 
   binding = FALSE,
-  upper = gs_b, upar = qnorm(.975), test_upper = TRUE,
-  lower = gs_b, lpar= -Inf, test_lower = TRUE,
+  upper = gs_b, upar = list(par = qnorm(.975)), test_upper = TRUE,
+  lower = gs_b, lpar = list(par = -Inf), test_lower = TRUE,
   r = 18, tol = 1e-6){
   #######################################################################################
   # WRITE INPUT CHECK TESTS AND RETURN APPROPRIATE ERROR MESSAGES
@@ -277,20 +274,18 @@ gs_design_npe <- function(
   } 
   # find an interval for information inflation to give correct power
   minpwr <- gs_power_npe(
-    theta = theta, #theta1 = theta1,
-    info = info * minx, # info1 = info * minx, 
-    info0 = info0 * minx,
+    theta = theta, 
+    info = info * minx, 
     info_scale = 2,
     binding = binding,
-    upper = upper, upar = upar, test_upper = test_upper,
+    upper = upper, upar = c(upar, info = list(info0 * minx)), test_upper = test_upper,
     lower = lower, lpar = lpar, test_lower = test_lower,
     r = r, tol = tol
   ) %>% 
     filter(Bound == "Upper" & Analysis == K) %>% 
-    #filter(hypothesis == "H1" & Bound == "Upper" & Analysis == K) %>% 
     select(Probability) %>% 
     unlist() %>% 
-    as.numeric()  # $Probability[K]
+    as.numeric()  
   
   # --------------------------------------------- #
   #     FOLLOWING IS PAINFUL                      #
@@ -307,13 +302,11 @@ gs_design_npe <- function(
     err <- 1
     for(i in 1:10){
       maxpwr <- gs_power_npe(
-        theta = theta, #theta1 = theta1,
+        theta = theta, 
         info = info * maxx, 
-        #info1 = info * maxx, 
-        info0 = info0 * maxx,
         info_scale = 2,
         binding = binding,
-        upper = upper, upar = upar, test_upper = test_upper, 
+        upper = upper, upar = c(upar, info = list(info * maxx)), test_upper = test_upper, 
         lower = lower, lpar= lpar, test_lower = test_lower,
         r = r, tol = tol
       )%>% 
@@ -374,13 +367,14 @@ gs_design_npe <- function(
   # Now we can solve for the inflation factor for the enrollment rate to achieve the desired power
   res <- try(
     uniroot(errbeta, lower = minx, upper = maxx,
-            theta = theta, #theta1 = theta1, 
+            theta = theta, 
             K = K, 
             beta = beta,
-            info = info, #info1 = info1, 
+            info = info, 
             info0 = info0, 
             binding = binding,
-            Zupper = upper, Zlower = lower, upar = upar, lpar = lpar,
+            Zupper = upper, Zlower = lower, 
+            upar = upar, lpar = lpar,
             test_upper = test_upper, test_lower = test_lower,
             r = r, tol = tol)
   )
@@ -393,13 +387,10 @@ gs_design_npe <- function(
   # calculate the probability under H1
   out_H1 <- gs_power_npe(
     theta = theta, 
-    #theta1 = theta1,
     info = info * res$root, 
-    #info1 = info1 * res$root, 
-    info0 = info0 * res$root,
     info_scale = 2,
     binding = binding,
-    upper = upper, upar = upar, test_upper = test_upper,
+    upper = upper, upar = c(upar, info = list(info0 * res$root)), test_upper = test_upper,
     lower = lower, lpar = lpar, test_lower = test_lower,
     r = r, tol = tol)
   # get the bounds from out_H1
@@ -416,20 +407,21 @@ gs_design_npe <- function(
   out_H0 <- gs_power_npe(
     theta = 0, 
     info = info * res$root, 
-    info0 = info0 * res$root,
     info_scale = 2,
     binding = binding,
-    upper = gs_b, upar = (bound_H1 %>% filter(Bound == "Upper"))$Z, test_upper = test_upper,
-    lower = gs_b, lpar = (bound_H1 %>% filter(Bound == "Lower"))$Z, test_lower = test_lower,
+    upper = gs_b, upar = list(par = (bound_H1 %>% filter(Bound == "Upper"))$Z), test_upper = test_upper,
+    lower = gs_b, lpar = list(par = (bound_H1 %>% filter(Bound == "Lower"))$Z), test_lower = test_lower,
     r = r, tol = tol)
   # combine probability  under H0 and H1
   suppressMessages(
-  out <- out_H1 %>% 
-    full_join(out_H0 %>% select(Analysis, Bound, Z, Probability) %>% rename(Probability0 = Probability)) %>% 
-    select(Analysis, Bound, Z, Probability, Probability0, theta, IF, info, info0) %>% 
-    arrange(desc(Bound), Analysis)
+    out <- out_H1 %>% full_join(out_H0 %>% select(Analysis, Bound, Z, Probability) %>% rename(Probability0 = Probability))
   )
-  
+  if ("info0" %in% colnames(out)){
+    out <- out %>% select(Analysis, Bound, Z, Probability, Probability0, theta, IF, info, info0) 
+  }else{
+    out <- out %>% select(Analysis, Bound, Z, Probability, Probability0, theta, IF, info) 
+  }
+  out <- out %>% arrange(desc(Bound), Analysis)
   return(out)
   
   
@@ -439,9 +431,7 @@ gs_design_npe <- function(
 errbeta <- function(x = 1, K = 1, 
                     beta = .1, 
                     theta = .1, 
-                    #theta1 = .1, 
                     info = 1, 
-                    #info1 = 1, 
                     info0 = 1,
                     binding = FALSE,
                     Zupper = gs_b, upar = qnorm(.975), test_upper = TRUE,
@@ -449,17 +439,19 @@ errbeta <- function(x = 1, K = 1,
                     r = 18, tol = 1e-6){
   out <- 1 -  
     beta -
-    gs_power_npe(theta = theta, #theta1 = theta1,
-                 info = info * x, #info1 = info1 * x, 
-                 info0 = info0 * x, 
+    gs_power_npe(theta = theta, 
+                 info = info * x, 
                  binding = binding,
                  info_scale = 2,
-                 upper = Zupper, lower = Zlower, upar = upar, lpar= lpar,
-                 test_upper = test_upper, test_lower = test_lower,
+                 upper = Zupper, 
+                 lower = Zlower, 
+                 upar = c(upar, info = list(info0 * x)), 
+                 lpar = lpar,
+                 test_upper = test_upper, 
+                 test_lower = test_lower,
                  r = r, tol = tol
-    )%>% # $Probability[K])
+    )%>% 
     filter(Bound == "Upper" & Analysis == K) %>% 
-    #filter(hypothesis == "H1" & Bound == "Upper" & Analysis == K) %>% 
     select(Probability) %>% 
     unlist() %>% 
     as.numeric()

@@ -122,7 +122,7 @@ gs_power_npe(
   upper = gs_b,
   upar = list(par = c(Inf, 3, 2)), 
   lower = gs_b,
-  lpar = list(c(qnorm(.1), -Inf, -Inf)))
+  lpar = list(par = c(qnorm(.1), -Inf, -Inf)))
 
 # Spending function bounds
 # Lower spending based on non-zero effect
