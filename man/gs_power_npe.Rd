@@ -7,14 +7,13 @@
 gs_power_npe(
   theta = 0.1,
   info = 1,
-  info0 = NULL,
   info_scale = c(0, 1, 2),
   binding = FALSE,
   upper = gs_b,
-  upar = qnorm(0.975),
+  upar = list(par = qnorm(0.975)),
   test_upper = TRUE,
   lower = gs_b,
-  lpar = -Inf,
+  lpar = list(par = -Inf),
   test_lower = TRUE,
   r = 18,
   tol = 1e-06
@@ -26,12 +25,7 @@ expected incremental drift at all analyses; used for power calculation}
 
 \item{info}{statistical information at all analyses for input \code{theta}}
 
-\item{info0}{statistical information under null hypothesis, if different than \code{info};
-impacts null hypothesis bound calculation}
-
-\item{info_scale}{\code{2} (default): do calculations as currently specified. Since this is default, all will be backwards compatible.
-\code{0}: use null hypothesis info0 for all calculations
-\code{1}: use alternate hypothesis info1 for all calculations}
+\item{info_scale}{only used when \code{gs_spending_bound} is used}
 
 \item{binding}{indicator of whether futility bound is binding; default of FALSE is recommended}
 
@@ -107,25 +101,28 @@ gs_power_npe(theta = 0) \%>\%
 # Fixed bound
 gs_power_npe(
   theta = c(.1, .2, .3), 
-  info = (1:3) * 40, info0 = (1:3) * 40,
+  info = (1:3) * 40, 
   upper = gs_b, 
-  upar = gsDesign::gsDesign(k = 3,sfu = gsDesign::sfLDOF)$upper$bound,
-  lower = gs_b, lpar = c(-1, 0, 0))
+  upar = list(par = gsDesign::gsDesign(k = 3,sfu = gsDesign::sfLDOF)$upper$bound),
+  lower = gs_b, 
+  lpar = list(par = c(-1, 0, 0)))
 
 # Same fixed efficacy bounds, no futility bound (i.e., non-binding bound), null hypothesis
 gs_power_npe(
   theta = rep(0, 3), 
   info = (1:3) * 40,
-  upar = gsDesign::gsDesign(k = 3,sfu = gsDesign::sfLDOF)$upper$bound,
-  lpar = rep(-Inf, 3)) \%>\% 
+  upar = list(par = gsDesign::gsDesign(k = 3,sfu = gsDesign::sfLDOF)$upper$bound),
+  lpar = list(par = rep(-Inf, 3))) \%>\% 
   filter(Bound == "Upper")
 
 # Fixed bound with futility only at analysis 1; efficacy only at analyses 2, 3
 gs_power_npe(
   theta = c(.1, .2, .3), 
   info = (1:3) * 40,
-  upar = c(Inf, 3, 2), 
-  lpar = c(qnorm(.1), -Inf, -Inf))
+  upper = gs_b,
+  upar = list(par = c(Inf, 3, 2)), 
+  lower = gs_b,
+  lpar = list(c(qnorm(.1), -Inf, -Inf)))
 
 # Spending function bounds
 # Lower spending based on non-zero effect
@@ -133,18 +130,27 @@ gs_power_npe(
   theta = c(.1, .2, .3), 
   info = (1:3) * 40,
   upper = gs_spending_bound,
-  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
   lower = gs_spending_bound,
-  lpar = list(sf = gsDesign::sfHSD, total_spend = 0.1, param = -1, timing = NULL))
+  lpar = list(par = list(sf = gsDesign::sfHSD, total_spend = 0.1, param = -1, timing = NULL)))
 
 # Same bounds, but power under different theta
 gs_power_npe(
   theta = c(.15, .25, .35), 
   info = (1:3) * 40,
   upper = gs_spending_bound,
-  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
   lower = gs_spending_bound,
-  lpar = list(sf = gsDesign::sfHSD, total_spend = 0.1, param = -1, timing = NULL))
+  lpar = list(par = list(sf = gsDesign::sfHSD, total_spend = 0.1, param = -1, timing = NULL)))
+  
+gs_power_npe(
+  theta = c(.15, .25, .35), 
+  info = (1:3) * 40,
+  upper = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL), 
+              info =  (1:3) * 30),
+  lower = gs_spending_bound,
+  lpar = list(par = list(sf = gsDesign::sfHSD, total_spend = 0.1, param = -1, timing = NULL)))
 
 # Two-sided symmetric spend, O'Brien-Fleming spending
 # Typically, 2-sided bounds are binding
@@ -153,9 +159,9 @@ x <- gs_power_npe(
   info = (1:3) * 40,
   binding = TRUE,
   upper = gs_spending_bound,
-  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
   lower = gs_spending_bound,
-  lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL))
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)))
 
 # Re-use these bounds under alternate hypothesis
 # Always use binding = TRUE for power calculations
@@ -163,8 +169,8 @@ gs_power_npe(
   theta = c(.1, .2, .3), 
   info = (1:3) * 40,
   binding = TRUE,
-  upar = (x \%>\% filter(Bound=="Upper"))$Z,
-  lpar = -(x \%>\% filter(Bound=="Upper"))$Z)
+  upar = list(par = (x \%>\% filter(Bound == "Upper"))$Z),
+  lpar = list(par = -(x \%>\% filter(Bound == "Upper"))$Z))
 }
 \author{
 Keaven Anderson \email{keaven\_anderson@merck.}
