@@ -95,7 +95,7 @@ x_ahr \%>\% summary(bound_names = c("A is better", "B is better"))
 gs_power_ahr(
   enrollRates = x_ahr$enrollRates,
   failRates = x_ahr$failRates,
-  events = x_wlr$analysis$Events - 20,
+  events = x_ahr$analysis$Events - 20,
   upper = upper,
   upar = upar,
   lower = lower,

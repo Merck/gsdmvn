@@ -24,7 +24,7 @@ as_gt <- function(x, ...) {
 #' @param title 
 #' @param footnote 
 #' @return
-#' @export as_gt.fixed_design
+#' @export as_gt
 #' @exportS3Method 
 #' @examples
 #' fixed_design(x = "AHR", 
@@ -111,7 +111,7 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
 #' @param display_inf_bound a logic value (TRUE or FALSE) whether to display the +-inf bound
 #' 
 #' @return a gt table summarizing the bounds table in group sequential designs
-#' @export as_gt.gs_design
+#' @export as_gt
 #' @exportS3Method
 #' @examples 
 #' # the default output 

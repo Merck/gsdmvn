@@ -23,7 +23,7 @@ summary <- function(x, ...) {
 #' @title summary for \code{fixed_design()} object
 #' @param x a fixed design object returned by \code{fixed_design()}
 #' @param ... additional arguments
-#' @export summary.fixed_design
+#' @export summary
 #' @exportS3Method 
 #' @examples
 #' fixed_design(x = "AHR", 
@@ -129,7 +129,7 @@ summary.fixed_design <- function(x, ...){
 #' gs_power_ahr(
 #'   enrollRates = x_ahr$enrollRates,
 #'   failRates = x_ahr$failRates,
-#'   events = x_wlr$analysis$Events - 20,
+#'   events = x_ahr$analysis$Events - 20,
 #'   upper = upper,
 #'   upar = upar,
 #'   lower = lower,
