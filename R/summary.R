@@ -62,8 +62,10 @@ summary.fixed_design <- function(x, ...){
 #' @param x an object returned by  \code{gs_design_ahr} or \code{gs_design_wlr} or \code{gs_design_combo} 
 #' @param analysis_vars the variables to be put at the summary header of each analysis
 #' @param analysis_decimals the displayed number of digits of \code{analysis_vars}
+#' @param col_vars the variables to be displayed 
+#' @param col_decimals the decimals to be displayed for the displaed variables in \code{col_vars}
 #' @param bound_names names for bounds; default = c("Efficacy", "Futility").
-#' @export summary.gs_design
+#' @export summary
 #' @exportS3Method
 #' @examples
 #' # ---------------------------- #
