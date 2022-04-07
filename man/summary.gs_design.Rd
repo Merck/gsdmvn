@@ -86,40 +86,71 @@ x_ahr \%>\% summary()
 x_ahr \%>\% summary(analysis_vars = c("Time", "Events", "IF"), analysis_decimals = c(1, 0, 2))
 x_ahr \%>\% summary(bound_names = c("A is better", "B is better"))
 
+gs_power_ahr(
+  enrollRates = x_ahr$enrollRates,
+  failRates = x_ahr$failRates,
+  events = x_wlr$analysis$Events - 20,
+  upper = upper,
+  upar = upar,
+  lower = lower,
+  lpar = lpar
+) \%>\% 
+  summary()
+
+
 # ---------------------------- #
 #         wlr                  #
 # ---------------------------- #
 x_wlr <- gs_design_wlr(
   enrollRates = enrollRates,
   failRates = failRates,
-  weight = wgt05, 
-  IF = NULL, 
-  analysisTimes = sort(unique(x_ahr$analysis$Time)), 
-  ratio = ratio, 
-  alpha = alpha, 
-  beta = beta,   
+  weight = wgt05,
+  IF = NULL,
+  analysisTimes = sort(unique(x_ahr$analysis$Time)),
+  ratio = ratio,
+  alpha = alpha,
+  beta = beta,
   upper = upper,
   upar = upar,
   lower = lower,
   lpar = lpar
-  )
-summary(x_wlr)
+)
+x_wlr \%>\% summary()
 
+gs_power_wlr(
+  enrollRates = x_wlr$enrollRates,
+  failRates = x_wlr$failRates,
+  events = x_wlr$analysis$Events - 20,
+  upper = upper,
+  upar = upar,
+  lower = lower,
+  lpar = lpar
+) \%>\% summary()
 # ---------------------------- #
 #         max combo            #
 # ---------------------------- #
-x_combo <- gsdmvn::gs_design_combo(
-  ratio = 1, 
-  alpha = 0.025, 
-  beta = 0.2, 
+x_combo <- gs_design_combo(
+  ratio = 1,
+  alpha = 0.025,
+  beta = 0.2,
   enrollRates = tibble::tibble(Stratum = "All", duration = 12, rate = 500/12),
-  failRates = tibble::tibble(Stratum = "All", duration = c(4, 100), 
-                             failRate = log(2) / 15, hr = c(1, .6), dropoutRate = .001), 
+  failRates = tibble::tibble(Stratum = "All", duration = c(4, 100),
+                             failRate = log(2) / 15, hr = c(1, .6), dropoutRate = .001),
   fh_test = fh_test,
   upper = gsdmvn::gs_spending_combo,
   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
   lower = gsdmvn::gs_spending_combo,
   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.2))
-summary(x_combo)
+x_combo \%>\% summary()
+
+gs_power_combo(
+  enrollRates = x_combo$enrollRates,
+  failRates = x_combo$failRates,
+  fh_test = fh_test,
+  upper = gsdmvn::gs_spending_combo,
+  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+  lower = gsdmvn::gs_spending_combo,
+  lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.2)
+) \%>\% summary()
 
 }

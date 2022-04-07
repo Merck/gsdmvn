@@ -214,9 +214,7 @@ gs_design_wlr <- function(
   # --------------------------------------------- #
   bounds <- allout %>% 
     select(all_of(c("Analysis", "Bound", "Probability", "Probability0", "Z",
-                    "~HR at bound", "Nominal p" ))) %>% 
-    rename(`Probability under H0` = Probability0) %>% 
-    rename(`Probability under H1` = Probability)
+                    "~HR at bound", "Nominal p" ))) 
   # --------------------------------------------- #
   #     get analysis summary to output            #
   # --------------------------------------------- #

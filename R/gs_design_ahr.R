@@ -281,9 +281,7 @@ gs_design_ahr <- function(
   bounds <- allout %>% 
     select(all_of(c("Analysis", "Bound", "Probability", "Probability0", "Z",
                     "~HR at bound", "Nominal p" #,"HR generic (H0)", "HR generic (H1)" 
-                    ))) %>% 
-    rename(`Probability under H0` = Probability0) %>% 
-    rename(`Probability under H1` = Probability)
+                    ))) 
   # --------------------------------------------- #
   #     get analysis summary to output            #
   # --------------------------------------------- #
