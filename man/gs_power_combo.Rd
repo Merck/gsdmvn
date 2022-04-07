@@ -88,7 +88,7 @@ fh_test <- rbind( data.frame(rho = 0, gamma = 0, tau = -1,
 )
 
 # User defined bound
-gs_power_combo(enrollRates, failRates, fh_test, upar = c(3,2,1), lpar = c(-1, 0, 1))
+gs_power_combo(enrollRates, failRates, fh_test, upar = c(3, 2, 1), lpar = c(-1, 0, 1))
 
 # Minimal Information Fraction derived bound
 gs_power_combo(enrollRates, failRates, fh_test,
