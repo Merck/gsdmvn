@@ -64,7 +64,7 @@ NULL
 #' 
 #' # The default output of \code{gs_power_ahr} is driven by events, i.e.,
 #' # \code{events = c(30, 40, 50), analysisTimes = NULL}
-#' gs_power_ahr() %>% summary_bound()
+#' gs_power_ahr() 
 #'
 #' # 2-sided symmetric O'Brien-Fleming spending bound, driven by analysis time, i.e.,
 #' # \code{events = NULL, analysisTimes = c(12, 24, 36)}
@@ -75,8 +75,7 @@ NULL
 #'   upper = gs_spending_bound,
 #'   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
 #'   lower = gs_spending_bound,
-#'   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)) %>% 
-#'   summary_bound()
+#'   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)) 
 #' 
 #' # If \code{events} is not \code{NULL} and \code{analysisTimes} is also not \code{NULL},
 #' # then the analysis will driven by the maximal one, i.e.,
@@ -172,7 +171,7 @@ gs_power_ahr <- function(
       `~HR at bound` = exp(-Z / sqrt(info0)),
       `Nominal p` = pnorm(-Z)
     ) %>% 
-    select(Analysis, Bound, Probability, hypothesis, Z, `~HR at bound`, `Nominal p`)
+    select(Analysis, Bound, Probability, Z, `~HR at bound`, `Nominal p`)
   
   # summarize the analysis
   suppressMessages(
@@ -180,7 +179,7 @@ gs_power_ahr <- function(
     select(Analysis, Time, Events, AHR) %>% 
     mutate(N = gsDesign2::eAccrual(x = x$Time, enrollRates = enrollRates)) %>% 
     left_join(y) %>% 
-    select(Analysis, Time, N, Events, AHR, theta, info, IF, hypothesis)
+    select(Analysis, Time, N, Events, AHR, theta, info, IF)
   )
   
   output <- list(
