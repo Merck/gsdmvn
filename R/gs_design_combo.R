@@ -208,25 +208,28 @@ gs_design_combo <- function(
   
   # out <- db[order(db$Bound, decreasing = TRUE), c("Analysis", "Bound", "Time", "N", "Events", "Z", "Probability", "Probability_Null")]
   out <- db %>% 
-    dplyr::select(Analysis, Bound, Time, N, Events, Z, Probability, Probability_Null)
+    dplyr::select(Analysis, Bound, Time, N, Events, Z, Probability, Probability_Null) %>% 
+    dplyr::rename(Probability0 = Probability_Null) %>% 
+    dplyr::mutate(`Nominal p` = pnorm(Z * (-1)))
   
-  out_H1 <- out %>% 
-    dplyr::select(Analysis, Bound, Time, N, Events, Z, Probability) %>% 
-    dplyr::mutate(hypothesis = "H1",
-                  `Nominal p` = pnorm(Z * (-1)))
-  
-  out_H0 <- out %>% 
-    dplyr::select(Analysis, Bound, Time, N, Events, Z, Probability_Null) %>% 
-    dplyr::rename(Probability = Probability_Null) %>% 
-    dplyr::mutate(hypothesis = "H0",
-                  `Nominal p` = pnorm(Z * (-1)))
+  # out_H1 <- out %>% 
+  #   dplyr::select(Analysis, Bound, Time, N, Events, Z, Probability) %>% 
+  #   dplyr::mutate(hypothesis = "H1",
+  #                 `Nominal p` = pnorm(Z * (-1)))
+  # 
+  # out_H0 <- out %>% 
+  #   dplyr::select(Analysis, Bound, Time, N, Events, Z, Probability_Null) %>% 
+  #   dplyr::rename(Probability = Probability_Null) %>% 
+  #   dplyr::mutate(hypothesis = "H0",
+  #                 `Nominal p` = pnorm(Z * (-1)))
   
   
   # --------------------------------------------- #
   #     get bounds to output                      #
   # --------------------------------------------- #
-  bounds <- rbind(out_H1, out_H0) %>% 
-    select(Analysis, Bound, Probability, hypothesis, Z, `Nominal p`)
+  bounds <- out %>% 
+    #rbind(out_H1, out_H0) %>% 
+    select(Analysis, Bound, Probability, Probability0, Z, `Nominal p`)
   
   # --------------------------------------------- #
   #     get analysis summary to output            #
@@ -254,23 +257,32 @@ gs_design_combo <- function(
       weight = eval(parse(text = get_combo_weight(rho = 0, gamma = 0, tau = -1))))$AHR
   }
   
-  analysis <- rbind(
-    utility$info_all %>% select(Analysis, test, Time, N, Events), 
-    utility$info_all %>% select(Analysis, test, Time, N, Events)) %>% 
-    
-    mutate(hypothesis = rep(c("H1", "H0"), each = n_analysis * n_test),
-           theta = c(utility$info_all$theta, rep(0, n_analysis * n_test)),
-           # info = c(utility$info_all$info, utility$info_all$info0),
-           EF = Events/tapply(Events, test, function(x) max(x)) %>% unlist() %>% as.numeric()
-           # IF = c(tapply(utility$info_all$info, utility$info_all$test, function(x) x / max(x)) %>% unlist() %>% as.numeric(),
-           #        tapply(utility$info_all$info0, utility$info_all$test, function(x) x / max(x)) %>% unlist() %>% as.numeric())
-    ) %>% 
-    select(Analysis, Time, N, Events, # AHR, theta, info, 
-           EF, hypothesis) %>% 
+  analysis <- utility$info_all %>% 
+    select(Analysis, test, Time, N, Events)%>% 
+    mutate(theta = utility$info_all$theta,
+           EF = Events/tapply(Events, test, function(x) max(x)) %>% unlist() %>% as.numeric()) %>% 
+    select(Analysis, Time, N, Events, EF) %>% 
     unique() %>% 
-    mutate(AHR = rep(AHR_dis, 2)) %>% 
+    mutate(AHR = AHR_dis) %>% 
     mutate(N = N *n / max(info_fh$N),
            Events = Events * n / max(info_fh$N))
+  # analysis <- rbind(
+  #   utility$info_all %>% select(Analysis, test, Time, N, Events), 
+  #   utility$info_all %>% select(Analysis, test, Time, N, Events)) %>% 
+  #   
+  #   mutate(hypothesis = rep(c("H1", "H0"), each = n_analysis * n_test),
+  #          theta = c(utility$info_all$theta, rep(0, n_analysis * n_test)),
+  #          # info = c(utility$info_all$info, utility$info_all$info0),
+  #          EF = Events/tapply(Events, test, function(x) max(x)) %>% unlist() %>% as.numeric()
+  #          # IF = c(tapply(utility$info_all$info, utility$info_all$test, function(x) x / max(x)) %>% unlist() %>% as.numeric(),
+  #          #        tapply(utility$info_all$info0, utility$info_all$test, function(x) x / max(x)) %>% unlist() %>% as.numeric())
+  #   ) %>% 
+  #   select(Analysis, Time, N, Events, # AHR, theta, info, 
+  #          EF, hypothesis) %>% 
+  #   unique() %>% 
+  #   mutate(AHR = rep(AHR_dis, 2)) %>% 
+  #   mutate(N = N *n / max(info_fh$N),
+  #          Events = Events * n / max(info_fh$N))
   # --------------------------------------------- #
   #     output                                    #
   # --------------------------------------------- #

@@ -91,12 +91,12 @@
 gs_design_wlr <- function(
   enrollRates = tibble::tibble(Stratum = "All",
                                duration = c(2,2,10),
-                               rate = c(3,6,9)),
+                               rate = c(3, 6, 9)),
   failRates = tibble::tibble(Stratum = "All",
-                             duration = c(3,100),
-                             failRate = log(2)/c(9,18),
-                             hr = c(.9,.6),
-                             dropoutRate = rep(.001,2)),
+                             duration = c(3, 100),
+                             failRate = log(2)/c(9, 18),
+                             hr = c(.9, .6),
+                             dropoutRate = rep(.001, 2)),
   ratio = 1,             # Experimental:Control randomization ratio
   weight = wlr_weight_fh,
   approx = "asymptotic",
@@ -146,7 +146,9 @@ gs_design_wlr <- function(
   K <- max(length(analysisTimes), length(IF))
   nextTime <- max(analysisTimes)
   
-  if(length(IF) == 1){IF <- IFalt}else{
+  if(length(IF) == 1){
+    IF <- IFalt
+    }else{
     IFindx <- IF[1:(K-1)]
     for(i in seq_along(IFindx)){
       if(length(IFalt) == 1){y <-
@@ -154,14 +156,14 @@ gs_design_wlr <- function(
           gsDesign2::tEvents(
             enrollRates, failRates, 
             targetEvents = IF[K - i] * finalEvents, ratio = ratio,
-            interval = c(.01, nextTime)) %>% mutate(theta=-log(AHR), Analysis=K-i),
+            interval = c(.01, nextTime)) %>% mutate(theta = -log(AHR), Analysis = K-i),
           y)
       }else if (IF[K-i] > IFalt[K-i]) y[K - i,] <-
           gsDesign2::tEvents(
             enrollRates, failRates, 
             targetEvents = IF[K - i] * finalEvents, ratio = ratio,
             interval = c(.01, nextTime)) %>%
-          dplyr::transmute(Analysis = K - i, Time, Events, AHR, theta=-log(AHR), info, info0)
+          dplyr::transmute(Analysis = K - i, Time, Events, AHR, theta = -log(AHR), info, info0)
       nextTime <- y$Time[K - i]
     }
   }
@@ -181,8 +183,8 @@ gs_design_wlr <- function(
   # --------------------------------------------- #
   suppressMessages(
   allout <- gs_design_npe(
-    theta = y$theta, theta1 = theta1,
-    info = y$info, info0 = y$info0, info1 = info1,
+    theta = y$theta, #theta1 = theta1,
+    info = y$info, info0 = y$info0, #info1 = info1,
     alpha = alpha, beta = beta, binding = binding,
     upper = upper, upar = upar, test_upper = test_upper,
     lower = lower, lpar = lpar, test_lower = test_lower,
@@ -193,10 +195,10 @@ gs_design_wlr <- function(
     
     select(c("Analysis", "Bound", "Time",
              "N", "Events", 
-             "Z", "Probability",
+             "Z", "Probability", "Probability0",
              "AHR", "theta", 
-             "info", "info0", "info1", "IF", "hypothesis")) %>%  
-    arrange(desc(hypothesis), desc(Bound), Analysis)  
+             "info", "info0", "IF")) %>%  
+    arrange(desc(Bound), Analysis)  
   )
   
   allout$Events <- allout$Events * allout$info[K] / y$info[K]
@@ -211,13 +213,15 @@ gs_design_wlr <- function(
   #     get bounds to output                      #
   # --------------------------------------------- #
   bounds <- allout %>% 
-    select(all_of(c("Analysis", "Bound", "Probability", "hypothesis", "Z",
-                    "~HR at bound", "Nominal p" )))
+    select(all_of(c("Analysis", "Bound", "Probability", "Probability0", "Z",
+                    "~HR at bound", "Nominal p" ))) %>% 
+    rename(`Probability under H0` = Probability0) %>% 
+    rename(`Probability under H1` = Probability)
   # --------------------------------------------- #
   #     get analysis summary to output            #
   # --------------------------------------------- #
   analysis <- allout %>% 
-    select(Analysis, Time, N, Events, AHR, theta, info, IF, hypothesis) %>% 
+    select(Analysis, Time, N, Events, AHR, theta, info, info0, IF) %>% 
     unique()
   
   # --------------------------------------------- #
