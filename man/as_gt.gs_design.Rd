@@ -63,6 +63,14 @@ gs_power_wlr() \%>\%
   summary() \%>\%
   as_gt()
 
+gs_design_combo() \%>\% 
+  summary() \%>\% 
+  as_gt() 
+
+gs_power_combo() \%>\% 
+  summary() \%>\% 
+  as_gt()
+  
 # usage of \code{title = ..., subtitle = ...}
 # to edit the title/subtitle 
 gs_power_wlr() \%>\% 

@@ -195,6 +195,8 @@ summary.gs_design <- function(
   x,
   analysis_vars = NULL,
   analysis_decimals = NULL,
+  col_vars = NULL,
+  col_decimals = NULL,
   bound_names = c("Efficacy", "Futility")
 ){
   
@@ -202,6 +204,38 @@ summary.gs_design <- function(
   x_bounds <- x$bounds
   x_analysis <- x$analysis
   K <- max(x_analysis$Analysis)
+  
+  # --------------------------------------------- #
+  #     prepare the columns decimals              #
+  # --------------------------------------------- #
+  if(method == "ahr"){
+    if(is.null(col_vars) & is.null(col_decimals)){
+      x_decimals <- tibble::tibble(
+        col_vars = c("Analysis", "Bound", "Z", "~HR at bound", "Nominal p", "Alternate hypothesis", "Null hypothesis"), 
+        col_decimals = c(NA, NA, 2, 4, 4, 4, 4))
+    }else{
+      x_decimals <- tibble::tibble(col_vars = col_vars, col_decimals = col_decimals)
+    }
+  }
+  if(method == "wlr"){
+    if(is.null(col_vars) & is.null(col_decimals)){
+      x_decimals <- tibble::tibble(
+        col_vars = c("Analysis", "Bound", "Z", "~wHR at bound", "Nominal p", "Alternate hypothesis", "Null hypothesis"), 
+        col_decimals = c(NA, NA, 2, 4, 4, 4, 4))
+    }else{
+      x_decimals <- tibble::tibble(col_vars = col_vars, col_decimals = col_decimals)
+    }
+  }
+  if(method == "combo"){
+    if(is.null(col_vars) & is.null(col_decimals)){
+      x_decimals <- tibble::tibble(
+        col_vars = c("Analysis", "Bound", "Z", "Nominal p", "Alternate hypothesis", "Null hypothesis"), 
+        col_decimals = c(NA, NA, 2, 4, 4, 4))
+    }else{
+      x_decimals <- tibble::tibble(col_vars = col_vars, col_decimals = col_decimals)
+    }
+  }
+  
   
   # --------------------------------------------- #
   #     prepare the analysis summary row          #
@@ -236,7 +270,7 @@ summary.gs_design <- function(
   }else{
     xy <- x_bounds %>% 
       dplyr::rename("Alternate hypothesis" = Probability) %>%
-      dplyr::mutate("Null hypothesis" = "-") 
+      tibble::add_column("Null hypothesis" = "-") 
   }
   # change Upper -> bound_names[1], e.g., Efficacy
   # change Lower -> bound_names[2], e.g., Futility
@@ -307,8 +341,9 @@ summary.gs_design <- function(
     # It has >= 1 records for each value of `byvar`
     table_b = bound_summary_detail,
     decimals = c(0, analysis_decimals),
-    byvar = "Analysis") %>% 
-    group_by(Analysis)
+    byvar = "Analysis"
+    ) %>% 
+    group_by(Analysis) 
   
   if(method == "ahr"){
     output <- output %>% select(Analysis, Bound, Z, `~HR at bound`, `Nominal p`, `Alternate hypothesis`, `Null hypothesis`)
@@ -316,6 +351,26 @@ summary.gs_design <- function(
     output <- output %>% select(Analysis, Bound, Z, `~wHR at bound`, `Nominal p`, `Alternate hypothesis`, `Null hypothesis`)
   }else if(method == "combo"){
     output <- output %>% select(Analysis, Bound, Z, `Nominal p`, `Alternate hypothesis`, `Null hypothesis`)
+  }
+  
+  # --------------------------------------------- #
+  #     set the decimals to display               #
+  # --------------------------------------------- #
+  output <- output %>% select(x_decimals$col_vars)
+  if("Z" %in% colnames(output)){
+    output <- output %>% dplyr::mutate_at("Z", round, (x_decimals %>% filter(col_vars == "Z"))$col_decimals)
+  }
+  if("~HR at bound" %in% colnames(output)){
+    output <- output %>% dplyr::mutate_at("~HR at bound", round, (x_decimals %>% filter(col_vars == "~HR at bound"))$col_decimals)
+  }
+  if("Nominal p" %in% colnames(output)){
+    output <- output %>% dplyr::mutate_at("Nominal p", round, (x_decimals %>% filter(col_vars == "Nominal p"))$col_decimals)
+  }
+  if("Alternate hypothesis" %in% colnames(output)){
+    output <- output %>% dplyr::mutate_at("Alternate hypothesis", round, (x_decimals %>% filter(col_vars == "Alternate hypothesis"))$col_decimals)
+  }
+  if("Null hypothesis" %in% colnames(output) & is.vector(output[["Null hypothesis"]], mode = "numeric")){
+    output <- output %>% dplyr::mutate_at("Null hypothesis", round, (x_decimals %>% filter(col_vars == "Null hypothesis"))$col_decimals)
   }
   
   class(output) <- c(method, "gs_design", class(output))

@@ -131,6 +131,14 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
 #'   summary() %>%
 #'   as_gt()
 #' 
+#' gs_design_combo() %>% 
+#'   summary() %>% 
+#'   as_gt() 
+#' 
+#' gs_power_combo() %>% 
+#'   summary() %>% 
+#'   as_gt()
+#'   
 #' # usage of \code{title = ..., subtitle = ...}
 #' # to edit the title/subtitle 
 #' gs_power_wlr() %>% 
@@ -285,22 +293,7 @@ as_gt.gs_design <- function(
     gt::tab_spanner(
       columns = all_of(colname_spannersub),
       label = colname_spanner) %>% 
-    gt::fmt_number(columns = colname_spannersub[1], decimals = 4) %>% 
-    gt::fmt_number(columns = colname_spannersub[2], decimals = 4) %>% 
     gt::tab_header(title = title, subtitle = subtitle)
-  
-  if("Z" %in% display_columns){
-    x <- x %>% gt::fmt_number(columns = "Z", decimals = 4)
-  }
-  if("Nominal p" %in% display_columns){
-    x <- x %>% gt::fmt_number(columns = "Nominal p", decimals = 4)
-  }
-  if("~HR at bound" %in% display_columns){
-    x <- x %>% gt::fmt_number(columns = "~HR at bound", decimals = 4)
-  }
-  if("~wHR at bound" %in% display_columns){
-    x <- x %>% gt::fmt_number(columns = "~wHR at bound", decimals = 4)
-  }
      
   
   # --------------------------------------------- #

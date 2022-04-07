@@ -5,9 +5,12 @@
 \title{Group sequential design using MaxCombo test under non-proportional hazards}
 \usage{
 gs_design_combo(
-  enrollRates,
-  failRates,
-  fh_test,
+  enrollRates = tibble::tibble(Stratum = "All", duration = 12, rate = 500/12),
+  failRates = tibble::tibble(Stratum = "All", duration = c(4, 100), failRate =
+    log(2)/15, hr = c(1, 0.6), dropoutRate = 0.001),
+  fh_test = rbind(data.frame(rho = 0, gamma = 0, tau = -1, test = 1, Analysis = 1:3,
+    analysisTimes = c(12, 24, 36)), data.frame(rho = c(0, 0.5), gamma = 0.5, tau = -1,
+    test = 2:3, Analysis = 3, analysisTimes = 36)),
   ratio = 1,
   alpha = 0.025,
   beta = 0.2,
