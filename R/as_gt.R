@@ -27,14 +27,76 @@ as_gt <- function(x, ...) {
 #' @export as_gt
 #' @exportS3Method 
 #' @examples
-#' fixed_design(x = "AHR", 
-#'              alpha = alpha,  
-#'              enrollRates = enrollRates, 
-#'              failRates = failRates, 
-#'              studyDuration = studyDuration, 
-#'              ratio = ratio
-#'              ) %>% 
-#'              summary()
+#' # Enrollment rate
+#' enrollRates <- tibble::tibble(
+#'   Stratum = "All", 
+#'   duration = 18, 
+#'   rate = 20)
+#' 
+#' # Failure rates
+#' failRates <- tibble::tibble(
+#'   Stratum = "All", 
+#'   duration = c(4, 100), 
+#'   failRate = log(2) / 12,
+#'   hr = c(1, .6), 
+#'   dropoutRate = .001)
+#' 
+#' # Study duration in months
+#' studyDuration <- 36
+#' 
+#' # Experimental / Control randomization ratio
+#' ratio <- 1 
+#' 
+#' # 1-sided Type I error
+#' alpha <- 0.025 
+#' # Type II error (1 - power)
+#' beta <- 0.1 
+#' 
+#' # ------------------------- #
+#' #        AHR                #
+#' # ------------------------- #
+#' # under fixed power 
+#' fixed_design(
+#'   x = "AHR", 
+#'   alpha = alpha, power = 1 - beta, 
+#'   enrollRates = enrollRates, failRates = failRates, 
+#'   studyDuration = studyDuration, ratio = ratio
+#'   ) %>% 
+#'   summary() %>% 
+#'   as_gt()
+#'   
+#' # under fixed sample size  
+#' fixed_design(
+#'   x = "AHR", 
+#'   alpha = alpha,  
+#'   enrollRates = enrollRates, failRates = failRates, 
+#'   studyDuration = studyDuration, ratio = ratio
+#'   ) %>% 
+#'   summary() %>% 
+#'   as_gt()
+#'   
+#' # ------------------------- #
+#' #        FH                 #
+#' # ------------------------- #
+#' # under fixed power
+#' fixed_design(
+#'   x = "FH", 
+#'   alpha = alpha, power = 1 - beta, 
+#'   enrollRates = enrollRates, failRates = failRates, 
+#'   studyDuration = studyDuration, ratio = ratio
+#'   ) %>% 
+#'   summary() %>% 
+#'   as_gt()
+#'   
+#' # under fixed sample size
+#' fixed_design(
+#'   x = "FH", 
+#'   alpha = alpha,  
+#'   enrollRates = enrollRates, failRates = failRates, 
+#'   studyDuration = studyDuration, ratio = ratio
+#'   ) %>% 
+#'   summary() %>% 
+#'   as_gt()
 as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
   # get the design method 
   if("AHR" %in% class(x)){
@@ -139,7 +201,7 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
 #'   summary() %>% 
 #'   as_gt()
 #'   
-#' # usage of \code{title = ..., subtitle = ...}
+#' # usage of title = ..., subtitle = ...
 #' # to edit the title/subtitle 
 #' gs_power_wlr() %>% 
 #'   summary() %>%
@@ -147,7 +209,7 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
 #'     title = "Bound Summary",
 #'     subtitle = "from gs_power_wlr")
 #'
-#'# usage of \code{colname_spanner = ..., colname_spannersub = ...}
+#'# usage of colname_spanner = ..., colname_spannersub = ...
 #'# to edit the spanner and its sub-spanner
 #' gs_power_wlr() %>% 
 #'   summary() %>%
@@ -155,7 +217,7 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
 #'     colname_spanner = "Cumulative probability to cross boundaries",
 #'     colname_spannersub = c("under H1", "under H0"))
 #'     
-#'# usage of \code{footnote = ...}
+#'# usage of footnote = ...
 #'# to edit the footnote
 #' gs_power_wlr() %>% 
 #'   summary() %>%
@@ -167,13 +229,13 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
 #'                    location = c("~wHR at bound", NA, NA, NA),
 #'                    attr = c("colname", "analysis", "spanner", "title")))
 #'                    
-#' # usage of \code{display_bound = ...}
+#' # usage of display_bound = ...
 #' # to either show efficacy bound or futility bound, or both(default) 
 #' gs_power_wlr() %>% 
 #'   summary() %>% 
 #'   as_gt(display_bound = "Efficacy")
 #'   
-#' # usage of \code{display_columns = ...}
+#' # usage of display_columns = ...
 #' # to select the columns to display in the summary table
 #' gs_power_wlr() %>%
 #'   summary() %>%

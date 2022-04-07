@@ -83,12 +83,12 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                                        events = NULL)
                   }
                   ans <- tibble::tibble(Design = "AHR",
-                                        N = (d$analysis %>% filter(hypothesis == "H0"))$N,
-                                        Events = (d$analysis %>% filter(hypothesis == "H0"))$Events,
-                                        Time = (d$analysis %>% filter(hypothesis == "H0"))$Time,
-                                        Bound = (d$bounds %>% filter(Bound == "Upper" & hypothesis == "H1"))$Z,
-                                        alpha = (d$bounds %>% filter(hypothesis == "H0", Bound == "Upper"))$Probability,
-                                        Power = (d$bounds %>% filter(hypothesis == "H1", Bound == "Upper"))$Probability)
+                                        N = d$analysis$N,
+                                        Events = d$analysis$Events,
+                                        Time = d$analysis$Time,
+                                        Bound = (d$bounds %>% filter(Bound == "Upper"))$Z,
+                                        alpha = (d$bounds %>% filter(Bound == "Upper"))$Probability,
+                                        Power = (d$bounds %>% filter(Bound == "Upper"))$Probability)
                   
                   list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "AHR")
                   },
@@ -121,12 +121,12 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                                        events = NULL)
                   }
                   ans <- tibble::tibble(Design = "FH",
-                                        N = (d$analysis %>% filter(hypothesis == "H0"))$N,
-                                        Events = (d$analysis %>% filter(hypothesis == "H0"))$Events,
-                                        Time = (d$analysis %>% filter(hypothesis == "H0"))$Time,
-                                        Bound = (d$bounds %>% filter(Bound == "Upper" & hypothesis == "H1"))$Z,
-                                        alpha = (d$bounds %>% filter(hypothesis == "H0", Bound == "Upper"))$Probability,
-                                        Power = (d$bounds %>% filter(hypothesis == "H1", Bound == "Upper"))$Probability)
+                                        N = d$analysis$N,
+                                        Events = d$analysis$Events,
+                                        Time = d$analysis$Time,
+                                        Bound = (d$bounds %>% filter(Bound == "Upper"))$Z,
+                                        alpha = (d$bounds %>% filter(Bound == "Upper"))$Probability,
+                                        Power = (d$bounds %>% filter(Bound == "Upper"))$Probability)
                   
                   list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, 
                        design = "FH", design_par = list(rho = if(has_rho){args$rho}else{0}, 
@@ -168,12 +168,12 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                   
                   # get the output of MB
                   ans <- tibble::tibble(Design = "MB",
-                                        N = (d$analysis %>% filter(hypothesis == "H0"))$N,
-                                        Events = (d$analysis %>% filter(hypothesis == "H0"))$Events,
-                                        Time = (d$analysis %>% filter(hypothesis == "H0"))$Time,
-                                        Bound = (d$bounds %>% filter(Bound == "Upper" & hypothesis == "H1"))$Z,
-                                        alpha = (d$bounds %>% filter(hypothesis == "H0", Bound == "Upper"))$Probability,
-                                        Power = (d$bounds %>% filter(hypothesis == "H1", Bound == "Upper"))$Probability)
+                                        N = d$analysis$N,
+                                        Events = d$analysis$Events,
+                                        Time = d$analysis$Time,
+                                        Bound = (d$bounds %>% filter(Bound == "Upper"))$Z,
+                                        alpha = (d$bounds %>% filter(Bound == "Upper"))$Probability,
+                                        Power = (d$bounds %>% filter(Bound == "Upper"))$Probability)
                   
                   list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, 
                        design = "MB", design_par = list(tau = ifelse(has_tau, args$tau, 6)))
@@ -242,12 +242,12 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                   
                   # get the output of max combo
                   ans <- tibble::tibble(Design = "MaxCombo",
-                                        N = (d$analysis %>% filter(hypothesis == "H0"))$N,
-                                        Events = (d$analysis %>% filter(hypothesis == "H0"))$Events,
-                                        Time = (d$analysis %>% filter(hypothesis == "H0"))$Time,
-                                        Bound = (d$bounds %>% filter(Bound == "Upper" & hypothesis == "H1"))$Z,
-                                        alpha = (d$bounds %>% filter(hypothesis == "H0", Bound == "Upper"))$Probability,
-                                        Power = (d$bounds %>% filter(hypothesis == "H1", Bound == "Upper"))$Probability)
+                                        N = d$analysis$N,
+                                        Events = d$analysis$Events,
+                                        Time = d$analysis$Time,
+                                        Bound = (d$bounds %>% filter(Bound == "Upper"))$Z,
+                                        alpha = (d$bounds %>% filter(Bound == "Upper"))$Probability,
+                                        Power = (d$bounds %>% filter(Bound == "Upper"))$Probability)
                   
                   list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, 
                        design = "MaxCombo", design_par = list(rho = if(has_rho){args$rho}else{c(0, 0)},

@@ -71,7 +71,7 @@ gs_power_combo() \%>\%
   summary() \%>\% 
   as_gt()
   
-# usage of \code{title = ..., subtitle = ...}
+# usage of title = ..., subtitle = ...
 # to edit the title/subtitle 
 gs_power_wlr() \%>\% 
   summary() \%>\%
@@ -79,7 +79,7 @@ gs_power_wlr() \%>\%
     title = "Bound Summary",
     subtitle = "from gs_power_wlr")
 
-# usage of \code{colname_spanner = ..., colname_spannersub = ...}
+# usage of colname_spanner = ..., colname_spannersub = ...
 # to edit the spanner and its sub-spanner
 gs_power_wlr() \%>\% 
   summary() \%>\%
@@ -87,7 +87,7 @@ gs_power_wlr() \%>\%
     colname_spanner = "Cumulative probability to cross boundaries",
     colname_spannersub = c("under H1", "under H0"))
     
-# usage of \code{footnote = ...}
+# usage of footnote = ...
 # to edit the footnote
 gs_power_wlr() \%>\% 
   summary() \%>\%
@@ -99,13 +99,13 @@ gs_power_wlr() \%>\%
                    location = c("~wHR at bound", NA, NA, NA),
                    attr = c("colname", "analysis", "spanner", "title")))
                    
-# usage of \code{display_bound = ...}
+# usage of display_bound = ...
 # to either show efficacy bound or futility bound, or both(default) 
 gs_power_wlr() \%>\% 
   summary() \%>\% 
   as_gt(display_bound = "Efficacy")
   
-# usage of \code{display_columns = ...}
+# usage of display_columns = ...
 # to select the columns to display in the summary table
 gs_power_wlr() \%>\%
   summary() \%>\%
