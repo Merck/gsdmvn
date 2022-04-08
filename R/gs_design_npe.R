@@ -39,8 +39,6 @@ NULL
 #' @param info proportionate statistical information at all analyses for input \code{theta}
 #' @param info0 proportionate statistical information under null hypothesis, if different than alternative;
 #' impacts null hypothesis bound calculation
-#' @param info1 proportionate statistical information under alternate hypothesis;
-#' impacts null hypothesis bound calculation
 #' @param alpha One-sided Type I error
 #' @param beta Type II error
 #' @param binding indicator of whether futility bound is binding; default of FALSE is recommended
@@ -77,7 +75,7 @@ NULL
 #'    \item
 #'    \item If there is no interim analysis, return a tibble including Analysis time, upper bound, Z-value,
 #'    Probability of crossing bound, theta, info0 and info1.
-#'    \item If the desing is a group sequential design, return a tibble of Analysis,
+#'    \item If the design is a group sequential design, return a tibble of Analysis,
 #'     Bound, Z, Probability,  theta, info, info0.
 #'   }
 #' }
@@ -95,18 +93,32 @@ NULL
 #' library(dplyr)
 #' library(gsDesign)
 #' 
+#' # ---------------------------------# 
+#' #         example 1                #
+#' # ---------------------------------# 
 #' # Single analysis
 #' # Lachin book p 71 difference of proportions example
-#' pc <- .28 # Control response rate
-#' pe <- .40 # Experimental response rate
-#' p0 <- (pc + pe) / 2 # Ave response rate under H0
+#' pc <- .28            # Control response rate
+#' pe <- .40            # Experimental response rate
+#' p0 <- (pc + pe) / 2  # Ave response rate under H0
+#' 
 #' # Information per increment of 1 in sample size
 #' info0 <- 1 / (p0 * (1 - p0) * 4)
 #' info <- 1 / (pc * (1 - pc) * 2 + pe * (1 - pe) * 2)
+#' 
 #' # Result should round up to next even number = 652
 #' # Divide information needed under H1 by information per patient added
 #' gs_design_npe(theta = pe - pc, info = info, info0 = info0)
 #' 
+#' # One can try `info_scale` argument. But it gives the same results as above. 
+#' # This is because the above example use fixed design.
+#' gs_design_npe(theta = pe - pc, info = info, info0 = info0, info_scale = 0)
+#' gs_design_npe(theta = pe - pc, info = info, info0 = info0, info_scale = 1)
+#' gs_design_npe(theta = pe - pc, info = info, info0 = info0, info_scale = 2) # default 
+#' 
+#' # ---------------------------------# 
+#' #         example 2                #
+#' # ---------------------------------# 
 #' # Fixed bound
 #' x <- gs_design_npe(
 #'   theta = c(.1, .2, .3),
@@ -127,6 +139,9 @@ NULL
 #'   lower = gs_b,
 #'   lpar = list(par = rep(-Inf, 3)))
 #' 
+#' # ---------------------------------# 
+#' #         example 3                #
+#' # ---------------------------------# 
 #' # Spending bound examples
 #' # Design with futility only at analysis 1; efficacy only at analyses 2, 3
 #' # Spending bound for efficacy; fixed bound for futility
@@ -141,7 +156,21 @@ NULL
 #'   lower = gs_b,
 #'   lpar = list(par = c(-1, -Inf, -Inf)),
 #'   test_upper = c(FALSE, TRUE, TRUE))
+#' # one can try `info_scale = 1` or `info_scale = 0` here
+#' gs_design_npe(
+#'   theta = c(.1, .2, .3),
+#'   info = (1:3) * 40,
+#'   info0 = (1:3) * 30,
+#'   info_scale = 1,
+#'   upper = gs_spending_bound,
+#'   upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+#'   lower = gs_b,
+#'   lpar = list(par = c(-1, -Inf, -Inf)),
+#'   test_upper = c(FALSE, TRUE, TRUE))
 #' 
+#' # ---------------------------------# 
+#' #         example 4                #
+#' # ---------------------------------# 
 #' # Spending function bounds
 #' # 2-sided asymmetric bounds
 #' # Lower spending based on non-zero effect
@@ -152,12 +181,15 @@ NULL
 #'   upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
 #'   lower = gs_spending_bound,
 #'   lpar = list(par = list(sf = gsDesign::sfHSD, total_spend = 0.1, param = -1, timing = NULL)))
-#'   
+#' 
+#' # ---------------------------------# 
+#' #         example 5                #
+#' # ---------------------------------# 
 #' # Two-sided symmetric spend, O'Brien-Fleming spending
 #' # Typically, 2-sided bounds are binding
 #' xx <- gs_design_npe(
 #'   theta = c(.1, .2, .3),
-#'  info = (1:3) * 40,
+#'   info = (1:3) * 40,
 #'   binding = TRUE,
 #'   upper = gs_spending_bound,
 #'   upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
@@ -171,12 +203,15 @@ NULL
 #'   theta = c(.1, .2, .3),
 #'   info = (1:3) * 40,
 #'   binding = TRUE,
+#'   upper = gs_b,
+#'   lower = gs_b,
 #'   upar = list(par = (xx %>% filter(Bound == "Upper"))$Z),
-#'   lpar = list(par = -(xx %>% filter(Bound == "Upper"))$Z)) 
-#'     
+#'   lpar = list(par = -(xx %>% filter(Bound == "Upper"))$Z))
+#'   
 gs_design_npe <- function(
   theta = .1, 
-  info = 1, info0 = NULL, 
+  info = 1, 
+  info0 = NULL, 
   info_scale = c(0, 1, 2),
   alpha = 0.025, beta = .1, 
   binding = FALSE,
@@ -185,7 +220,7 @@ gs_design_npe <- function(
   r = 18, tol = 1e-6){
   
   # --------------------------------------------- #
-  #     check info, info0,                        #
+  #     check info, info0                         #
   # --------------------------------------------- #
   if (!is.vector(info, mode = "numeric")) stop("gs_design_npe(): info must be specified numeric vector")
   K <- length(info)
@@ -194,7 +229,10 @@ gs_design_npe <- function(
   if (length(info0) != length(info) ) stop("gs_design_npe(): length of info, info0 must be the same")
   if (min(info - lag(info, default = 0) <= 0)) stop("gs_design_npe(): info much be strictly increasing and positive")
   if (min(info0 - lag(info0, default = 0) <= 0)) stop("gs_design_npe(): info0 much be NULL or strictly increasing and positive")
-   
+  
+  if(identical(upper, gs_spending_bound)){
+    info_scale <- if(methods::missingArg(info_scale)){2}else{match.arg(as.character(info_scale), choices = 0:2)}
+  }
   # --------------------------------------------- #
   #     check theta, theta0, theta1               #
   # --------------------------------------------- #
@@ -255,7 +293,7 @@ gs_design_npe <- function(
   minpwr <- gs_power_npe(
     theta = theta, 
     info = info * minx, 
-    info_scale = 2,
+    info_scale = info_scale,
     binding = binding,
     upper = upper, upar = c(upar, info = list(info0 * minx)), test_upper = test_upper,
     lower = lower, lpar = lpar, test_lower = test_lower,
@@ -283,7 +321,7 @@ gs_design_npe <- function(
       maxpwr <- gs_power_npe(
         theta = theta, 
         info = info * maxx, 
-        info_scale = 2,
+        info_scale = info_scale,
         binding = binding,
         upper = upper, upar = c(upar, info = list(info * maxx)), test_upper = test_upper, 
         lower = lower, lpar = lpar, test_lower = test_lower,
@@ -311,7 +349,7 @@ gs_design_npe <- function(
       if (1  - beta < gs_power_npe(
         theta = theta, 
         info = info * minx, 
-        info_scale = 2,
+        info_scale = info_scale,
         binding = binding,
         upper = upper, lower = lower, 
         upar = c(upar, info = list(info0 * minx)), lpar = lpar,
@@ -346,7 +384,7 @@ gs_design_npe <- function(
             theta = theta, 
             K = K, 
             beta = beta,
-            info = info, info0 = info0, 
+            info = info, info0 = info0, info_scale = info_scale,
             binding = binding,
             Zupper = upper, Zlower = lower, 
             upar = upar, lpar = lpar,
@@ -363,10 +401,13 @@ gs_design_npe <- function(
   out_H1 <- gs_power_npe(
     theta = theta, 
     info = info * res$root, 
-    info_scale = 2,
+    info_scale = info_scale,
     binding = binding,
-    upper = upper, upar = c(upar, info = list(info0 * res$root)), test_upper = test_upper,
-    lower = lower, lpar = lpar, test_lower = test_lower,
+    upper = upper, 
+    lower = lower,
+    upar = c(upar, info = list(info0 * res$root)), 
+    lpar = lpar, 
+    test_upper = test_upper, test_lower = test_lower,
     r = r, tol = tol)
   # get the bounds from out_H1
   suppressMessages(
@@ -382,7 +423,7 @@ gs_design_npe <- function(
   out_H0 <- gs_power_npe(
     theta = 0, 
     info = info * res$root, 
-    info_scale = 2,
+    info_scale = info_scale,
     binding = binding,
     upper = gs_b, upar = list(par = (bound_H1 %>% filter(Bound == "Upper"))$Z), test_upper = test_upper,
     lower = gs_b, lpar = list(par = (bound_H1 %>% filter(Bound == "Lower"))$Z), test_lower = test_lower,
@@ -408,6 +449,7 @@ errbeta <- function(x = 1, K = 1,
                     theta = .1, 
                     info = 1, 
                     info0 = 1,
+                    info_scale = 2,
                     binding = FALSE,
                     Zupper = gs_b, upar = qnorm(.975), test_upper = TRUE,
                     Zlower = gs_b, lpar= -Inf, test_lower = TRUE,
@@ -417,7 +459,7 @@ errbeta <- function(x = 1, K = 1,
     gs_power_npe(theta = theta, 
                  info = info * x, 
                  binding = binding,
-                 info_scale = 2,
+                 info_scale = info_scale,
                  upper = Zupper, lower = Zlower, 
                  upar = c(upar, info = list(info0 * x)), lpar = lpar,
                  test_upper = test_upper, test_lower = test_lower,
