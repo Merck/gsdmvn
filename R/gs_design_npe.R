@@ -92,8 +92,11 @@ NULL
 #' @export
 #'
 #' @examples
-#' Single analysis
-#' Lachin book p 71 difference of proportions example
+#' library(dplyr)
+#' library(gsDesign)
+#' 
+#' # Single analysis
+#' # Lachin book p 71 difference of proportions example
 #' pc <- .28 # Control response rate
 #' pe <- .40 # Experimental response rate
 #' p0 <- (pc + pe) / 2 # Ave response rate under H0
@@ -149,7 +152,7 @@ NULL
 #'   upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
 #'   lower = gs_spending_bound,
 #'   lpar = list(par = list(sf = gsDesign::sfHSD, total_spend = 0.1, param = -1, timing = NULL)))
-#' 
+#'   
 #' # Two-sided symmetric spend, O'Brien-Fleming spending
 #' # Typically, 2-sided bounds are binding
 #' xx <- gs_design_npe(
@@ -180,29 +183,18 @@ gs_design_npe <- function(
   upper = gs_b, upar = list(par = qnorm(.975)), test_upper = TRUE,
   lower = gs_b, lpar = list(par = -Inf), test_lower = TRUE,
   r = 18, tol = 1e-6){
-  #######################################################################################
-  # WRITE INPUT CHECK TESTS AND RETURN APPROPRIATE ERROR MESSAGES
-  # info should be a scalar or vector of positive increasing values
-  # info0, info1 should be NULL or of the same form as info
-  # theta should be a scalar or vector of real values; if vector, same length as info
-  # theta0, theta1 should be NULL or same form and length as theta
-  # test_upper and test_lower should be logical scalar or vector; if vector same length as info
-  # alpha and beta should be scalars with 0 < alpha < 1 - beta < 1
   
   # --------------------------------------------- #
-  #     check info, info0, info1                  #
+  #     check info, info0,                        #
   # --------------------------------------------- #
   if (!is.vector(info, mode = "numeric")) stop("gs_design_npe(): info must be specified numeric vector")
   K <- length(info)
   if (is.null(info0)) info0 <- info
-  #if (is.null(info1)) info1 <- info
   if (!is.vector(info0, mode = "numeric")) stop("gs_design_npe(): info0 must be specified numeric vector or NULL")
-  #if (!is.vector(info1, mode = "numeric")) stop("gs_design_npe(): info1 must be specified numeric vector or NULL")
   if (length(info0) != length(info) ) stop("gs_design_npe(): length of info, info0 must be the same")
   if (min(info - lag(info, default = 0) <= 0)) stop("gs_design_npe(): info much be strictly increasing and positive")
   if (min(info0 - lag(info0, default = 0) <= 0)) stop("gs_design_npe(): info0 much be NULL or strictly increasing and positive")
-  #if (min(info1 - lag(info1,default = 0) <= 0)) stop("gs_design_npe(): info1 much be NULL or strictly increasing and positive")
-  
+   
   # --------------------------------------------- #
   #     check theta, theta0, theta1               #
   # --------------------------------------------- #
@@ -210,9 +202,6 @@ gs_design_npe <- function(
   if (length(theta) == 1 && K > 1) theta <- rep(theta, K)
   if (length(theta) != K) stop("gs_design_npe(): if length(theta) > 1, must be same as info")
   if (theta[K] <= 0) stop("gs_design_npe(): final effect size must be > 0")
-  #if (is.null(theta1)){theta1 <- theta}else if (length(theta1)==1) theta1 <- rep(theta1,K)
-  #if (!is.vector(theta1, mode = "numeric")) stop("gs_design_npe(): theta1 must be a real vector")
-  #if (length(theta1) != K) stop("gs_design_npe(): if length(theta1) > 1, must be same as info")
   
   # --------------------------------------------- #
   #     check test_upper & test_lower             #
@@ -256,22 +245,12 @@ gs_design_npe <- function(
   minx <- ((qnorm(alpha) / sqrt(info0[K]) + qnorm(beta) / sqrt(info[K])) / theta[K])^2
   # for a fixed design, this is all you need.
   if (K == 1){
-    out <- tibble::tibble(
-      Analysis = 1,
-      Bound = "Upper",
-      Z = qnorm(1 - alpha),
-      Probability = 1 - beta,
-      Probability0 = alpha,
-      theta = theta,
-      info = info * minx,
-      info0 = info0 * minx,
-      #info1 = info1 * minx,
-      IF = info / max(info)
-      #IF = info1 / max(info1),
-      )
-    
+    out <- tibble::tibble(Analysis = 1, Bound = "Upper", Z = qnorm(1 - alpha),
+                          Probability = 1 - beta, Probability0 = alpha, theta = theta, 
+                          info = info * minx, info0 = info0 * minx, IF = info / max(info))
     return(out)
   } 
+  
   # find an interval for information inflation to give correct power
   minpwr <- gs_power_npe(
     theta = theta, 
@@ -307,14 +286,13 @@ gs_design_npe <- function(
         info_scale = 2,
         binding = binding,
         upper = upper, upar = c(upar, info = list(info * maxx)), test_upper = test_upper, 
-        lower = lower, lpar= lpar, test_lower = test_lower,
+        lower = lower, lpar = lpar, test_lower = test_lower,
         r = r, tol = tol
       )%>% 
         filter(Bound == "Upper" & Analysis == K) %>% 
-        #filter(hypothesis == "H1" & Bound == "Upper" & Analysis == K) %>% 
         select(Probability) %>% 
         unlist() %>% 
-        as.numeric() #$Probability[K]
+        as.numeric() 
       
       if (1  - beta > maxpwr){
         minx <- maxx
@@ -332,27 +310,25 @@ gs_design_npe <- function(
     for(i in 1:10){
       if (1  - beta < gs_power_npe(
         theta = theta, 
-        #theta1 = theta1,
         info = info * minx, 
-        #info1 = info1 * minx, 
-        info0 = info0 * minx,
         info_scale = 2,
         binding = binding,
-        upper = upper, lower = lower, upar = upar, lpar= lpar,
+        upper = upper, lower = lower, 
+        upar = c(upar, info = list(info0 * minx)), lpar = lpar,
         test_upper = test_upper, test_lower = test_lower,
         r = r, tol = tol
       ) %>% 
       filter(Bound == "Upper" & Analysis == K) %>% 
-      #filter(hypothesis == "H1" & Bound == "Upper" & Analysis == K) %>%
       select(Probability) %>% 
       unlist() %>% 
-      as.numeric() #$Probability[K]
+      as.numeric() 
       ){
         maxx <- minx
-        minx <- minx / 1.05}else{
+        minx <- minx / 1.05
+      }else{
           err <- 0
           break
-        }
+      }
     }
     if (err) stop("gs_design_npe: could not deflate information to bracket targeted power before root finding")
   }
@@ -370,8 +346,7 @@ gs_design_npe <- function(
             theta = theta, 
             K = K, 
             beta = beta,
-            info = info, 
-            info0 = info0, 
+            info = info, info0 = info0, 
             binding = binding,
             Zupper = upper, Zlower = lower, 
             upar = upar, lpar = lpar,
@@ -397,9 +372,9 @@ gs_design_npe <- function(
   suppressMessages(
   bound_H1 <- out_H1 %>% 
     select(Analysis, Bound, Z) %>%
-    rename(Z1 = Z) %>% 
+    dplyr::rename(Z1 = Z) %>% 
     right_join(tibble::tibble(Analysis = rep(1:K, 2), Bound = rep(c("Upper", "Lower"), each = K), Z2 = rep(c(Inf, -Inf), each = K))) %>% 
-    mutate(Z = coalesce(Z1, Z2)) %>% 
+    mutate(Z = dplyr::coalesce(Z1, Z2)) %>% 
     select(Analysis, Bound, Z) %>% 
     arrange(desc(Bound), Analysis)
   )
@@ -414,7 +389,7 @@ gs_design_npe <- function(
     r = r, tol = tol)
   # combine probability  under H0 and H1
   suppressMessages(
-    out <- out_H1 %>% full_join(out_H0 %>% select(Analysis, Bound, Z, Probability) %>% rename(Probability0 = Probability))
+    out <- out_H1 %>% full_join(out_H0 %>% select(Analysis, Bound, Z, Probability) %>% dplyr::rename(Probability0 = Probability))
   )
   if ("info0" %in% colnames(out)){
     out <- out %>% select(Analysis, Bound, Z, Probability, Probability0, theta, IF, info, info0) 
@@ -443,12 +418,9 @@ errbeta <- function(x = 1, K = 1,
                  info = info * x, 
                  binding = binding,
                  info_scale = 2,
-                 upper = Zupper, 
-                 lower = Zlower, 
-                 upar = c(upar, info = list(info0 * x)), 
-                 lpar = lpar,
-                 test_upper = test_upper, 
-                 test_lower = test_lower,
+                 upper = Zupper, lower = Zlower, 
+                 upar = c(upar, info = list(info0 * x)), lpar = lpar,
+                 test_upper = test_upper, test_lower = test_lower,
                  r = r, tol = tol
     )%>% 
     filter(Bound == "Upper" & Analysis == K) %>% 

@@ -177,7 +177,7 @@ gs_power_npe <- function(
   if (length(test_upper) == 1 && K > 1) test_upper <- rep(test_upper, K)
   if (length(test_lower) == 1 && K > 1) test_lower <- rep(test_lower, K)
   
-  ## if info0 is available
+  ## if `gs_spending_bound` is used for upper bound
   if(identical(upper, gs_spending_bound)){
     info0 <- if(!"info" %in% names(upar)){info}else{upar$info}
     if (length(info0) != length(info)){stop("gs_power_npe: length of info, info0 must be the same")}
@@ -186,6 +186,10 @@ gs_power_npe <- function(
     if(info_scale == 1){info0 <- info}
   }else{
     info0 <- NULL
+  }
+  ## if `gs_spending_bound` is used for lower bound
+  if(identical(lower, gs_spending_bound) & ("info" %in% names(lpar))){
+    if(lpar$info != info){warning("gs_power_npe: the info for lower spending is ignored!")}
   }
   
   # --------------------------------------------- #
@@ -199,17 +203,13 @@ gs_power_npe <- function(
   lowerProb <- rep(NA, K)
   
   # --------------------------------------------- #
-  #     calculate crossing probability            #
-  #               under the H1                    #
-  #            i.e., theta != 0                   #
+  #     calculate crossing prob  under  H1        #
   # --------------------------------------------- #
   for(k in 1:K){
     # compute/update lower bound
-    a[k] <- lower(k = k, par = lpar$par, hgm1 = hgm1, 
-                  info = info, 
+    a[k] <- lower(k = k, par = lpar$par, hgm1 = hgm1, info = info, 
                   r = r, tol = tol, test_bound = test_lower,
-                  theta = theta, 
-                  efficacy = FALSE)
+                  theta = theta, efficacy = FALSE)
     # compute/update upper bound
     b[k] <- upper(k = k, par = upar$par, hgm1 = hgm1_0, info = info0,
                   r = r, tol = tol, test_bound = test_upper)
@@ -245,7 +245,7 @@ gs_power_npe <- function(
     }
   }
   
-  table_H1 <- tibble::tibble(
+  out <- tibble::tibble(
     Analysis = rep(1:K, 2),
     Bound = c(rep("Upper", K), rep("Lower", K)),
     Z = c(b, a),
@@ -253,12 +253,8 @@ gs_power_npe <- function(
     theta = rep(theta, 2),
     IF = rep(info / max(info), 2),
     info = rep(info, 2),
-    ) 
-  if(!is.null(info0)){
-    table_H1 <- table_H1 %>% mutate(info0 = rep(info0, 2))
-  }
-  
-  out <- table_H1 %>% 
+    ) %>% 
+    mutate(info0 = if(is.null(info0)){NA}else{rep(info0, 2)}) %>% 
     filter(abs(Z) < Inf) %>% 
     arrange(desc(Bound), Analysis)
   
