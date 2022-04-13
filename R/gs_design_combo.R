@@ -27,16 +27,23 @@
 #' @export
 #' 
 #' @examples
-#' The example is slow to run
+#' # The example is slow to run
 #' library(dplyr)
 #' library(mvtnorm)
 #' library(gsDesign)
-#' enrollRates <- tibble::tibble(Stratum = "All", duration = 12, rate = 500/12)
-#' failRates <- tibble::tibble(Stratum = "All",
-#'                             duration = c(4, 100),
-#'                             failRate = log(2) / 15,  # median survival 15 month
-#'                             hr = c(1, .6),
-#'                             dropoutRate = 0.001)
+#' 
+#' enrollRates <- tibble::tibble(
+#'   Stratum = "All", 
+#'   duration = 12, 
+#'   rate = 500/12)
+#'   
+#' failRates <- tibble::tibble(
+#'   Stratum = "All",
+#'   duration = c(4, 100),
+#'   failRate = log(2) / 15,  # median survival 15 month
+#'   hr = c(1, .6),
+#'   dropoutRate = 0.001)
+#'   
 #' fh_test <- rbind( 
 #'   data.frame(rho = 0, gamma = 0, tau = -1,
 #'              test = 1, Analysis = 1:3, analysisTimes = c(12, 24, 36)),
@@ -53,6 +60,9 @@
 #'   R = c( 12 ) , S = NULL ,
 #'   T = 36 , minfup = 24 , ratio = 1 )
 #' 
+#' # -------------------------#
+#' #       example 1          #
+#' # ------------------------ #
 #' # User defined boundary
 #' gs_design_combo(
 #'   enrollRates,
@@ -60,11 +70,14 @@
 #'   fh_test,
 #'   alpha = 0.025, beta = 0.2,
 #'   ratio = 1,
-#'   binding = FALSE,                 # test.type = 4 non-binding futility bound
+#'   binding = FALSE,       
 #'   upar = x$upper$bound,
 #'   lpar = x$lower$bound
 #' )
 #' 
+#' # -------------------------#
+#' #       example 2          #
+#' # ------------------------ #
 #' # Boundary derived by spending function
 #' gs_design_combo(
 #'   enrollRates,
@@ -72,26 +85,39 @@
 #'   fh_test,
 #'   alpha = 0.025, beta = 0.2,
 #'   ratio = 1,
-#'   binding = FALSE,                 # test.type = 4 non-binding futility bound
+#'   binding = FALSE,                 
 #'   upper = gs_spending_combo,
-#'   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),   # alpha spending
+#'   upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025), info = xxx),   # alpha spending
 #'   lower = gs_spending_combo,
 #'   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.2),     # beta spending
 #' )
 
 gs_design_combo <- function(
-  enrollRates = tibble::tibble(Stratum = "All", duration = 12, rate = 500/12),
-  failRates = tibble::tibble(Stratum = "All", duration = c(4, 100), failRate = log(2) / 15,  hr = c(1, .6), dropoutRate = 0.001),
+  # enrollment rate
+  enrollRates = tibble::tibble(
+    Stratum = "All", 
+    duration = 12, 
+    rate = 500/12),
+  # failure rate
+  failRates = tibble::tibble(
+    Stratum = "All", 
+    duration = c(4, 100), 
+    failRate = log(2) / 15,  
+    hr = c(1, .6), 
+    dropoutRate = 0.001),
   fh_test = rbind(data.frame(rho = 0, gamma = 0, tau = -1, test = 1, Analysis = 1:3, analysisTimes = c(12, 24, 36)),
                   data.frame(rho = c(0, 0.5), gamma = 0.5, tau = -1, test = 2:3, Analysis = 3, analysisTimes = 36)),
+  # Experimental:Control randomization ratio
   ratio = 1,
+  # One-sided Type I error
   alpha = 0.025,
+  # NULL if enrollment is not adapted
   beta = 0.2,
   binding = FALSE,
   upper = gs_b,
-  upar = c(3, 2, 1),
+  upar = list(par = c(3, 2, 1)),
   lower = gs_b,
-  lpar = c(-1, 0, 1),
+  lpar = list(par = c(-1, 0, 1)),
   algorithm = mvtnorm::GenzBretz(maxpts = 1e5, abseps = 1e-5),
   n_upper_bound = 1e3,
   ...){
@@ -154,8 +180,8 @@ gs_design_combo <- function(
     n0 <- n
     
     # Obtain spending function
-    bound <- gs_bound(alpha = upper(upar, min_info_frac),
-                      beta = lower(lpar, min_info_frac),
+    bound <- gs_bound(alpha = upper(par = upar$par, info = if("info" %in% names(upar)){upar$info}else{min_info_frac}),
+                      beta = lower(lpar$par, min_info_frac),
                       analysis = info_fh$Analysis,
                       theta = theta_fh * sqrt(n),
                       corr = corr_fh,
@@ -213,17 +239,6 @@ gs_design_combo <- function(
     dplyr::rename(Probability0 = Probability_Null) %>% 
     dplyr::mutate(`Nominal p` = pnorm(Z * (-1)))
   
-  # out_H1 <- out %>% 
-  #   dplyr::select(Analysis, Bound, Time, N, Events, Z, Probability) %>% 
-  #   dplyr::mutate(hypothesis = "H1",
-  #                 `Nominal p` = pnorm(Z * (-1)))
-  # 
-  # out_H0 <- out %>% 
-  #   dplyr::select(Analysis, Bound, Time, N, Events, Z, Probability_Null) %>% 
-  #   dplyr::rename(Probability = Probability_Null) %>% 
-  #   dplyr::mutate(hypothesis = "H0",
-  #                 `Nominal p` = pnorm(Z * (-1)))
-  
   
   # --------------------------------------------- #
   #     get bounds to output                      #
@@ -267,23 +282,7 @@ gs_design_combo <- function(
     mutate(AHR = AHR_dis) %>% 
     mutate(N = N *n / max(info_fh$N),
            Events = Events * n / max(info_fh$N))
-  # analysis <- rbind(
-  #   utility$info_all %>% select(Analysis, test, Time, N, Events), 
-  #   utility$info_all %>% select(Analysis, test, Time, N, Events)) %>% 
-  #   
-  #   mutate(hypothesis = rep(c("H1", "H0"), each = n_analysis * n_test),
-  #          theta = c(utility$info_all$theta, rep(0, n_analysis * n_test)),
-  #          # info = c(utility$info_all$info, utility$info_all$info0),
-  #          EF = Events/tapply(Events, test, function(x) max(x)) %>% unlist() %>% as.numeric()
-  #          # IF = c(tapply(utility$info_all$info, utility$info_all$test, function(x) x / max(x)) %>% unlist() %>% as.numeric(),
-  #          #        tapply(utility$info_all$info0, utility$info_all$test, function(x) x / max(x)) %>% unlist() %>% as.numeric())
-  #   ) %>% 
-  #   select(Analysis, Time, N, Events, # AHR, theta, info, 
-  #          EF, hypothesis) %>% 
-  #   unique() %>% 
-  #   mutate(AHR = rep(AHR_dis, 2)) %>% 
-  #   mutate(N = N *n / max(info_fh$N),
-  #          Events = Events * n / max(info_fh$N))
+
   # --------------------------------------------- #
   #     output                                    #
   # --------------------------------------------- #

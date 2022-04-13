@@ -69,13 +69,13 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                "AHR" = {
                   if (!is.null(power)){
                      d <- gs_design_ahr(alpha = alpha, beta = 1 - power,
-                                        upar = qnorm(1 - alpha), lpar = -Inf,
+                                        upar = list(par = qnorm(1 - alpha)), lpar = list(par = -Inf),
                                         enrollRates = enrollRates,
                                         failRates = failRates,
                                         ratio  = ratio, 
                                         analysisTimes = studyDuration)
                   }else{
-                     d <- gs_power_ahr(upar = qnorm(1 - alpha), lpar = -Inf,
+                     d <- gs_power_ahr(upar = list(par = qnorm(1 - alpha)), lpar = list(par = -Inf),
                                        enrollRates = enrollRates,
                                        failRates = failRates,
                                        ratio  = ratio, 
@@ -105,14 +105,14 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                   }
                   if (!is.null(power)){
                      d <- gs_design_wlr(alpha = alpha, beta = 1 - power,
-                                        upar = qnorm(1 - alpha), lpar = -Inf,
+                                        upar = list(par = qnorm(1 - alpha)), lpar = list(par = -Inf),
                                         enrollRates = enrollRates, 
                                         failRates = failRates,
                                         ratio = ratio, 
                                         weight = weight,
                                         analysisTimes = studyDuration)
                   }else{
-                     d <- gs_power_wlr(upar = qnorm(1 - alpha), lpar = -Inf,
+                     d <- gs_power_wlr(upar = list(par = qnorm(1 - alpha)), lpar = list(par = -Inf),
                                        enrollRates = enrollRates, 
                                        failRates = failRates,
                                        ratio = ratio, 
@@ -147,9 +147,9 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                                            gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0,
                                                                   tau = ifelse(has_tau, args$tau, 6))},
                                         upper = gs_b,
-                                        upar = qnorm(1 - alpha),
+                                        upar = list(par = qnorm(1 - alpha)),
                                         lower = gs_b,
-                                        lpar = -Inf,
+                                        lpar = list(par = -Inf),
                                         analysisTimes = studyDuration) 
                   }else{
                      d <- gs_power_wlr(enrollRates = enrollRates, 
@@ -159,9 +159,9 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                                           gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0,
                                                                  tau = ifelse(has_tau, args$tau, 6))},
                                        upper = gs_b,
-                                       upar = qnorm(1 - alpha),
+                                       upar = list(par = qnorm(1 - alpha)),
                                        lower = gs_b,
-                                       lpar = -Inf,
+                                       lpar = list(par = -Inf),
                                        analysisTimes = studyDuration,
                                        events = NULL) 
                   }
@@ -229,15 +229,15 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                                           enrollRates = enrollRates, 
                                           failRates = failRates,
                                           fh_test = max_combo_test, 
-                                          upper = gs_b, upar = qnorm(1 - alpha),
-                                          lower = gs_b, lpar = -Inf) 
+                                          upper = gs_b, upar = list(par = qnorm(1 - alpha)),
+                                          lower = gs_b, lpar = list(par = -Inf)) 
                   }else{
                      d <- gs_power_combo(ratio = ratio,
                                          enrollRates = enrollRates,  
                                          failRates = failRates,  
                                          fh_test = max_combo_test, 
-                                         upper = gs_b, upar = qnorm(1 - alpha),
-                                         lower = gs_b, lpar = -Inf) 
+                                         upper = gs_b, upar = list(par = qnorm(1 - alpha)),
+                                         lower = gs_b, lpar = list(par = -Inf)) 
                   }
                   
                   # get the output of max combo

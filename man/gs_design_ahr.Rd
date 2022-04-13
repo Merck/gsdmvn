@@ -16,13 +16,14 @@ gs_design_ahr(
   analysisTimes = 36,
   binding = FALSE,
   upper = gs_b,
-  upar = gsDesign::gsDesign(k = 3, test.type = 1, n.I = c(0.25, 0.75, 1), sfu = sfLDOF,
-    sfupar = NULL)$upper$bound,
+  upar = list(par = gsDesign::gsDesign(k = 3, test.type = 1, n.I = c(0.25, 0.75, 1),
+    sfu = sfLDOF, sfupar = NULL)$upper$bound),
   lower = gs_b,
-  lpar = c(qnorm(0.1), -Inf, -Inf),
+  lpar = list(par = c(qnorm(0.1), -Inf, -Inf)),
   h1_spending = TRUE,
   test_upper = TRUE,
   test_lower = TRUE,
+  info_scale = c(0, 1, 2),
   r = 18,
   tol = 1e-06
 )
@@ -133,12 +134,31 @@ gs_design_ahr(
   analysisTimes = c(12, 24, 36),
   binding = TRUE,
   upper = gs_spending_bound,
-  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025,
-              param = NULL, timing = NULL),
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
   lower = gs_spending_bound,
-  lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025,
-              param = NULL, timing = NULL),
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
   h1_spending = FALSE)
+  
+gs_design_ahr(
+  analysisTimes = c(12, 24, 36),
+  binding = TRUE,
+  upper = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = c(20, 50, 80)),
+  lower = gs_spending_bound,
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  h1_spending = FALSE)
+
+gs_design_ahr(
+ analysisTimes = c(12, 24, 36),
+ binding = TRUE,
+ info_scale = 1,
+ upper = gs_spending_bound,
+ upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+             info = c(20, 50, 80)),
+ lower = gs_spending_bound,
+ lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+ h1_spending = FALSE)
 
 # 2-sided asymmetric design with O'Brien-Fleming upper spending
 # Pocock lower spending under H1 (NPH)
@@ -146,10 +166,9 @@ gs_design_ahr(
   analysisTimes = c(12, 24, 36),
   binding = TRUE,
   upper = gs_spending_bound,
-  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025,
-              param = NULL, timing = NULL),
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
   lower = gs_spending_bound,
-  lpar = list(sf = gsDesign::sfLDPocock, total_spend = 0.1,
-              param = NULL, timing = NULL),
+  lpar = list(par = list(sf = gsDesign::sfLDPocock, total_spend = 0.1, param = NULL, timing = NULL)),
   h1_spending = TRUE)
+  
 }

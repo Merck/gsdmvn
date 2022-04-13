@@ -178,7 +178,8 @@ NULL
 #'   theta = c(.1, .2, .3),
 #'   info = (1:3) * 40,
 #'   upper = gs_spending_bound,
-#'   upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+#'   upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+#'               info = ),
 #'   lower = gs_spending_bound,
 #'   lpar = list(par = list(sf = gsDesign::sfHSD, total_spend = 0.1, param = -1, timing = NULL)))
 #' 
@@ -314,8 +315,8 @@ gs_design_npe <- function(
   # --------------------------------------------- #
   ## Ensure minx gives power < 1 - beta and maxx gives power > 1 - beta
   if (minpwr < 1 - beta){
-    maxx <- 1.05 * minx
     ## Ensure maxx is sufficient information inflation to overpower
+    maxx <- 1.05 * minx
     err <- 1
     for(i in 1:10){
       maxpwr <- gs_power_npe(
@@ -442,6 +443,8 @@ gs_design_npe <- function(
   
   
 }
+
+
 ## Create a function that uses gs_power_npe to compute difference from targeted power
 ## for a given sample size inflation factor
 errbeta <- function(x = 1, K = 1, 

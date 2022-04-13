@@ -83,11 +83,11 @@ beta <- 0.1
 
 # Upper bound
 upper <- gsdmvn::gs_spending_bound     # alpha-spending bound
-upar <- list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)
+upar <- list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL))
            
 # Lower bound
 lower <- gsdmvn::gs_spending_bound    # beta-spending bound
-lpar <- list(sf = gsDesign::sfHSD, total_spend = 0.1, param = 0, timing = NULL)
+lpar <- list(par = list(sf = gsDesign::sfHSD, total_spend = 0.1, param = 0, timing = NULL))
 
 # Fleming-Harrington (FH) weight functions for weighted logrank (WLR)
 wgt00 <- function(x, arm0, arm1){    # Equal weighting for logrank

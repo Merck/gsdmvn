@@ -39,14 +39,21 @@
 #' library(mvtnorm)
 #' library(gsDesign)
 #' 
+#' # set enrollment rates
 #' enrollRates <- tibble::tibble(Stratum = "All", duration = 12, rate = 500/12)
 #' 
-#' failRates <- tibble::tibble(Stratum = "All",
-#'                             duration = c(4, 100),
-#'                             failRate = log(2) / 15,  # median survival 15 month
-#'                             hr = c(1, .6),
-#'                             dropoutRate = 0.001)
+#' # set failure rates
+#' failRates <- tibble::tibble(
+#'   Stratum = "All",
+#'   duration = c(4, 100),
+#'   failRate = log(2) / 15,  # median survival 15 month
+#'   hr = c(1, .6),
+#'   dropoutRate = 0.001)
 #' 
+#' # -------------------------#
+#' #       example 1          #
+#' # ------------------------ #
+#' # Boundary is fixed 
 #' x <- gsDesign::gsSurv(
 #'   k = 3, 
 #'   test.type = 4, 
@@ -61,18 +68,21 @@
 #'   T = 36, minfup = 24, 
 #'   ratio = 1)
 #' 
-#' # User defined boundary
 #' gs_design_wlr(
 #'   enrollRates = enrollRates, 
 #'   failRates = failRates,
 #'   ratio = 1, 
 #'   alpha = 0.025, beta = 0.2,
-#'   weight = function(x, arm0, arm1){
-#'     gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5)},
-#'   upar = x$upper$bound,
-#'   lpar = x$lower$bound,
+#'   weight = function(x, arm0, arm1){gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5)},
+#'   upper = gs_b,
+#'   upar = list(par = x$upper$bound),
+#'   lower = gs_b,
+#'   lpar = list(par = x$lower$bound),
 #'   analysisTimes = c(12, 24, 36))
 #' 
+#' # -------------------------#
+#' #       example 2          #
+#' # ------------------------ #
 #' # Boundary derived by spending function
 #' gs_design_wlr(
 #'   enrollRates = enrollRates, 
@@ -83,36 +93,61 @@
 #'     gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5)
 #'   },
 #'   upper = gs_spending_bound,
-#'   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+#'   upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025)),
 #'   lower = gs_spending_bound,
-#'   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.2),
+#'   lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.2)),
 #'   analysisTimes = c(12, 24, 36))
-
+#'
+#' # if users change the info in `upar`, the the boundary will be changed
+#' gs_design_wlr(
+#'   enrollRates = enrollRates,
+#'   failRates = failRates,
+#'   ratio = 1,
+#'   alpha = 0.025, beta = 0.2,
+#'   weight = function(x, arm0, arm1){gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5)},
+#'   upper = gs_spending_bound,
+#'   upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+#'               info = c(2, 8, 16)),
+#'   lower = gs_spending_bound,
+#'   lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.2)),
+#'   analysisTimes = c(12, 24, 36))
+#'   
 gs_design_wlr <- function(
-  enrollRates = tibble::tibble(Stratum = "All",
-                               duration = c(2,2,10),
-                               rate = c(3, 6, 9)),
-  failRates = tibble::tibble(Stratum = "All",
-                             duration = c(3, 100),
-                             failRate = log(2)/c(9, 18),
-                             hr = c(.9, .6),
-                             dropoutRate = rep(.001, 2)),
-  ratio = 1,             # Experimental:Control randomization ratio
+  # enrollment rate
+  enrollRates = tibble::tibble(
+    Stratum = "All",
+    duration = c(2, 2, 10),
+    rate = c(3, 6, 9)),
+  # failure rate
+  failRates = tibble::tibble(
+    Stratum = "All",
+    duration = c(3, 100),
+    failRate = log(2)/c(9, 18),
+    hr = c(.9, .6),
+    dropoutRate = rep(.001, 2)),
+  # Experimental:Control randomization ratio
+  ratio = 1,            
   weight = wlr_weight_fh,
   approx = "asymptotic",
-  alpha = 0.025,         # One-sided Type I error
-  beta = 0.1,            # NULL if enrollment is not adapted
-  IF = NULL,             # relative information fraction timing (vector, if not NULL; increasing to 1)
-  analysisTimes = 36,    # Targeted times of analysis or just planned study duration
+  # One-sided Type I error
+  alpha = 0.025,    
+  # NULL if enrollment is not adapted
+  beta = 0.1,         
+  # relative information fraction timing (vector, if not NULL; increasing to 1)
+  IF = NULL,        
+  # Targeted times of analysis or just planned study duration
+  analysisTimes = 36,    
   binding = FALSE,
-  upper = gs_b,
   # Default is Lan-DeMets approximation of
+  upper = gs_b,
   upar = gsDesign(k = 3, test.type = 1, n.I = c(.25, .75, 1), sfu = sfLDOF, sfupar = NULL)$upper$bound,
+  # Futility only at IA1
   lower = gs_b,
-  lpar = c(qnorm(.1), -Inf, -Inf), # Futility only at IA1
+  lpar = c(qnorm(.1), -Inf, -Inf), 
   h1_spending = TRUE,
   test_upper = TRUE,
   test_lower = TRUE,
+  info_scale = c(0, 1, 2),
   r = 18,
   tol = 1e-6
 ){
@@ -121,14 +156,16 @@ gs_design_wlr <- function(
   # --------------------------------------------- #
   msg <- "gs_design_wlr(): analysisTimes must be a positive number or positive increasing sequence"
   if (!is.vector(analysisTimes,mode = "numeric")) stop(msg)
-  if (min(analysisTimes - dplyr::lag(analysisTimes, def=0))<=0) stop(msg)
+  if (min(analysisTimes - dplyr::lag(analysisTimes, def = 0)) <= 0) stop(msg)
   msg <- "gs_design_wlr(): IF must be a positive number or positive increasing sequence on (0, 1] with final value of 1"
   if (is.null(IF)){IF <- 1}
   if (!is.vector(IF,mode = "numeric")) stop(msg)
-  if (min(IF - dplyr::lag(IF, def=0))<=0) stop(msg)
+  if (min(IF - dplyr::lag(IF, def = 0)) <= 0) stop(msg)
   if (max(IF) != 1) stop(msg)
   msg <- "gs_design_wlr(): IF and analysisTimes must have the same length if both have length > 1"
-  if ((length(analysisTimes)>1) & (length(IF) > 1) & (length(IF) != length(analysisTimes))) stop(msg)
+  if ((length(analysisTimes) > 1) & (length(IF) > 1) & (length(IF) != length(analysisTimes))) stop(msg)
+  # get the info_scale
+  info_scale <- if(methods::missingArg(info_scale)){2}else{match.arg(as.character(info_scale), choices = 0:2)}
   
   # --------------------------------------------- #
   #     get information at input analysisTimes    #
@@ -148,22 +185,18 @@ gs_design_wlr <- function(
   
   if(length(IF) == 1){
     IF <- IFalt
-    }else{
-    IFindx <- IF[1:(K-1)]
+  }else{
+    IFindx <- IF[1 : (K-1)]
     for(i in seq_along(IFindx)){
-      if(length(IFalt) == 1){y <-
-        rbind(
-          gsDesign2::tEvents(
-            enrollRates, failRates, 
-            targetEvents = IF[K - i] * finalEvents, ratio = ratio,
-            interval = c(.01, nextTime)) %>% mutate(theta = -log(AHR), Analysis = K-i),
+      if(length(IFalt) == 1){
+        y <-rbind(
+          gsDesign2::tEvents(enrollRates, failRates, targetEvents = IF[K - i] * finalEvents, ratio = ratio, interval = c(.01, nextTime)) %>% 
+            mutate(theta = -log(AHR), Analysis = K - i),
           y)
-      }else if (IF[K-i] > IFalt[K-i]) y[K - i,] <-
-          gsDesign2::tEvents(
-            enrollRates, failRates, 
-            targetEvents = IF[K - i] * finalEvents, ratio = ratio,
-            interval = c(.01, nextTime)) %>%
+      }else if(IF[K-i] > IFalt[K-i]){
+        y[K - i,] <- gsDesign2::tEvents(enrollRates, failRates, targetEvents = IF[K - i] * finalEvents, ratio = ratio, interval = c(.01, nextTime)) %>%
           dplyr::transmute(Analysis = K - i, Time, Events, AHR, theta = -log(AHR), info, info0)
+      } 
       nextTime <- y$Time[K - i]
     }
   }
@@ -183,21 +216,15 @@ gs_design_wlr <- function(
   # --------------------------------------------- #
   suppressMessages(
   allout <- gs_design_npe(
-    theta = y$theta, #theta1 = theta1,
-    info = y$info, info0 = y$info0, #info1 = info1,
+    theta = y$theta, 
+    info = y$info, info0 = y$info0, info_scale = info_scale,
     alpha = alpha, beta = beta, binding = binding,
     upper = upper, upar = upar, test_upper = test_upper,
     lower = lower, lpar = lpar, test_lower = test_lower,
     r = r, tol = tol) %>%
-    
     # Add Time, Events, AHR, N from gs_info_ahr call above
     full_join(y %>% select(-c(info, info0, theta)), by = "Analysis") %>%
-    
-    select(c("Analysis", "Bound", "Time",
-             "N", "Events", 
-             "Z", "Probability", "Probability0",
-             "AHR", "theta", 
-             "info", "info0", "IF")) %>%  
+    select(c("Analysis", "Bound", "Time","N", "Events", "Z", "Probability", "Probability0","AHR", "theta", "info", "info0", "IF")) %>%  
     arrange(desc(Bound), Analysis)  
   )
   
@@ -213,8 +240,7 @@ gs_design_wlr <- function(
   #     get bounds to output                      #
   # --------------------------------------------- #
   bounds <- allout %>% 
-    select(all_of(c("Analysis", "Bound", "Probability", "Probability0", "Z",
-                    "~HR at bound", "Nominal p" ))) 
+    select(all_of(c("Analysis", "Bound", "Probability", "Probability0", "Z", "~HR at bound", "Nominal p" ))) 
   # --------------------------------------------- #
   #     get analysis summary to output            #
   # --------------------------------------------- #

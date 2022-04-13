@@ -73,31 +73,47 @@ library(dplyr)
 library(mvtnorm)
 library(gsDesign)
 
-enrollRates <- tibble::tibble(Stratum = "All", duration = 12, rate = 500/12)
+enrollRates <- tibble::tibble(
+  Stratum = "All", 
+  duration = 12, 
+  rate = 500/12)
 
-failRates <- tibble::tibble(Stratum = "All",
-                            duration = c(4, 100),
-                            failRate = log(2) / 15,  # median survival 15 month
-                            hr = c(1, .6),
-                            dropoutRate = 0.001)
+failRates <- tibble::tibble(
+  Stratum = "All",
+  duration = c(4, 100),
+  failRate = log(2) / 15,  # median survival 15 month
+  hr = c(1, .6),
+  dropoutRate = 0.001)
 
-fh_test <- rbind( data.frame(rho = 0, gamma = 0, tau = -1,
-                             test = 1,
-                             Analysis = 1:3,
-                             analysisTimes = c(12, 24, 36)),
-                  data.frame(rho = c(0, 0.5), gamma = 0.5, tau = -1,
-                             test = 2:3,
-                             Analysis = 3, analysisTimes = 36)
+fh_test <- rbind(
+  data.frame(rho = 0, gamma = 0, tau = -1, test = 1, Analysis = 1:3, analysisTimes = c(12, 24, 36)),
+  data.frame(rho = c(0, 0.5), gamma = 0.5, tau = -1, test = 2:3, Analysis = 3, analysisTimes = 36)
 )
 
+# -------------------------#
+#       example 1          #
+# ------------------------ #
 # User defined bound
-gs_power_combo(enrollRates, failRates, fh_test, upar = c(3, 2, 1), lpar = c(-1, 0, 1))
+gs_power_combo(
+  enrollRates, 
+  failRates, 
+  fh_test, 
+  upper = gs_b,
+  upar = list(par = c(3, 2, 1)), 
+  lower = gs_b,
+  lpar = list(par = c(-1, 0, 1)))
 
+# -------------------------#
+#       example 2          #
+# ------------------------ #
 # Minimal Information Fraction derived bound
-gs_power_combo(enrollRates, failRates, fh_test,
-               upper = gs_spending_combo,
-               upar  = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
-               lower = gs_spending_combo,
-               lpar  = list(sf = gsDesign::sfLDOF, total_spend = 0.2))
+gs_power_combo(
+  enrollRates, 
+  failRates, 
+  fh_test,
+  upper = gs_spending_combo,
+  upar  = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025)),
+  lower = gs_spending_combo,
+  lpar  = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.2)))
 
 }

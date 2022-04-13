@@ -25,6 +25,7 @@ gs_design_wlr(
   h1_spending = TRUE,
   test_upper = TRUE,
   test_lower = TRUE,
+  info_scale = c(0, 1, 2),
   r = 18,
   tol = 1e-06
 )
@@ -105,14 +106,21 @@ library(dplyr)
 library(mvtnorm)
 library(gsDesign)
 
+# set enrollment rates
 enrollRates <- tibble::tibble(Stratum = "All", duration = 12, rate = 500/12)
 
-failRates <- tibble::tibble(Stratum = "All",
-                            duration = c(4, 100),
-                            failRate = log(2) / 15,  # median survival 15 month
-                            hr = c(1, .6),
-                            dropoutRate = 0.001)
+# set failure rates
+failRates <- tibble::tibble(
+  Stratum = "All",
+  duration = c(4, 100),
+  failRate = log(2) / 15,  # median survival 15 month
+  hr = c(1, .6),
+  dropoutRate = 0.001)
 
+# -------------------------#
+#       example 1          #
+# ------------------------ #
+# Boundary is fixed 
 x <- gsDesign::gsSurv(
   k = 3, 
   test.type = 4, 
@@ -127,18 +135,21 @@ x <- gsDesign::gsSurv(
   T = 36, minfup = 24, 
   ratio = 1)
 
-# User defined boundary
 gs_design_wlr(
   enrollRates = enrollRates, 
   failRates = failRates,
   ratio = 1, 
   alpha = 0.025, beta = 0.2,
-  weight = function(x, arm0, arm1){
-    gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5)},
-  upar = x$upper$bound,
-  lpar = x$lower$bound,
+  weight = function(x, arm0, arm1){gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5)},
+  upper = gs_b,
+  upar = list(par = x$upper$bound),
+  lower = gs_b,
+  lpar = list(par = x$lower$bound),
   analysisTimes = c(12, 24, 36))
 
+# -------------------------#
+#       example 2          #
+# ------------------------ #
 # Boundary derived by spending function
 gs_design_wlr(
   enrollRates = enrollRates, 
@@ -149,8 +160,23 @@ gs_design_wlr(
     gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5)
   },
   upper = gs_spending_bound,
-  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025)),
   lower = gs_spending_bound,
-  lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.2),
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.2)),
   analysisTimes = c(12, 24, 36))
+
+# if users change the info in `upar`, the the boundary will be changed
+gs_design_wlr(
+  enrollRates = enrollRates,
+  failRates = failRates,
+  ratio = 1,
+  alpha = 0.025, beta = 0.2,
+  weight = function(x, arm0, arm1){gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0.5)},
+  upper = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+              info = c(2, 8, 16)),
+  lower = gs_spending_bound,
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.2)),
+  analysisTimes = c(12, 24, 36))
+  
 }
