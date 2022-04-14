@@ -177,9 +177,10 @@ NULL
 #' gs_design_npe(
 #'   theta = c(.1, .2, .3),
 #'   info = (1:3) * 40,
+#'   info0 = (1:3) * 30,
 #'   upper = gs_spending_bound,
 #'   upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
-#'               info = ),
+#'               info = (1:3) * 30),
 #'   lower = gs_spending_bound,
 #'   lpar = list(par = list(sf = gsDesign::sfHSD, total_spend = 0.1, param = -1, timing = NULL)))
 #' 
