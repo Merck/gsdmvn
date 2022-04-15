@@ -1,16 +1,142 @@
-gs_power_rd <- function(){
-  x <- gs_info_ahr(enrollRates = enrollRates,
-                   failRates = failRates,
-                   ratio = ratio,
-                   events = events,
-                   analysisTimes = analysisTimes
+#  Copyright (c) 2021 Merck Sharp & Dohme Corp. a subsidiary of Merck & Co., Inc., Kenilworth, NJ, USA.
+#
+#  This file is part of the gsdmvn program.
+#
+#  gsdmvn is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#' Title
+#'
+#' @param p_c 
+#' @param p_e 
+#' @param n sample size 
+#' @param delta 
+#' @param delta0 treatment effect under super-superiority designs, the default is 0
+#' @param ratio experimental:control randomization ratio
+#' @param upper function to compute upper bound
+#' @param upar parameter to pass to upper
+#' @param lower function to compare lower bound
+#' @param lpar parameter to pass to lower
+#' @param info_scale 
+#' @param binding indicator of whether futility bound is binding; default of FALSE is recommended
+#' @param test_upper indicator of which analyses should include an upper (efficacy) bound;
+#' single value of TRUE (default)  indicates all analyses; otherwise,
+#' a logical vector of the same length as \code{info} should indicate which analyses will have an efficacy bound
+#' @param test_lower indicator of which analyses should include a lower bound;
+#' single value of TRUE (default) indicates all analyses;
+#' single value FALSE indicated no lower bound; otherwise,
+#' a logical vector of the same length as \code{info} should indicate which analyses will have a lower bound
+#' @param r Integer, at least 2; default of 18 recommended by Jennison and Turnbull
+#' @param tol Tolerance parameter for boundary convergence (on Z-scale)
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' gs_power_rd()
+gs_power_rd <- function(
+  p_c = .15,
+  p_e = .1,
+  n = c(350, 700, 1400),
+  delta = NULL,
+  delta0 = 0, 
+  ratio = 1,
+  upper = gs_b,
+  upar = list(par = gsDesign(k = length(n), test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  lower = gs_b,
+  lpar = list(par = c(qnorm(.1), rep(-Inf, length(n) - 1))),
+  info_scale = c(0, 1, 2),
+  binding = FALSE,
+  test_upper = TRUE,
+  test_lower = TRUE,
+  r = 18,
+  tol = 1e-6
+  ){
+  
+  # get the number of analysis
+  K <- length(n)
+  # get the info_scale
+  info_scale <- if(methods::missingArg(info_scale)){2}else{match.arg(as.character(info_scale), choices = 0:2)}
+  
+  # ---------------------------------------- #
+  #    calculate the asymptotic variance     #
+  #       and statistical information        #
+  # ---------------------------------------- #
+  x <- gs_info_rd(
+    p_c = p_c,
+    p_e = p_e,
+    n = n,
+    delta = delta,
+    delta0 = delta0,
+    ratio = ratio)
+  
+  # ---------------------------------------- #
+  #  given the above statistical information #
+  #         calculate the power              #
+  # ---------------------------------------- #
+  y_H1 <- gs_power_npe(
+    theta = x$theta, 
+    info = x$info, 
+    info_scale = info_scale,
+    binding = binding,
+    upper = upper, 
+    upar = upar,
+    test_upper = test_upper,
+    lower = lower, 
+    lpar = lpar,
+    test_lower = test_lower,
+    r = r, 
+    tol = tol) 
+  
+  y_H0 <- gs_power_npe(
+    theta = delta0, 
+    info = x$info0, 
+    info_scale = info_scale,
+    binding = binding,
+    upper = upper, 
+    upar = upar,
+    test_upper = test_upper,
+    lower = lower, 
+    lpar = lpar,
+    test_lower = test_lower,
+    r = r, 
+    tol = tol)
+  
+  # ---------------------------------------- #
+  #         organize the outputs             #
+  # ---------------------------------------- #
+  # summarize the bounds
+  suppressMessages(
+    bounds <- y_H0 %>% 
+      mutate(`~HR at bound` = exp(-Z / sqrt(info)), `Nominal p` = pnorm(-Z)) %>% 
+      dplyr::rename(Probability0 = Probability) %>% 
+      left_join(y_H1 %>% select(Analysis, Bound, Probability)) %>% 
+      select(Analysis, Bound, Probability, Probability0, Z, `~HR at bound`, `Nominal p`)
   )
-  return(gs_power_npe(theta = x$theta, info = x$info, info0 = x$info0, binding = binding,
-                      upper=upper, lower=lower, upar = upar, lpar= lpar,
-                      test_upper = test_upper, test_lower = test_lower,
-                      r = r, tol = tol) %>%
-           right_join(x %>% select(-c(info, info0, theta)), by = "Analysis") %>%
-           select(c(Analysis, Bound, Time, Events, Z, Probability, AHR, theta, info, info0)) %>%
-           arrange(desc(Bound), Analysis)
+  # summarize the analysis
+  suppressMessages(
+    analysis <- x %>% 
+      select(Analysis, n, theta, theta0, theta1) %>% 
+      left_join(y_H1 %>% select(Analysis, info, IF) %>% unique()) %>%
+      left_join(y_H0 %>% select(Analysis, info, IF) %>% dplyr::rename(info0 = info, IF0 = IF) %>% unique()) %>%
+      select(Analysis, n, theta, theta1, theta0, info, info0, IF, IF0)
   )
+  
+  output <- list(
+    bounds = bounds,
+    analysis = analysis)
+  
+  class(output) <- c("rd", "gs_design", class(output))
+  
+  return(output)
 }

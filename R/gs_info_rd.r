@@ -43,7 +43,7 @@ gs_info_rd <- function(
   p_c_star <- p_c + delta * ratio / (1 + ratio)
   p_e_star <- p_c - delta * 1 / (1 + ratio)
   
-  if (is.null(delta)) delta <- p_e - p_c
+  if (is.null(delta)){delta <- p_e - p_c}
   theta <- rep(p_e - p_c, length(n))
   
   sigma2 <- p_c * (1 - p_c) / n_c  + p_e * (1 - p_e) / n_e
@@ -54,8 +54,13 @@ gs_info_rd <- function(
   info1 <- 1 / sigma2_H1
   
   output <- tibble::tibble(
-    Analysis = 1:length(n), n = n,
-    theta = theta, theta1 = rep(delta, length(n)),
-    info = info, info0 = info0, info1 = info1)
+    Analysis = 1:length(n), 
+    n = n,
+    theta = theta, 
+    theta1 = rep(delta, length(n)), 
+    theta0 = rep(delta0, length(n)),
+    info = info, 
+    info1 = info1, 
+    info0 = info0)
   return(output)
 }
