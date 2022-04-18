@@ -2,13 +2,13 @@
 % Please edit documentation in R/gs_power_rd.R
 \name{gs_power_rd}
 \alias{gs_power_rd}
-\title{Title}
+\title{Group sequential design power under risk difference}
 \usage{
 gs_power_rd(
   p_c = 0.15,
-  p_e = 0.1,
-  n = c(350, 700, 1400),
-  delta = NULL,
+  p_e = 0.13,
+  n = c(50, 80, 100),
+  theta0 = 0,
   delta0 = 0,
   ratio = 1,
   upper = gs_b,
@@ -25,13 +25,13 @@ gs_power_rd(
 )
 }
 \arguments{
-\item{p_c}{}
+\item{p_c}{rate at the control group}
 
-\item{p_e}{}
+\item{p_e}{rate at the experimental group}
 
 \item{n}{sample size}
 
-\item{delta}{}
+\item{theta0}{the standardized treatment effect under H0}
 
 \item{delta0}{treatment effect under super-superiority designs, the default is 0}
 
@@ -66,7 +66,7 @@ a logical vector of the same length as \code{info} should indicate which analyse
 
 }
 \description{
-Title
+Group sequential design power under risk difference
 }
 \examples{
 gs_power_rd()

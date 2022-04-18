@@ -15,12 +15,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#' Title
+#' Group sequential design power under risk difference
 #'
-#' @param p_c 
-#' @param p_e 
+#' @param p_c rate at the control group
+#' @param p_e rate at the experimental group 
 #' @param n sample size 
-#' @param delta 
+#' @param theta0 the standardized treatment effect under H0  
 #' @param delta0 treatment effect under super-superiority designs, the default is 0
 #' @param ratio experimental:control randomization ratio
 #' @param upper function to compute upper bound
@@ -46,9 +46,9 @@
 #' gs_power_rd()
 gs_power_rd <- function(
   p_c = .15,
-  p_e = .1,
-  n = c(350, 700, 1400),
-  delta = NULL,
+  p_e = .13,
+  n = c(50, 80, 100),
+  theta0 = 0,
   delta0 = 0, 
   ratio = 1,
   upper = gs_b,
@@ -76,7 +76,7 @@ gs_power_rd <- function(
     p_c = p_c,
     p_e = p_e,
     n = n,
-    delta = delta,
+    theta0 = theta0,
     delta0 = delta0,
     ratio = ratio)
   
@@ -99,7 +99,7 @@ gs_power_rd <- function(
     tol = tol) 
   
   y_H0 <- gs_power_npe(
-    theta = delta0, 
+    theta = x$theta0, 
     info = x$info0, 
     info_scale = info_scale,
     binding = binding,
@@ -118,18 +118,18 @@ gs_power_rd <- function(
   # summarize the bounds
   suppressMessages(
     bounds <- y_H0 %>% 
-      mutate(`~HR at bound` = exp(-Z / sqrt(info)), `Nominal p` = pnorm(-Z)) %>% 
+      mutate(`Nominal p` = pnorm(-Z)) %>% 
       dplyr::rename(Probability0 = Probability) %>% 
       left_join(y_H1 %>% select(Analysis, Bound, Probability)) %>% 
-      select(Analysis, Bound, Probability, Probability0, Z, `~HR at bound`, `Nominal p`)
+      select(Analysis, Bound, Probability, Probability0, Z, `Nominal p`)
   )
   # summarize the analysis
   suppressMessages(
     analysis <- x %>% 
-      select(Analysis, n, theta, theta0, theta1) %>% 
+      select(Analysis, n, rd, rd0, theta, theta0) %>% 
       left_join(y_H1 %>% select(Analysis, info, IF) %>% unique()) %>%
       left_join(y_H0 %>% select(Analysis, info, IF) %>% dplyr::rename(info0 = info, IF0 = IF) %>% unique()) %>%
-      select(Analysis, n, theta, theta1, theta0, info, info0, IF, IF0)
+      select(Analysis, n, rd, rd0, theta, theta0, info, info0, IF, IF0)
   )
   
   output <- list(
