@@ -1,0 +1,46 @@
+---
+title: "User stories for spending bounds"
+output:
+  rmarkdown::html_vignette:
+    css: "custom.css"
+    df_print: paged
+    toc: true
+    toc_depth: 2
+    number_sections: true
+bibliography: gsDesign.bib
+vignette: |
+  %\VignetteIndexEntry{User stories for spending bounds}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r, message=FALSE, warning=FALSE}
+library(dplyr)
+library(tibble)
+library(gt)
+devtools::load_all()
+```
+
+# Overview
+
+We assume a 2-arm group sequential design with an experimental treatment group and a control group.
+Spending is used to specify boundary crossing probabilities for group sequential designs.
+The simplest and most common application is to define upper (efficacy) boundaries that control $\alpha$-spending (Type I error) for a design. 
+Lower bounds may be defined to be 
+
+1) symmetric with upper efficacy bounds to do 2-sided testing,
+2) asymmetric with
+    a) futility bounds defined by $\beta$-spending to control Type II error,
+    b) asymmetric lower bounds for harm, controlling probability that the experimental arm yields worse efficacy than control.
+    
+This vignette discusses considerations for distributional assumptions used to compute these bounds.
+ 
+# References
