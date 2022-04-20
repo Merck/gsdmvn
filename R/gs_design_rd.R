@@ -54,7 +54,7 @@ NULL
 gs_design_rd <- function(
   p_c = .15,
   p_e = .13,
-  n = c(2, 4, 6),
+  N = c(2, 4, 6),
   theta0 = 0,
   delta0 = 0, 
   alpha = 0.025,                   # One-sided Type I error
@@ -62,8 +62,8 @@ gs_design_rd <- function(
   ratio = 1,
   upper = gs_b,
   lower = gs_b,
-  upar = list(par = gsDesign(k = length(n), test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
-  lpar = list(par = c(qnorm(.1), rep(-Inf, length(n) - 1))),
+  upar = list(par = gsDesign(k = length(N), test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  lpar = list(par = c(qnorm(.1), rep(-Inf, length(N) - 1))),
   test_upper = TRUE,
   test_lower = TRUE,
   info_scale = c(0, 1, 2),
@@ -75,14 +75,14 @@ gs_design_rd <- function(
   #     check input values                        #
   # --------------------------------------------- #
   info_scale <- if(methods::missingArg(info_scale)){2}else{match.arg(as.character(info_scale), choices = 0:2)}
-  K <- length(n)
+  K <- length(N)
   # --------------------------------------------- #
   #     get statistical information               #
   # --------------------------------------------- #
   x <- gs_info_rd(
     p_c = p_c,
     p_e = p_e,
-    n = n,
+    N = N,
     theta0 = theta0,
     delta0 = delta0,
     ratio = ratio)
@@ -91,7 +91,7 @@ gs_design_rd <- function(
     x_temp <- gs_power_rd(
       p_c = p_c,
       p_e = p_e,
-      n = n * xi,
+      N = N * xi,
       theta0 = theta0,
       delta0 = delta0, 
       ratio = ratio,
@@ -123,7 +123,7 @@ gs_design_rd <- function(
   # --------------------------------------------- #
   x_final <- gs_power_rd(
     p_c = p_c, p_e = p_e,
-    n = n * res$root,
+    N = N * res$root,
     theta0 = theta0,
     delta0 = delta0, 
     ratio = ratio,

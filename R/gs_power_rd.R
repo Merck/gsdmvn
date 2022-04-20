@@ -47,14 +47,14 @@
 gs_power_rd <- function(
   p_c = .15,
   p_e = .13,
-  n = c(50, 80, 100),
+  N = c(50, 80, 100),
   theta0 = 0,
   delta0 = 0, 
   ratio = 1,
   upper = gs_b,
-  upar = list(par = gsDesign(k = length(n), test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  upar = list(par = gsDesign(k = length(N), test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
   lower = gs_b,
-  lpar = list(par = c(qnorm(.1), rep(-Inf, length(n) - 1))),
+  lpar = list(par = c(qnorm(.1), rep(-Inf, length(N) - 1))),
   info_scale = c(0, 1, 2),
   binding = FALSE,
   test_upper = TRUE,
@@ -64,7 +64,7 @@ gs_power_rd <- function(
   ){
   
   # get the number of analysis
-  K <- length(n)
+  K <- length(N)
   # get the info_scale
   info_scale <- if(methods::missingArg(info_scale)){2}else{match.arg(as.character(info_scale), choices = 0:2)}
   
@@ -75,7 +75,7 @@ gs_power_rd <- function(
   x <- gs_info_rd(
     p_c = p_c,
     p_e = p_e,
-    n = n,
+    N = N,
     theta0 = theta0,
     delta0 = delta0,
     ratio = ratio)
@@ -118,18 +118,18 @@ gs_power_rd <- function(
   # summarize the bounds
   suppressMessages(
     bounds <- y_H0 %>% 
-      mutate(`Nominal p` = pnorm(-Z)) %>% 
+      mutate(`~Risk difference at bound` = exp(-Z / sqrt(info)),  `Nominal p` = pnorm(-Z)) %>% 
       dplyr::rename(Probability0 = Probability) %>% 
       left_join(y_H1 %>% select(Analysis, Bound, Probability)) %>% 
-      select(Analysis, Bound, Probability, Probability0, Z, `Nominal p`)
+      select(Analysis, Bound, Probability, Probability0, Z, `~Risk difference at bound`, `Nominal p`)
   )
   # summarize the analysis
   suppressMessages(
     analysis <- x %>% 
-      select(Analysis, n, rd, rd0, theta, theta0) %>% 
+      select(Analysis, N, rd, rd0, theta, theta0) %>% 
       left_join(y_H1 %>% select(Analysis, info, IF) %>% unique()) %>%
       left_join(y_H0 %>% select(Analysis, info, IF) %>% dplyr::rename(info0 = info, IF0 = IF) %>% unique()) %>%
-      select(Analysis, n, rd, rd0, theta, theta0, info, info0, IF, IF0)
+      select(Analysis, N, rd, rd0, theta, theta0, info, info0, IF, IF0)
   )
   
   output <- list(

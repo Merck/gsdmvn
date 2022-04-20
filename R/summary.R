@@ -324,8 +324,8 @@ summary.gs_design <- function(
   if(method == "rd"){
     if(is.null(col_vars) & is.null(col_decimals)){
       x_decimals <- tibble::tibble(
-        col_vars = c("Analysis", "Bound", "Z", "Nominal p", "Alternate hypothesis", "Null hypothesis"), 
-        col_decimals = c(NA, NA, 2, 4, 4, 4))
+        col_vars = c("Analysis", "Bound", "Z", "~Risk difference at bound", "Nominal p", "Alternate hypothesis", "Null hypothesis"), 
+        col_decimals = c(NA, NA, 2, 4, 4, 4, 4))
     }else{
       x_decimals <- tibble::tibble(col_vars = col_vars, col_decimals = col_decimals)
     }
@@ -347,8 +347,8 @@ summary.gs_design <- function(
       analysis_decimals <- c(1, 1, 1, 2, 2) 
     }
     if(method == "rd"){
-      analysis_vars <- c("n", "rd")
-      analysis_decimals <- c(1, 4) 
+      analysis_vars <- c("N", "rd", "IF")
+      analysis_decimals <- c(1, 4, 2) 
     }
   }else if(is.null(analysis_vars) & !is.null(analysis_decimals)){
     stop("summary: please input analysis_vars and analysis_decimals in pairs!")
@@ -420,7 +420,7 @@ summary.gs_design <- function(
     # header
     analysis_summary_header <- analyses %>% 
       dplyr::select(all_of(c("Analysis", analysis_vars))) %>% 
-      dplyr::rename("risk difference" = rd, N = n)
+      dplyr::rename("risk difference" = rd)
     # bound details
     bound_summary_detail <- xy
   }
@@ -444,7 +444,7 @@ summary.gs_design <- function(
   }else if(method == "combo"){
     output <- output %>% select(Analysis, Bound, Z, `Nominal p`, `Alternate hypothesis`, `Null hypothesis`)
   }else if(method == "rd"){
-    output <- output %>% select(Analysis, Bound, Z, `Nominal p`, `Alternate hypothesis`, `Null hypothesis`)
+    output <- output %>% select(Analysis, Bound, Z, `~Risk difference at bound`, `Nominal p`, `Alternate hypothesis`, `Null hypothesis`)
   }
   
   # --------------------------------------------- #
@@ -456,6 +456,9 @@ summary.gs_design <- function(
   }
   if("~HR at bound" %in% colnames(output)){
     output <- output %>% dplyr::mutate_at("~HR at bound", round, (x_decimals %>% filter(col_vars == "~HR at bound"))$col_decimals)
+  }
+  if("~Risk difference at bound" %in% colnames(output)){
+    output <- output %>% dplyr::mutate_at("~Risk difference at bound", round, (x_decimals %>% filter(col_vars == "~Risk difference at bound"))$col_decimals)
   }
   if("Nominal p" %in% colnames(output)){
     output <- output %>% dplyr::mutate_at("Nominal p", round, (x_decimals %>% filter(col_vars == "Nominal p"))$col_decimals)

@@ -302,7 +302,7 @@ as_gt.gs_design <- function(
     }else if(method == "combo"){
       display_columns <- c("Analysis", "Bound", "Nominal p", "Alternate hypothesis", "Null hypothesis")
     }else if(method == "rd"){
-      display_columns <- c("Analysis", "Bound", "Nominal p", "Alternate hypothesis", "Null hypothesis")
+      display_columns <- c("Analysis", "Bound", "Nominal p", "~Risk difference at bound", "Alternate hypothesis", "Null hypothesis")
     }
   }
   # filter the columns to display as the output

@@ -34,20 +34,20 @@ NULL
 gs_info_rd <- function(
   p_c = .15,
   p_e = .13,
-  n = c(50, 80, 100),
+  N = c(50, 80, 100),
   theta0 = 0,
   delta0 = 0, 
   ratio = 1  
 ){
   # set the sample size of control/experiment group
-  n_e <- n / (1 + ratio)
-  n_c <- n * ratio / (1 + ratio)
+  n_e <- N / (1 + ratio)
+  n_c <- N * ratio / (1 + ratio)
   # set the pooled rate
-  p_pool <- p_c * n_c / n + p_e * n_e /n
+  p_pool <- p_c * n_c / N + p_e * n_e / N
   # set d
   d <- ifelse(p_c > p_e, 1, 1)
   # set the treatment effect 
-  theta <- d * rep(p_c - p_e, length(n))
+  theta <- d * rep(p_c - p_e, length(N))
   
   # if it is superiority, non-inferiority design
   if(theta0 == 0){
@@ -68,8 +68,8 @@ gs_info_rd <- function(
   }
   
   output <- tibble::tibble(
-    Analysis = 1:length(n), 
-    n = n,
+    Analysis = 1:length(N), 
+    N = N,
     rd = d * (p_c - p_e),
     rd0 = if(theta0 > 0){d * (p_c0 - p_e0)}else{0},
     theta = rd / sqrt(sigma2_H1),
