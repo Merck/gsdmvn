@@ -29,7 +29,7 @@ library(gt)
 devtools::load_all()
 ```
 
-# Overview
+## Overview
 
 We assume a 2-arm group sequential design with an experimental treatment group and a control group.
 Spending is used to specify boundary crossing probabilities for group sequential designs.
@@ -41,6 +41,10 @@ Lower bounds may be defined to be
     a) futility bounds defined by $\beta$-spending to control Type II error,
     b) asymmetric lower bounds for harm, controlling probability that the experimental arm yields worse efficacy than control.
     
-This vignette discusses considerations for distributional assumptions used to compute these bounds.
+Distributional assumptions have been outlined in the vignette * *
+
+
+
+
  
 # References
