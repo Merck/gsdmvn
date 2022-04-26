@@ -18,9 +18,8 @@ knitr::opts_chunk$set(
 
 ## Overview
 
-We consider one- and two-sided hypothesis testing using a group sequential design with possibly non-constant treatment effect.
-That can be useful for situations such as an assumed non-proportional hazards model or using weighted logrank tests for a time-to-event endpoint. 
-Asymptotic distributional assumptions for this document have been laid out in the vignette *Non-Proportional Effect Size in Group Sequential Design.*
+We consider group sequential designs with possibly non-constant treatment effects over time.
+This can be useful for situations such as an assumed non-proportional hazards model as laid out in `vignette("NPEbackground", package="gsdmvn")`. 
 In general, we assume $K\ge 1$ analyses with statistical information $\mathcal{I}_k$ and information fraction $t_k=\mathcal{I}_k/\mathcal{I}_k$ at analysis $k$, $1\le k\le K$.
 We denote the null hypothesis $H_{0}$: $\theta(t)=0$ and an alternate hypothesis $H_1$: $\theta(t)=\theta_1(t)$ for $t> 0$ where $t$ represents the information fraction for a study.
 While a study is planned to stop at information fraction $t=1$, we define $\theta(t)$ for $t>0$ since a trial can overrun its planned statistical information at the final analysis. 
@@ -31,7 +30,7 @@ For our purposes, $H_0$ will represent no treatment difference, but it could rep
 Recall that we assume $K$ analyses and bounds $-\infty \le a_k< b_k<\le \infty$ for $1\le k < K$ and $-\infty \le a_K\le b_K<\infty$. 
 We denote the probability of crossing the upper boundary at analysis $k$ without previously crossing a bound by
 
-$$\alpha_{k}(\theta)=P_{\theta}(\{Z_{k}\geq b_{k}\}\cap_{j=1}^{i-1}\{a_{j}\le Z_{j}< b_{j}\}),$$
+$$\alpha_{k}(\theta)=P_{\theta}(\{Z_{k}\geq b_{k}\}\cap_{j=1}^{k-1}\{a_{j}\le Z_{j}< b_{j}\}),$$
 $k=1,2,\ldots,K.$
 The total probability of crossing an upper bound prior to crossing a lower bound is denoted by 
 
