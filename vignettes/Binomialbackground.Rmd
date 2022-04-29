@@ -1,13 +1,15 @@
 ---
 title: "Group Sequential Design for Binary Outcomes"
 output:
-  html_document:
+  rmarkdown::html_document:
     toc: true
     toc_depth: 3
     toc_float: true
     theme: flatly
-    highlight: tango
     code_folding: hide
+    number_sections: true
+    highlight: "textmate"
+    css: "custom.css"
 bibliography: gsDesign.bib
 vignette: |
   %\VignetteIndexEntry{Group Sequential Design for Binary Outcomes}
@@ -20,13 +22,16 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+
 library(tibble)
 library(dplyr)
 library(knitr)
 library(gsdmvn)
 ```
 
-## Overview
+
+
+# Overview
 
 We consider group sequential design comparing two binomial distributions based on comparing two treatment groups for a binary outcome.
 There are several issues to consider:
@@ -34,8 +39,31 @@ There are several issues to consider:
 - The measure of treatment difference or natural parameter; we focus on risk difference.
 - Null and alternate hypothesis variance incorporation.
 - Superiority, non-inferiority and super-superiority designs.
+  
+  + Superiority design: experimental group is superior to the control group ($H_0: \theta = 0 \;\; vs. \;\; H_1: \theta > 0$).
+  + Non-inferiority design: while the treatment group is definitely not better than the control group, it is not unacceptably worse ($H_0: \theta \leq 0 \;\; vs. \;\; H_1: \theta > 0$). 
+  + Super-superiority designs: experimental group is superior to the control group above some thresholds ($H_0: \theta = \theta_0 \;\; vs. \;\; H_1: \theta > \theta_0$ with $\theta_0 > 0$).
+  
 - Stratified populations.
 - Fixed and group sequential designs.
+
+In the reminder of this vignette, we will discuss 4 types of designs:
+
+- fixed design 
+  + with unstratified population
+    + superiority, non-inferiority design
+    + super-superiority design
+  + with stratified population
+    + superiority, non-inferiority design
+    + super-superiority design 
+
+- group sequential  design 
+  + with unstratified population
+    + superiority, non-inferiority design
+    + super-superiority design
+  + with stratified population
+    + superiority, non-inferiority design
+    + super-superiority design 
 
 For single stratum designs, we focus on sample size or power using the method of
 @FarringtonManning for a trial to test the difference between two
@@ -50,6 +78,7 @@ This is also consistent with the **Hmisc** R package routines `bsamsize()` and
 For trials with multiple strata, testing for a risk difference is often done by weighting each stratum according to the inverse of the variance (@MantelHaenszel).
 Since risk differences may also be assumed to be different for different strata, we will also explore weighting by strata sample sizes as in @Mehrotra2000.
 
+
 The focus here is for sample sizes that are large enough for asymptotic theory to work well without continuity corrections.
 The concepts are incorporated in the following functions intended for use in fixed and group sequentials designs:
 
@@ -59,48 +88,82 @@ The concepts are incorporated in the following functions intended for use in fix
 
 Simulation is used throughout to check the examples presented.
 
-## Single analysis unstratified
+# Fixed Design Unstratified
 
-### Assumptions and notation
+## Notations
 
 Throughout we assume a control group and a single experimental group indexed by $C$ and $E$, respectively.
 We focus on pairwise comparisons.
 We assume for control and experimental groups, respectively:
 
-- Randomization between two treatment groups with sample sizes $N_C$ and $N_E$; the randomization ratio planned is $r=N_E/N_C$.
-- Independent observations with a binary outcome that is observed with probability $p_C$ and $p_E$.
-- Random variables $X_C\sim\hbox{Binomial}(N_C, p_C), X_E\sim\hbox{Binomial}(N_E,p_E)$ with observed outcomes $x_C, x_E$ and observed rates of $\bar p_C=x_C/N_C, \bar p_E=x_E/N_E$.  
-- The constant $d=\pm 1$ indicating whether is an outcome is bad (failure; $d=1$) or good (response; $d=-1$).
-- The natural parameter risk difference is denoted by $\theta = d\times (p_C - p_E)$. Thus, whether $d=1$ or $d=-1$, $\theta > 0$ indicates a more favorable outcome distribution in the experimental group than in the control group.
-- Estimation of risk difference with $\hat\theta=d\times(\bar p_C - \bar p_E).$
+- $N_C$: sample size in the control group.
+- $N_E$: sample size in the treatment group.
+- $N$: total sample size, i.e, $N=N_C+N_E$. We note that $N_C=N/(r+1)$ and $N_E=Nr/(r+1)$.
+- $r$: planned randomization ratio, i.e., $r=N_E/N_C$.
+- $p_C$: independent observations in the control group with a binary outcome that is observed with probability $p_C$.
+- $p_E$: independent observations in the treatment group with a binary outcome that is observed with probability $p_E$.
+- $X_C$: random variables $X_C\sim\hbox{Binomial}(N_C, p_C)$.
+- $X_E$: random variables $X_E\sim\hbox{Binomial}(N_E, p_E)$.
+- $x_C$: the observed outcome of $X_C$.
+- $x_E$: the observed outcome of $X_E$.
+- $\bar p_C$: observed rates of the control group, i.e., $\bar p_C = x_C / N_C$.
+- $\bar p_E$: observed rates of the control group, i.e., $\bar p_E = x_E / N_E$.
+- $\bar p$: the pooled observed rates of two groups, i.e, $\bar p=(x_C+x_E)/(N_C+N_E)$.
+- $d$: an indicator whether is an outcome is bad (failure; $d=1$) or good (response; $d=-1$).
+- $\delta$: the natural parameter risk difference is denoted by $\delta = d \times (p_C - p_E)$. Thus, whether $d = 1$ or $d = -1$, $\theta > 0$ indicates a more favorable outcome distribution in the experimental group than in the control group.
+- $\hat \delta$: estimation of risk difference with $\hat \delta = d \times (\bar p_C - \bar p_E)$. We have $E(\hat\delta) = \delta$ and 
+- $\theta$: the standardized treatment effect, i.e., $\theta = \delta / \sqrt{\hbox{Var}(\delta)}$
+- $\hat\theta$: the estimated standardized treatment effect $\hat\theta = \hat\delta / \sqrt{\hbox{Var}(\hat\delta)}$.
+- $\sigma^2_{H_0}$: the variance of $\delta$ under $H_0$.
+- $\sigma^2_{H_1}$: the variance of $\delta$ under $H_1$.
 
-Letting $N=N_C+N_E$, we note that $N_C=N/(r+1)$ and $N_E=Nr/(r+1)$.
-We have $E(\hat\theta)=\theta$ and 
+
+## Testing
+
+We test a null hypothesis $H_0: \delta = \delta_0$, or equivalently $H_0: \theta = \theta_0$ where $\theta_0 \in (-1, 1)$ by using the test statistic
 
 $$
-\begin{aligned}
-\sigma^2 &= \hbox{Var}(\hat\theta)= \frac{p_C(1- p_C)}{N_C}+\frac{p_E(1- p_E)}{N_E}\\
- &= \frac{r+1}{N}\left(p_C(1- p_C)+\frac{p_E(1- p_E)}{r}\right)\\
- &= \psi^2/N
-\end{aligned}
+  Z = \frac{\hat\delta - \delta_0}{\hat \sigma_{H_0}}
 $$
-where $$\psi^2=(r+1)\left(p_C(1- p_C)+\frac{p_E(1- p_E)}{r}\right).$$
-
-### Testing
-
-
-We test a null hypothesis $H_0: \theta=\theta_0$ where $\theta_0$ is in $(-1, 1)$ using the test statistic
+where $\hat\sigma^2_{H_0}$ is the null hypothesis estimate of the $\hbox{Var}(\bar p_C -\bar p_E)$. 
+And the value of $\hat\sigma^2_0$ depends on the design, i.e., whether it is a superiority design, or non-inferiority design, or super-superiority design. 
+We will discuss  $\hat\sigma^2_0$ in the following 2 subsections.
 
 
-$$Z=\frac{d\times(\bar p_C - \bar p_E) - \theta_0}{\hat\sigma_0}$$
-where $\hat\sigma^2_0$, defined below, is the null hypothesis estimate of the $\hbox{Var}(\bar p_C -\bar p_E).$
+### Superiority \& Non-inferiority Design
+
+Under the null hypothesis $\theta_0 = 0$ we have
+$$
+  \hat\sigma^2_{H_0} 
+  = 
+  \bar p (1-\bar p)\times \left(\frac{1}{N_C}+\frac{1}{N_E}\right)
+  = 
+  \bar p (1-\bar p)\frac{r+1}{N}\left(1 + \frac{1}{r}\right).
+$$
+
+Under the alternative hypothesis, the variance of the estimated treatment effect $\hat\theta$ is
+$$
+  \sigma_{H_1}^2 
+  = \hbox{Var}(\hat\theta)= \frac{p_C(1- p_C)}{N_C}+\frac{p_E(1- p_E)}{N_E}
+  = \frac{r+1}{N}\left[ p_C(1- p_C)+\frac{p_E(1- p_E)}{r} \right]
+  = \psi^2/N,
+$$
+where 
+$$
+  \psi^2=(r+1)\left[ p_C(1- p_C)+\frac{p_E(1- p_E)}{r} \right].
+$$
+
+The statistical information under $H_0$ and $H_1$ are 
+$$
+  \mathcal I_{H_0} = 1 / \sigma_{H_0}^2 \\
+  \mathcal I_{H_1} = 1 / \sigma_{H_1}^2
+$$
+
 Testing will be one-sided at level $\alpha\in (0,1)$ and the null hypothesis will be rejected if 
-$$Z\ge \Phi^{-1}(1-\alpha).$$
-We define $\bar p=(x_C+x_E)/(N_C+N_E)$.
-Under the null hypothesis $\theta_0=0$ we have 
-$$\hat\sigma^2_0 = \bar p (1-\bar p)\times \left(\frac{1}{N_C}+\frac{1}{N_E}\right)= \bar p (1-\bar p)\frac{r+1}{N}\left(1 + \frac{1}{r}\right).$$
-Note that when we have equal randomization, this has the perhaps more recognizable form 
-$$\hat\sigma^2_0 = \frac{4}{N}\bar p (1-\bar p).$$
+$$
+  Z \ge \Phi^{-1}(1-\alpha).
+$$
+
 
 We do a quick 20,000 simulations and compare the density histogram of outcomes to the standard normal density.
 Assume $r=1, d = 1, p_C=p_E=0.125, N=200$.
@@ -108,7 +171,7 @@ We then compute $\sigma$ as `r round(sqrt(.125 * .875/200 * 4), 3)`.
 Even for this *not huge* sample size the normal density fits quite well other than some flatness in the middle.
 
 
-```{r, message = FALSE}
+```{r, message = FALSE, eval=FALSE}
 # Hypothesized failure rate
 p <- .125
 #  Other parameters
@@ -139,57 +202,455 @@ ggplot() +
           subtitle = "Histogram of 20,000 simulations")
 ```
 
-Now we extend the computation of $\hat\sigma^2_0$ to $\theta_0\neq 0$ using the restriction that rate estimates $\bar p_{C0}, \bar p_{E0}$ under the null hypothesis satisfy 
-$$\bar p_{C0}=\bar p_{E0}+d\theta_0\\
-\bar p_{C0} + r\bar p_{E0} = \bar p_C + r\bar p_E .$$
+
+### Super-Superiority Design
+
+Under the null hypothesis $\theta_0 \neq 0$, the estimation of rates $\bar p_{C0}, \bar p_{E0}$ satisfy 
+$$
+  \left\{
+  \begin{array}{l}
+    \bar p_{C0} = \bar p_{E0} + d \times \theta_0 \\
+    \bar p_{C0} + r\bar p_{E0} = \bar p_C + r\bar p_E .
+  \end{array}
+  \right.
+$$
 Solving these 2 equations with 2 unknowns yields
-
 $$
-\begin{aligned}
-\bar p_{E0} &= \frac{\bar p_C+r\bar p_E - d\theta_0}{r+1}\\
-\bar p_{C0} &=  \bar p_{E0}+ d\theta_0.
-\end{aligned}
+  \left\{
+  \begin{array}{l}
+  \bar p_{E0} &= (\bar p_C+r\bar p_E - d\theta_0) / (r+1)\\
+  \bar p_{C0} &=  \bar p_{E0}+ d\theta_0.
+  \end{array}
+  \right.
 $$
-We estimate the above variance with:
-$$\hat\sigma^2_0= \frac{\bar p_{C0}(1- \bar p_{C0})}{N_C}+\frac{ \bar p_{E0}(1- \bar p_{E0})}{N_E}= \frac{r+1}{N}\left( \bar p_{C0}(1- \bar p_{C0})+\frac{\bar p_{E0}(1 -\bar p_{E0})}{r}\right).
+We estimate the above variance under $H_0$ as
 $$
-
-
-
-For testing, we will use $Z=\hat\theta/\hat\sigma_0\sim\hbox{Normal}(0, 1)$
-Squaring this and applying a continuity correction is a typical two-sided testing approach, but we will not use the continuity correction here. 
-Using the normally distributed $Z$ enables one-sided testing. 
-The continuity correction is generally unneeded (@CCmyth).
-
-## Stratified population
-
-### Assumptions
-
-We will consider $m>1$ strata with $d, \theta_0, r$ as before, but allow $\theta_{1j}, j=1,\cdots,m$ to vary by stratum.
-The full alternate hypothesis is specified by $p_{Ej}, p_{Cj}=p_{Ej}+\theta_{1j}, j=1,\cdots, m$ as well as
-positive weights $w_j, j=1,\cdots m$.
-Our test is now
-
+  \hat\sigma^2_{H_0}
+  = 
+  \frac{\bar p_{C0}(1- \bar p_{C0})}{N_C}+\frac{ \bar p_{E0}(1- \bar p_{E0})}{N_E}
+  = 
+  \frac{r+1}{N}\left[ \bar p_{C0}(1- \bar p_{C0})+\frac{\bar p_{E0}(1 -\bar p_{E0})}{r} \right].
 $$
-\begin{aligned}
-Z&=\frac{\sum_{j=1}^m w_j\left(\hat\theta_j + d\theta_0\right)}{\left(\sum_{j=1}^mw_j^2\hat\sigma_{0j}^2\right)^{1/2}}.
-\end{aligned}
+And the variance under $H_1$ is
+$$
+  \sigma_{H_1}^2 
+  = 
+  \frac{p_C(1- p_C)}{N_C} + \frac{p_E(1- p_E)}{N_E} \\
 $$
 
-### Weighting options
+For testing, we will use 
+$$
+  Z = \frac{\hat\delta - \delta_0} {\hat\sigma_{H_0}} \sim\hbox{Normal}(0, 1).
+$$
 
-As previously noted, we will consider weighting based on either inverse-variance weights (@MantelHaenszel) or strata sample size weights (Mehrotra2000). [YUJIE]
+
+
+# Fixed Design Stratified
+
+## Notations
+
+Throughout we assume a control group and a single experimental group indexed by $C$ and $E$, respectively.
+We focus on pairwise comparisons.
+We assume for control and experimental groups, respectively:
+
+- $S$: total number of stratums.
+- $N_{C,s}$: sample size in the control group of the $s$-th strata.
+- $N_{E,s}$: sample size in the treatment group of the $s$-th strata.
+- $N_s$: total sample size of the $s$-th strata., i.e, $N_s = N_{C,s} + N_{E,s}$. We note that $N_{C,s} = N_s / (r+1)$ and $N_{E,s} = rN_s /(r+1)$.
+- $r$: planned randomization ratio, i.e., $r = N_{E,s} / N_{C,s}$ for any $s = 1, \ldots, S$.
+- $p_{C,s}$: independent observations in the control group of the $s$-th strata with a binary outcome that is observed with probability $p_{C,s}$.
+- $p_{E,s}$: independent observations in the treatment group of the $s$-th strata with a binary outcome that is observed with probability $p_{E,s}$.
+- $X_{C,s}$: random variables $X_{C,s} \sim \hbox{Binomial}(N_{C,s}, p_{C,s})$ of the $s$-th strata.
+- $X_{E,s}$: random variables $X_{E,s} \sim \hbox{Binomial}(N_{E,s}, p_{E,s})$ of the $s$-th strata.
+- $x_{C,s}$: the observed outcome of $X_{C,s}$.
+- $x_{E,s}$: the observed outcome of $X_{E,s}$.
+- $\bar p_{C,s}$: observed rates of the control group of the $s$-th strata, i.e., $\bar p_{C,s} = x_{C,s} / N_{C,s}$.
+- $\bar p_{E,s}$: observed rates of the control group of the $s$-th strata, i.e., $\bar p_{E,s} = x_{E,s} / N_{E,s}$.
+- $\bar p_s$: the pooled observed rates of two groups, i.e, $\bar p_s = (x_{C,s} + x_{E,s}) / (N_{C,s} + N_{E,s})$.
+- $d_s$: an indicator of the $s$-th strata whether is an outcome is bad (failure; $d_s = 1$) or good (response; $d_s = -1$).
+- $\delta_s$: the natural parameter risk difference of the $s$-th strata is denoted by $\delta_s = d_s \times (p_{C,s} - p_{E,s})$. Thus, whether $d_s = 1$ or $d_s = -1$, $\theta_s > 0$ indicates a more favorable outcome distribution in the experimental group than in the control group.
+- $\hat\delta_s$: estimation of risk difference with $\hat\delta_s = d_s \times (\bar p_{C,s} - \bar p_{E,s})$. We have $E(\hat\delta_s) = \delta_s$.
+- $\theta_s$: the standardized treatment effect of the $s$-th strata, i.e., $\theta_s = \delta_s / \sqrt{\hbox{Var}(\delta_s)}$
+- $\hat\theta_s$: the estimated standardized treatment effect of the $s$-th strata, i.e., $\hat\theta_s = \hat\delta_s / \sqrt{\hbox{Var}(\hat\delta_s)}$.
+- $\sigma^2_{H_0,s}$: the variance of $\delta_s$ under $H_0$.
+- $\sigma^2_{H_1,s}$: the variance of $\delta_s$ under $H_1$.
 
 
 
-## Statistical information
+## Testing
+
+We test a null hypothesis $H_0: \theta = \theta_{0,s}$ where $\theta_{0,s} \in (-1, 1)$ by using the test statistic
+
+$$
+  Z 
+  = 
+  \frac{\sum_{s=1}^S (\hat\theta_s - \theta_{0,s})}{\sqrt{\sum_{s=1}^S w_s^2 \sigma^2_{H_0,s}}}
+$$
+where $\hat\sigma^2_{H_0, s}$ is the null hypothesis estimate of the $\hbox{Var}(\bar p_{C,s} -\bar p_{E,s})$ for any $s = 1, \ldots, S$. 
+And the value of $\hat\sigma^2_{H_0, s}$ depends on the design, i.e., whether it is a superiority design, or non-inferiority design, or super-superiority design. 
+We will discuss  $\hat\sigma^2_{H_0, s}$ in the following 2 subsections.
+
+
+### Superiority \& Non-inferiority Design
+
+Under the null hypothesis $\theta_0 = 0$ we have
+$$
+  \hat\sigma^2_{H_0, s} 
+  = 
+  \bar p_s (1 - \bar p_s) \left(\frac{1}{N_{C,s}} + \frac{1}{N_{E,s}} \right)
+  = 
+  \bar p_s (1 - \bar p_s) \frac{r+1}{N_s} \left(1 + \frac{1}{r}\right).
+$$
+
+Under the alternative hypothesis, we have
+$$
+  \sigma_{H_1,s}^2 
+  = \hbox{Var}(\hat\theta_s) = \frac{p_{C,s} (1 - p_{C,s})}{N_{C,s}} + \frac{p_{E,s} (1 - p_{E,s})}{N_{E,s}}
+  = \frac{r+1}{N_s} \left[ p_{C,s} (1 - p_{C,s}) + \frac{p_{E,s} (1 - p_{E,s})}{r} \right].
+$$
+
+
+Testing will be one-sided at level $\alpha\in (0,1)$ and the null hypothesis will be rejected if 
+$$
+  Z \ge \Phi^{-1}(1-\alpha).
+$$
+
+### Super-Superiority Design
+
+Under the null hypothesis $\theta_{0,s} \neq 0$, the estimation of rates $\bar p_{C0}, \bar p_{E0}$ satisfy 
+$$
+  \left\{
+  \begin{array}{l}
+    \bar p_{C0,s} = \bar p_{E0,s} + d_s \times \theta_{0,s} \\
+    \bar p_{C0,s} + r\bar p_{E0,s} = \bar p_{C,0} + r \bar p_{E,s} .
+  \end{array}
+  \right.
+$$
+
+Solving these 2 equations with 2 unknowns yields
+$$
+  \left\{
+  \begin{array}{l}
+  \bar p_{E0,s} = (\bar p_{C,s} + r \bar p_{E,s} - d_s \theta_{0,s}) / (r+1)\\
+  \bar p_{C0,s} =  \bar p_{E0,s} +  d_s \theta_{0,s}.
+  \end{array}
+  \right.
+$$
+We estimate the above variance of the $s$-th strata under $H_0$ as
+$$
+  \hat\sigma^2_{H_0,s}
+  = 
+  \frac{\bar p_{C0,s}(1 - \bar p_{C0,s})}{N_{C,s}} + \frac{ \bar p_{E0,s}(1- \bar p_{E0,s})}{N_{E,s}}
+  = 
+  \frac{r+1}{N_s} \left[ \bar p_{C0,s}(1- \bar p_{C0,s}) + \frac{\bar p_{E0, s}(1 -\bar p_{E0,s})}{r} \right].
+$$
+And the variance under $H_1$ of the $s$-th strata is
+$$
+  \sigma_{H_1,s}^2 
+  =
+  \frac{p_{C,s}(1 - p_{C,s})}{N_{C,s}} + \frac{p_{E,s} (1 - p_{E,s})}{N_{E,s}} 
+  =
+  \frac{r+1}{N_s}\left[p_{C,s}(1 - p_{C,s}) + \frac{p_{E,s} (1 - p_{E,s})}{r} \right]
+$$
+
+
+
+# GS Design Unstratified
+
+## Notations
+
+- $K$: total number of analysis (including the final analysis) in the group sequential design.
+- $N_{C,k}$: sample size in the control group at the $k$-th analysis.
+- $N_{E,k}$: sample size in the treatment group at the $k$-th analysis.
+- $N_k$: total sample size at the $k$-th analysis., i.e, $N_k = N_{C,k} + N_{E,k}$. We note that $N_{C,k} = N_k / (r+1)$ and $N_{E,k} = rN_k /(r+1)$.
+- $r$: planned randomization ratio, i.e., $r = N_{E,k} / N_{C,k}$ for any $k = 1, \ldots, K$.
+- $p_{C,k}$: independent observations in the control group with a binary outcome that is observed with probability $p_{C,k}$ at the $k$-th analysis.
+- $p_{E,k}$: independent observations in the treatment group with a binary outcome that is observed with probability $p_{E,k}$ at the $k$-th analysis.
+- $X_{C,k}$: random variables $X_{C,k} \sim \hbox{Binomial}(N_{C,k}, p_{C,k})$ at the $k$-th analysis.
+- $X_{E,k}$: random variables $X_{E,k} \sim \hbox{Binomial}(N_{E,k}, p_{E,k})$ at the $k$-th analysis.
+- $x_{C,k}$: the observed outcome of $X_{C, k}$ at the $k$-th analysis.
+- $x_{E,k}$: the observed outcome of $X_{E, k}$ at the $k$-th analysis.
+- $\bar p_{C,k}$: observed rates of the control group at the $k$-th analysis, i.e., $\bar p_{C,k} = x_{C,k} / N_{C,k}$.
+- $\bar p_{E,k}$: observed rates of the control group at the $k$-th analysis, i.e., $\bar p_{E,k} = x_{E,k} / N_{E,k}$.
+- $\bar p_k$: the pooled observed rates of two groups at the $k$-th analysis, i.e, $\bar p_k = (x_{C,k} + x_{E,k}) / (N_{C,k} + N_{E,k})$.
+- $d_k$: an indicator whether is an outcome is bad (failure $\bar p_{C,k} < \bar p_{E,k}$; $d_k=1$) or good (response $\bar p_{C,k} > \bar p_{E,k}$; $d_k = -1$).
+- $\theta_k$: the natural parameter risk difference at the $k$-th analysis is denoted by $\theta_k = d_k \times (p_C - p_E)$. Thus, whether $d_k = 1$ or $d_k = -1$, $\theta_k > 0$ indicates a more favorable outcome distribution in the experimental group than in the control group.
+- $\hat\theta_k$: estimation of risk difference with $\hat\theta_k = d_k \times (\bar p_{C,k} - \bar p_{E,k})$. We have $E(\hat\theta_k)=\theta_k$.
+
+## Testing
+
+We test a null hypothesis $H_0: \theta_k = \theta_{0,k}$ where $\theta_{0,k} \in (-1, 1)$ by using the test statistic
+
+$$
+  Z_k = \frac{\hat\theta_k - \theta_{0,k}}{ \hat \sigma_{0,k}}
+$$
+where $\hat\sigma^2_{0,k}$ is the null hypothesis estimate of the $\hbox{Var}(\bar p_{C,k} -\bar p_{E,k})$. 
+And the value of $\hat\sigma^2_{0,k}$ depends on the design, i.e., whether it is a superiority design, or non-inferiority design, or super-superiority design. 
+We will discuss  $\hat\sigma^2_{0,k}$ in the following 2 subsections.
+
+
+### Superiority \& Non-inferiority Design
+
+Under the null hypothesis $\theta_{0,k} = 0$ we have
+$$
+  \hat\sigma^2_{H_0,k} 
+  = 
+  \bar p_k (1 - \bar p_k) \times \left(\frac{1}{N_{C,k}} + \frac{1}{N_{E,k}} \right)
+  = 
+  \bar p_k (1 - \bar p_k) \frac{r + 1}{N_k} \left(1 + \frac{1}{r}\right).
+$$
+
+Under the alternative hypothesis $\theta_k > 0$, the variance of the estimated treatment effect $\hat\theta$ is
+$$
+  \begin{aligned}
+    \sigma_{H_1,k}^2 
+    & = \hbox{Var}(\hat\theta_k) = \frac{p_{C,k} (1- p_{C,k})}{N_{C,k}} + \frac{p_{E,k} (1 - p_{E,k})}{N_{E,k}}\\
+    & = \frac{r + 1}{N_k} \left[p_{C,k} (1 - p_{C,k}) + \frac{p_{E,k} (1 - p_{E,k})}{r} \right] \\
+    & = \psi^2_k / N_k,
+  \end{aligned}
+$$
+where 
+$$
+  \psi^2_k = (r + 1) \left[ p_{C,k} (1 - p_{C,k}) + \frac{p_{E,k} (1 - p_{E,k})}{r} \right].
+$$
+
+Testing will be one-sided at level $\alpha \in (0, 1)$ and the null hypothesis will be rejected if $Z_k$ cross the upper boundary. 
+And the upper boundary can be either fixed or derived from spending functions.
+
+### Super-Superiority Design
+
+Under the null hypothesis $\theta_{0,k} \neq 0$, the estimation of rates $\bar p_{C0,k}, \bar p_{E0,k}$ satisfy 
+$$
+  \left\{
+  \begin{array}{l}
+    \bar p_{C0,k} = \bar p_{E0,k} + d_k \times \theta_{0,k} \\
+    \bar p_{C0,k} + r\bar p_{E0,k} = \bar p_{C,k} + r\bar p_{E,k} .
+  \end{array}
+  \right.
+$$
+Solving these 2 equations with 2 unknowns yields
+$$
+  \left\{
+  \begin{array}{l}
+  \bar p_{E0,k} & = (\bar p_{C,k} + r \bar p_{E,k} - d_k \theta_{0,k}) / (r + 1)\\
+  \bar p_{C0,k} & =  \bar p_{E0,k} + d_k \theta_{0,k}.
+  \end{array}
+  \right.
+$$
+We estimate the above variance under $H_0$ as
+$$
+  \hat\sigma^2_{H_0,k}
+  = 
+  \frac{\bar p_{C0,k}(1- \bar p_{C0,k})}{N_{C,k}} + \frac{ \bar p_{E0,k} (1 - \bar p_{E0,k})}{N_{E,k}}
+  = 
+  \frac{r+1}{N_k} \left[ \bar p_{C0,k} (1 - \bar p_{C0,k}) + \frac{\bar p_{E0,k} (1 - \bar p_{E0,k})}{r} \right].
+$$
+And the variance under $H_1$ is
+$$
+  \sigma_{H_1,k}^2 
+  = 
+  \frac{p_{C,k} (1 - p_{C,k})}{N_{C,k}} + \frac{p_{E,k} (1 - p_{E,k})}{N_{E,k}} 
+$$
+
+For testing, we will use 
+$$
+  Z_k = \hat\theta_k / \hat\sigma_{H_0,k} \sim \hbox{Normal}(0, 1).
+$$
+
+
+# GS Design Stratified 
+
+## Notations
+
+- $K$: total number of analysis (including the final analysis) in the group sequential design.
+- $S$: total number of stratum.
+- $N_{C,k,s}$: sample size in the control group at the $k$-th analysis of the $s$-th strata.
+- $N_{E,k,s}$: sample size in the treatment group at the $k$-th analysis of the $s$-th strata.
+- $N_{k,s}$: total sample size at the $k$-th analysis of the $s$-th strata, i.e, $N_{k,s} = N_{C,k,s} + N_{E,k,s}$. We note that $N_{C,k,s} = N_{k,s} / (r+1)$ and $N_{E,k,s} = rN_{k,s} /(r+1)$.
+- $N_k$: total sample size at the $k$-th analysis, i.e., $N_k = \sum_{s=1}^S N_{k,s} = \sum_{s=1}^S (N_{C,k,s} + N_{E,k,s})$.
+- $N$: total sample size, i.e., $N = \sum_{k=1}^K N_k = \sum_{k=1}^K \sum_{s=1}^S N_{C,k,s} + N_{E,k,s}$.
+- $r$: planned randomization ratio, i.e., $r = N_{E,k,s} / N_{C,k,s}$ for any $k = 1, \ldots, K$ and $s = 1, \ldots, S$.
+- $p_{C,k,s}$: independent observations in the control group with a binary outcome that is observed with probability $p_{C,k,s}$ at the $k$-th analysis of the $s$-th strata.
+- $p_{E,k,s}$: independent observations in the treatment group with a binary outcome that is observed with probability $p_{E,k,s}$ at the $k$-th analysis of the $s$-th strata.
+- $p_{C,k}$: TBA
+- $p_{E,k}$: TBA
+- $X_{C,k,s}$: random variables $X_{C,k,s} \sim \hbox{Binomial}(N_{C,k,s}, p_{C,k,s})$ at the $k$-th analysis of the $s$-th strata.
+- $X_{E,k,s}$: random variables $X_{E,k,s} \sim \hbox{Binomial}(N_{E,k,s}, p_{E,k,s})$ at the $k$-th analysis of the $s$-th strata.
+- $x_{C,k,s}$: the observed outcome of $X_{C, k, s}$ at the $k$-th analysis of the $s$-th strata.
+- $x_{E,k,s}$: the observed outcome of $X_{E, k, s}$ at the $k$-th analysis of the $s$-th strata.
+- $x_{C,k}$: the observed outcome of the control group at the $k$-th analysis, i.e., $x_{C,k} = \sum_{s=1}^S x_{C,k,s}$.
+- $x_{E,k}$: the observed outcome of the treatment group at the $k$-th analysis, i.e., $x_{E,k} = \sum_{s=1}^S x_{E,k,s}$.
+- $\bar p_{C,k,s}$: observed rates of the control group at the $k$-th analysis of the $s$-th strata, i.e., $\bar p_{C,k,s} = x_{C,k,s} / N_{C,k,s}$.
+- $\bar p_{E,k,s}$: observed rates of the control group at the $k$-th analysis of the $s$-th strata, i.e., $\bar p_{E,k,s} = x_{E,k,s} / N_{E,k,s}$.
+- $\bar p_{C,k}$: observed rates of the control group at the $k$-th analysis, i.e., $\bar p_{C,k} = \sum_{s=1}^S x_{C,k,s} / \sum_{s=1}^S N_{C,k,s}$.
+- $\bar p_{E,k,s}$: observed rates of the control group at the $k$-th analysis, i.e., $\bar p_{E,k} = \sum_{s=1}^S x_{E,k,s} / \sum_{s=1}^S N_{E,k,s}$.
+- $\bar p_{k,s}$: the pooled observed rates of two groups at the $k$-th analysis of the $s$-th strata, i.e, $\bar p_{k,s} = (x_{C,k,s} + x_{E,k,s}) / (N_{C,k,s} + N_{E,k,s})$.
+- $\bar p_{k}$: the pooled observed rates of two groups at the $k$-th analysis, i.e, $\bar p_k = \sum_{s=1}^S (x_{C,k} + x_{E,k}) / \sum_{s=1}^S (N_{C,k,s} + N_{E,k,s})$.
+- $d_{k,s}$: an indicator whether is an outcome is bad (failure $\bar p_{C,k,s} < \bar p_{E,k,s}$; $d_{k,s} = 1$) or good (response $\bar p_{C,k,s} > \bar p_{E,k,s}$; $d_{k,s} = -1$).
+- $\theta_{k,s}$: the natural parameter risk difference at the $k$-th analysis of the $s$-th strata is denoted by $\theta_{k,s} = d_{k,s} \times (p_{C,k,s} - p_{E,k,s})$. Thus, whether $d_{k,s} = 1$ or $d_{k,s} = -1$, $\theta_{k,s} > 0$ indicates a more favorable outcome distribution in the experimental group than in the control group.
+- $\hat\theta_{k,s}$: estimation of risk difference with $\hat\theta_{k,s} = d_{k,s} \times (\bar p_{C,k,s} - \bar p_{E,k,s})$. We have $E(\hat\theta_{k,s}) = \theta_{k,s}$.
+- ?$\theta_{k}$: the natural parameter risk difference at the $k$-th analysis is denoted by $\theta_{k} = |p_{C,k} - p_{E,k}|$. 
+- $\hat\theta_{k}$: estimation of risk difference at the $k$-th analysis with $\hat\theta_{k} = |\bar p_{C,k} - \bar p_{E,k}|$
+
+## Testing
+The test statistics at the $k$-th analysis is
+$$
+  Z_{k} 
+  = 
+  \frac{ 
+    \sum_{s=1}^S w_s | \hat \theta_{k,s} - \theta_{0,k,s}|
+  }{
+    \sqrt{\sum_{s=1}^S w_{s}^2 \sigma_{H_0,k,s}^2}
+  }
+$$
+
+### Superiority \& Non-inferiority Design
+
+Under the null hypothesis $\theta_{0,k,s} = 0$ we have
+$$
+  \hat\sigma^2_{H_0,k,s} 
+  = 
+  \bar p_{k,s} (1 - \bar p_{k,s}) \times \left(\frac{1}{N_{C,k,s}} + \frac{1}{N_{E,k,s}} \right),
+$$
+where $\bar p_{k,s}$ is the pooled observed rates of two groups at the $k$-th analysis of the $s$-th strata, i.e, $\bar p_{k,s} = (x_{C,k,s} + x_{E,k,s}) / (N_{C,k,s} + N_{E,k,s})$.
+
+
+Under the alternative hypothesis $\theta_{k,s} > 0$, the variance of the estimated treatment effect $\hat\theta_{k,s}$ is
+$$
+  \begin{aligned}
+    \sigma_{H_1,k,s}^2 
+    & = \hbox{Var}(\hat\theta_{k,s}) = \frac{p_{C,k,s} (1- p_{C,k,s})}{N_{C,k,s}} + \frac{p_{E,k,s} (1 - p_{E,k,s})}{N_{E,k,s}}
+  \end{aligned}
+$$
+
+Testing will be one-sided at level $\alpha \in (0, 1)$ and the null hypothesis will be rejected if $Z_k$ cross the upper boundary. 
+And the upper boundary can be either fixed or derived from spending functions.
+
+### Super-Superiority Design
+
+Under the null hypothesis $\theta_{0,k,s} \neq 0$, the estimation of rates $\bar p_{C0,k,s}, \bar p_{E0,k,s}$ satisfy 
+$$
+  \left\{
+  \begin{array}{l}
+    \bar p_{C0,k,s} = \bar p_{E0,k,s} + d_{k,s} \times \theta_{0,k,s} \\
+    \bar p_{C0,k,s} + r\bar p_{E0,k,s} = \bar p_{C,k,s} + r\bar p_{E,k,s} .
+  \end{array}
+  \right.
+$$
+Solving these 2 equations with 2 unknowns yields
+$$
+  \left\{
+  \begin{array}{l}
+  \bar p_{E0,k,s} & = (\bar p_{C,k,s} + r \bar p_{E,k,s} - d_{k,s} \theta_{0,k,s}) / (r + 1)\\
+  \bar p_{C0,k,s} & =  \bar p_{E0,k,s} + d_{k,s} \theta_{0,k,s}.
+  \end{array}
+  \right.
+$$
+We estimate the above variance under $H_0$ as
+$$
+  \hat\sigma^2_{H_0,k,s}
+  = 
+  \frac{\bar p_{C0,k,s}(1- \bar p_{C0,k,s})}{N_{C,k,s}} + \frac{ \bar p_{E0,k,s} (1 - \bar p_{E0,k,s})}{N_{E,k,s}}.
+$$
+And the variance under $H_1$ is
+$$
+  \sigma_{H_1,k,s}^2 
+  = 
+  \frac{p_{C,k,s} (1- p_{C,k,s})}{N_{C,k,s}} + \frac{p_{E,k,s} (1 - p_{E,k,s})}{N_{E,k,s}}
+$$
+
+
+
+
+
+
+# Weighting options
+
+As previously noted, we will consider weighting based on either inverse-variance weights (@MantelHaenszel) or strata sample size weights (@mehrotra2000minimum). 
+
+## Inverse-Variance Weights
+
+$$
+  w_{s,k} = \frac{1/\sigma^2_{s,k}}{\sum_{s=1}^S 1/\sigma^2_{s,k}}.
+$$
+where $\sigma_{s,k}^2 = \hbox{Var}(\bar p_{C,s,k} - \bar p_{E,s,k})$.
+
+## Sample-Size Weights
+
+$$
+  w_{s,k} 
+  =
+  \frac{
+    (N_{C, s, k} \; N_{E, s, k}) / (N_{C, s, k} + N_{E, s, k})
+  }{
+    \sum_{s=1}^S (N_{C, s, k} \; N_{E, s, k}) / (N_{C, s, k} + N_{E, s, k})
+  },
+$$
+where $N_{C,s,k}, N_{E,s,k}$ are the sample size of the $s$-th strata and $k$-th analysis of the control group and experimental group, respectively.
+
+
+# Summary
+
+Table: Superiority \& non-inferiority fixed design
+
+|           | Notation      | Un-stratified | Stratified |
+|:---------:|:--:|:----------------:|:--------------------------:|
+| risk difference          | $\delta_{H_0}$| 0             | 0          |
+|                          | $\delta_{H_1}$| $\bar p_C - \bar p_E$ | $\sum_{s=1}^S w_s (\bar p_{C,s} - \bar p_{E,s})$ |
+|standardized treatment effect| $\theta_{H_0}$  | 0 | 0 |
+|                          | $\theta_{H_1}$     | $\frac{\bar p_C - \bar p_E}{\sigma_{H_1}}$ <br> with $\sigma_{H_1} = \sqrt{\frac{p_C(1- p_C)}{N_C} + \frac{p_E(1- p_E)}{N_E}}$ | $\frac{\sum_{s=1}^S w_s (\bar p_{C,s} - \bar p_{E,s})}{\sqrt{\sum_{s=1}^S w_s^2 \sigma_{H_1,s}^2}}$ <br> with $\sigma_{H_1,s} = \sqrt{\frac{p_{C,s}(1 - p_{C,s})}{N_{C,s}} + \frac{p_{E,s} (1 - p_{E,s})}{N_{E,s}}}$ |
+| statistical information  | $\mathcal I_{H_0}$ | $\left[ \frac{\bar p (1 - \bar p)}{N} \right]^{-1}$ <br> with $N = N_C + N_E$ and $\bar p = (x_C + x_E)/N$ | $\left[ \frac{\bar p (1 - \bar p)}{N} \right]^{-1}$ <br> with $N = \sum_{s=1}^S N_{C,s} + N_{E,s}$ and $\bar p = \sum_{s=1}^S (x_{C,s} + x_{E,s}) / N$|
+|                          | $\mathcal I_{H_1}$ | $\left[ \frac{\bar p_C (1 - \bar p_C)}{N_C} + \frac{\bar p_E (1 - \bar p_E)}{N_E} \right]^{-1}$ with $\bar p_C = x_c /N_C, \; \bar p_E = x_E / N_E$ | $\left[ \sum_{s=1}^S \left( w_s^2 \frac{\bar p_{C,s} (1 - \bar p_{C,s})}{N_{C,s}} + w_s^2 \frac{\bar p_{E,s} (1 - \bar p_{E,s})}{N_{E,s}} \right) \right]^{-1}$ <br>  with $\bar p_{C,s} = \frac{x_{C,s}}{N_{C,s}}, \; \bar p_E = \frac{x_{E,s} }{N_{E,s}}$|
+
+
+
+Table: Super-superiority fixed design
+
+|    | Notation |Un-stratified | Stratified |
+|:---------:|:--:|:----------------:|:--------------------------:|
+| risk difference         | $\delta_{H_0} > 0$     | $\delta_0$ | $\sum_{s=1}^S w_s \delta_{0,s}$ |
+|                         | $\delta_{H_1}$     | $\bar p_C - \bar p_E$ | $\sum_{s=1}^S w_s (\bar p_{C,s} - \bar p_{E,s})$ |
+| standardized treatment effect        | $\theta_{H_0}$     | $\frac{\delta_0}{\sigma_{H_0}}$ <br> with $\sigma_{H_0} = \sqrt{\frac{\bar p_{C0}(1- \bar p_{C0})}{N_C}+\frac{ \bar p_{E0}(1- \bar p_{E0})}{N_E}}$ | $\frac{\sum_{s=1}^S w_s \delta_{0,s}}{\sqrt{\sum_{s=1}^S w_s^2 \sigma_{H_0,s}^2}}$ <br> $\sigma_{H_1,s} = \sqrt{\frac{\bar p_{C0,s}(1 - \bar p_{C0,s})}{N_{C,s}} + \frac{ \bar p_{E0,s}(1- \bar p_{E0,s})}{N_{E,s}}}$ |
+|                          | $\theta_{H_1}$     | $\frac{\bar p_C - \bar p_E}{\sigma_{H_1}}$ <br> with $\sigma_{H_1} = \sqrt{\frac{p_C(1- p_C)}{N_C} + \frac{p_E(1- p_E)}{N_E}}$| $\frac{\sum_{s=1}^S w_s (\bar p_{C,s} - \bar p_{E,s})}{\sqrt{\sum_{s=1}^S w_s^2 \sigma_{H_1,s}^2}}$ <br> with $\sigma_{H_1,s} = \sqrt{\frac{p_{C,s}(1 - p_{C,s})}{N_{C,s}} + \frac{p_{E,s} (1 - p_{E,s})}{N_{E,s}}}$|
+| statistical information  | $\mathcal I_{H_0}$ | $\left[ \frac{\bar p_{C0} (1 - \bar p_{C0})}{N_C} + \frac{\bar p_{E0} (1 - \bar p_{E0})}{N_E} \right]^{-1}$ <br> with $\bar p_{E0} = (\bar p_C+r\bar p_E - d\theta_0) / (r+1)$ and $\bar p_{C0} =  \bar p_{E0}+ d\theta_0$ | $\left[\sum_{s=1}^S \frac{\bar p_{C0,s} (1 - \bar p_{C0,s})}{N_{C,s}} + \frac{\bar p_{E0,s} (1 - \bar p_{E0,s})}{N_{E,s}} \right]^{-1}$ <br> with $\bar p_{E0,s} = (\bar p_{C,s} + r \bar p_{E,s} - d_s \theta_{0,s}) / (r+1)$ and $\bar p_{C0,s} =  \bar p_{E0,s} +  d_s \theta_{0,s}$|
+|                          | $\mathcal I_{H_1}$ | $\left[ \frac{\bar p_C (1 - \bar p_C)}{N_C} + \frac{\bar p_E (1 - \bar p_E)}{N_E} \right]^{-1}$ with $\bar p_C = x_c /N_C, \; \bar p_E = x_E / N_E$ | $\left[ \sum_{s=1}^S \left( w_s^2 \frac{\bar p_{C,s} (1 - \bar p_{C,s})}{N_{C,s}} + w_s^2 \frac{\bar p_{E,s} (1 - \bar p_{E,s})}{N_{E,s}} \right) \right]^{-1}$ <br>  with $\bar p_{C,s} = \frac{x_{C,s}}{N_{C,s}}, \; \bar p_E = \frac{x_{E,s} }{N_{E,s}}$|
+
+
+Table: Superiority \& non-inferiority group sequential design
+
+|              | Notation |Un-stratified | Stratified |
+|:-------------:|:--:|:----------------:|:--------------------------:|
+| risk difference               | $\delta_{H_0,k}$     | 0 | 0 |
+|                               | $\delta_{H_1,k}$     | $\bar p_{C,k} - \bar p_{E,k}$ | $\sum_{s=1}^S w_s (\bar p_{C,k,s} - \bar p_{E,k,s})$ |
+| standardized treatment effect | $\theta_{H_0,k}$     | 0 | 0 |
+|                               | $\theta_{H_1,k}$     | $\frac{\bar p_{C,k} - \bar p_{E,k}}{\sigma_{H_1,k}}$ <br> with $\sigma_{H_1} = \sqrt{\frac{p_{C,k} (1- p_{C,k})}{N_{C,k}} + \frac{p_{E,k} (1 - p_{E,k})}{N_{E,k}}}$ | $\frac{\sum_{s=1}^S w_s (\bar p_{C,k,s} - \bar p_{E,k,s})}{\sqrt{\sum_{s=1}^S w_s^2 \sigma_{H_1,k,s}^2}}$ <br> with $\sigma_{H_1,k,s} = \sqrt{\frac{p_{C,k,s} (1- p_{C,k,s})}{N_{C,k,s}} + \frac{p_{E,k,s} (1 - p_{E,k,s})}{N_{E,k,s}}}$ |
+| statistical information       | $\mathcal I_{H_0,k}$ | $\left[ \frac{\bar p_k (1 - \bar p_k)}{N_k} \right]^{-1}$ <br> with $N_k = N_{C,k} + N_{E,k}$ and $\bar p_k = (x_{C,k} + x_{E,k}) / N_k$ | $\left[ \frac{\bar p_k (1 - \bar p_k)}{N_k} \right]^{-1}$ <br> with $N_k = \sum_{s=1}^S N_{C,k,s} + N_{E,k,s}$ and $\bar p_k = \sum_{s=1}^S (x_{C,k,s} + x_{E,k,s}) / N_k$|
+|                               | $\mathcal I_{H_1,k}$ | $\left[ \frac{\bar p_{C,k} (1 - \bar p_{C,k})}{N_{C,k}} + \frac{\bar p_{E,k} (1 - \bar p_{E,k})}{N_{E,k}} \right]^{-1}$ <br> with $\bar p_{C,k} = x_{C,k} / N_{C,k}, \; \bar p_{E,k} = x_{E,k} / N_{E,k}$ | $\left[ \sum_{s=1}^S \left( w_s^2 \frac{\bar p_{C,k,s} (1 - \bar p_{C,k,s})}{N_{C,k,s}} + w_s^2 \frac{\bar p_{E,k,s} (1 - \bar p_{E,k,s})}{N_{E,k,s}} \right) \right]^{-1}$ <br>  with $\bar p_{C,k,s} = \frac{x_{C,k,s}}{N_{C,k,s}}, \; \bar p_{E,k,s} = \frac{x_{E,k,s} }{N_{E,k,s}}$|
+
+
+
+
+Table: Super-superiority group sequential design
+
+|    | Notation |Un-stratified | Stratified |
+|:-------------:|:--:|:----------------:|:--------------------------:|
+| risk difference          | $\delta_{H_0,k}$     | $\delta_{0,k}$ | $\sum_{s=1}^S w_s \delta_{0,k,s}$ |
+|                          | $\delta_{H_1,k}$     | $\bar p_{C,k} - \bar p_{E,k}$ | $\sum_{s=1}^S w_s (\bar p_{C,k,s} - \bar p_{E,k,s})$ |
+| standardized treatment effect         | $\theta_{H_0,k}$     | $\frac{\delta_{0,k}}{\sigma_{H_0,k}}$ <br> with $\sigma_{H_0,k} = \sqrt{\frac{\bar p_{C0,k}(1- \bar p_{C0,k})}{N_{C,k}} + \frac{ \bar p_{E0,k} (1 - \bar p_{E0,k})}{N_{E,k}}}$ | $\frac{\sum_{s=1}^S w_s \delta_{0,k,s}}{\sqrt{\sum_{s=1}^S w_s^2 \sigma_{H_0,k,s}^2}}$ <br> $\hat\sigma_{H_0,k,s} = \sqrt{\frac{\bar p_{C0,k,s}(1- \bar p_{C0,k,s})}{N_{C,k,s}} + \frac{ \bar p_{E0,k,s} (1 - \bar p_{E0,k,s})}{N_{E,k,s}}}$ |
+|                          | $\theta_{H_1,k}$     | $\frac{\bar p_{C,k} - \bar p_{E,k}}{\sigma_{H_1,k}}$ <br> with $\sigma_{H_1,k} =  \sqrt{\frac{p_{C,k} (1 - p_{C,k})}{N_{C,k}} + \frac{p_{E,k} (1 - p_{E,k})}{N_{E,k}}}$| $\frac{\sum_{s=1}^S w_s (\bar p_{C,k,s} - \bar p_{E,k,s})}{\sqrt{\sum_{s=1}^S w_s^2 \sigma_{H_1,k,s}^2}}$ <br> $\sigma_{H_1,k,s} = \sqrt{\frac{p_{C,k,s} (1- p_{C,k,s})}{N_{C,k,s}} + \frac{p_{E,k,s} (1 - p_{E,k,s})}{N_{E,k,s}}}$|
+| statistical information  | $\mathcal I_{H_0,k}$ | $\left[ \frac{\bar p_{C0,k} (1 - \bar p_{C0,k})}{N_{C,k}} + \frac{\bar p_{E0,k} (1 - \bar p_{E0,k})}{N_{E,k}} \right]^{-1}$ <br> with $\bar p_{E0,k} = (\bar p_{C,k} + r \bar p_{E,k} - d_k \theta_{0,k}) / (r + 1)$ and $\bar p_{C0,k} =  \bar p_{E0,k} + d_k \theta_{0,k}$ | $\left[\sum_{s=1}^S w_s^2 \frac{\bar p_{C0,s} (1 - \bar p_{C0,s})}{N_{C,s}} + w_s^2\frac{\bar p_{E0,s} (1 - \bar p_{E0,s})}{N_{E,s}} \right]^{-1}$ <br> with $\bar p_{E0,k,s} = (\bar p_{C,k,s} + r \bar p_{E,k,s} - d_{k,s} \theta_{0,k,s}) / (r + 1)$ and $\bar p_{C0,k,s} =  \bar p_{E0,k,s} + d_{k,s} \theta_{0,k,s}$|
+|                          | $\mathcal I_{H_1,k}$ | $\left[ \frac{\bar p_{C,k} (1 - \bar p_{C,k})}{N_{C,k}} + \frac{\bar p_{E,k} (1 - \bar p_{E,k})}{N_{E,k}} \right]^{-1}$ with $\bar p_{C,k} = x_{C,k} /N_{C,k}, \; \bar p_{E,k} = x_{E,k} / N_{E,k}$ | $\left[ \sum_{s=1}^S \left( w_s^2 \frac{\bar p_{C,k,s} (1 - \bar p_{C,k,s})}{N_{C,k,s}} + w_s^2 \frac{\bar p_{E,k,s} (1 - \bar p_{E,k,s})}{N_{E,k,s}} \right) \right]^{-1}$ <br>  with $\bar p_{C,k,s} = \frac{x_{C,k,s}}{N_{C,k,s}}, \; \bar p_{E,k,s} = \frac{x_{E,k,s} }{N_{E,k,s}}$|
+
+
+
+# Statistical information
 
 @LachinBook or @Lachin1981 provide fixed sample size calculations based on the values $\psi_0$ under the null hypothesis and $\psi_1$ under the alternate hypothesis. 
 Here we propose using the same variance calculations to compute statistical information for a group sequential design and apply the formulation for power and sample size calculation in the vignette _Computing Bounds Under Non-Constant Treatment Effect_.
 
-## Examples
+# Examples
 
 The variance derivations of previous sections provide the calculations needed for statistical information under the null and alternate hypotheses that are applicable to the approach for group sequential design applied in the package.
 These are implemented in the `gs_info_rd()`, `gs_power_rd()` and `gs_design_rd()` functions.
  
-## References
+# References

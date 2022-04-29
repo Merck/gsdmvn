@@ -7,7 +7,7 @@
 gs_design_rd(
   p_c = 0.15,
   p_e = 0.13,
-  n = c(2, 4, 6),
+  N = c(2, 4, 6),
   theta0 = 0,
   delta0 = 0,
   alpha = 0.025,
@@ -15,9 +15,9 @@ gs_design_rd(
   ratio = 1,
   upper = gs_b,
   lower = gs_b,
-  upar = list(par = gsDesign(k = length(n), test.type = 1, sfu = sfLDOF, sfupar =
+  upar = list(par = gsDesign(k = length(N), test.type = 1, sfu = sfLDOF, sfupar =
     NULL)$upper$bound),
-  lpar = list(par = c(qnorm(0.1), rep(-Inf, length(n) - 1))),
+  lpar = list(par = c(qnorm(0.1), rep(-Inf, length(N) - 1))),
   test_upper = TRUE,
   test_lower = TRUE,
   info_scale = c(0, 1, 2),
@@ -30,8 +30,6 @@ gs_design_rd(
 \item{p_c}{rate at the control group}
 
 \item{p_e}{rate at the experimental group}
-
-\item{n}{sample size}
 
 \item{theta0}{the standardized treatment effect under H0}
 
@@ -65,6 +63,8 @@ lower bound}
 \item{r}{Integer, at least 2; default of 18 recommended by Jennison and Turnbull}
 
 \item{tol}{Tolerance parameter for boundary convergence (on Z-scale)}
+
+\item{n}{sample size}
 }
 \value{
 a \code{tibble} with columns Analysis, Bound, Z, Probability, theta, Time, AHR, Events

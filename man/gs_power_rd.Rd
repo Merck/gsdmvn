@@ -5,17 +5,17 @@
 \title{Group sequential design power under risk difference}
 \usage{
 gs_power_rd(
-  p_c = 0.15,
-  p_e = 0.13,
-  n = c(50, 80, 100),
+  p_c = tibble::tibble(Stratum = "All", Rate = c(0.15, 0.2, 0.25), Analysis = 1:3),
+  p_e = tibble::tibble(Stratum = "All", Rate = c(0.1, 0.15, 0.2), Analysis = 1:3),
+  N = tibble::tibble(Stratum = "All", N = c(50, 100, 200), Analysis = 1:3),
   theta0 = 0,
   delta0 = 0,
   ratio = 1,
   upper = gs_b,
-  upar = list(par = gsDesign(k = length(n), test.type = 1, sfu = sfLDOF, sfupar =
-    NULL)$upper$bound),
   lower = gs_b,
-  lpar = list(par = c(qnorm(0.1), rep(-Inf, length(n) - 1))),
+  upar = list(par = gsDesign(k = length(N), test.type = 1, sfu = sfLDOF, sfupar =
+    NULL)$upper$bound),
+  lpar = list(par = c(qnorm(0.1), rep(-Inf, length(N) - 1))),
   info_scale = c(0, 1, 2),
   binding = FALSE,
   test_upper = TRUE,
@@ -29,8 +29,6 @@ gs_power_rd(
 
 \item{p_e}{rate at the experimental group}
 
-\item{n}{sample size}
-
 \item{theta0}{the standardized treatment effect under H0}
 
 \item{delta0}{treatment effect under super-superiority designs, the default is 0}
@@ -39,9 +37,9 @@ gs_power_rd(
 
 \item{upper}{function to compute upper bound}
 
-\item{upar}{parameter to pass to upper}
-
 \item{lower}{function to compare lower bound}
+
+\item{upar}{parameter to pass to upper}
 
 \item{lpar}{parameter to pass to lower}
 
@@ -61,6 +59,8 @@ a logical vector of the same length as \code{info} should indicate which analyse
 \item{r}{Integer, at least 2; default of 18 recommended by Jennison and Turnbull}
 
 \item{tol}{Tolerance parameter for boundary convergence (on Z-scale)}
+
+\item{n}{sample size}
 }
 \value{
 
