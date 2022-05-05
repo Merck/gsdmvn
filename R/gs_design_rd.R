@@ -40,9 +40,9 @@ NULL
 #' @param p_c rate at the control group
 #' @param p_e rate at the experimental group 
 #' @param n sample size 
-#' @param theta0 the standardized treatment effect under H0 
-#' @param delta0 treatment effect under super-superiority designs, the default is 0
+#' @param rd0 treatment effect under super-superiority designs, the default is 0
 #' @param info_scale 
+#' @param weight the weighting scheme for stratified population
 #' @param tol Tolerance parameter for boundary convergence (on Z-scale)
 #'
 #' @return a \code{tibble} with columns Analysis, Bound, Z, Probability, theta, Time, AHR, Events
@@ -52,14 +52,20 @@ NULL
 #' @examples
 #' gs_design_rd()
 gs_design_rd <- function(
-  p_c = .15,
-  p_e = .13,
-  N = c(2, 4, 6),
-  theta0 = 0,
-  delta0 = 0, 
+  p_c = tibble::tibble(Stratum = "All", 
+                       Rate = c(.15, .2, .25), 
+                       Analysis = 1:3),
+  p_e = tibble::tibble(Stratum = "All",
+                       Rate = c(.1, .15, .2),
+                       Analysis = 1:3),
+  N = tibble::tibble(Stratum = "All",  
+                     N = c(20, 30, 50),
+                     Analysis = 1:3),
+  rd0 = 0, 
   alpha = 0.025,                   # One-sided Type I error
   beta = 0.1,                      # NULL if enrollment is not adapted
   ratio = 1,
+  weight = c("un-stratified", "ss", "invar"),
   upper = gs_b,
   lower = gs_b,
   upar = list(par = gsDesign(k = length(N), test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
@@ -74,79 +80,56 @@ gs_design_rd <- function(
   # --------------------------------------------- #
   #     check input values                        #
   # --------------------------------------------- #
+  K <- length(N$N)
   info_scale <- if(methods::missingArg(info_scale)){2}else{match.arg(as.character(info_scale), choices = 0:2)}
-  K <- length(N)
-  # --------------------------------------------- #
-  #     get statistical information               #
-  # --------------------------------------------- #
+  weight <- if(methods::missingArg(weight)){"un-stratified"}else{match.arg(weight)}
+  
+  # ---------------------------------------- #
+  #    calculate the asymptotic variance     #
+  #       and statistical information        #
+  # ---------------------------------------- #
   x <- gs_info_rd(
     p_c = p_c,
     p_e = p_e,
     N = N,
-    theta0 = theta0,
-    delta0 = delta0,
-    ratio = ratio)
-  
-  find_xi <- function(xi){
-    x_temp <- gs_power_rd(
-      p_c = p_c,
-      p_e = p_e,
-      N = N * xi,
-      theta0 = theta0,
-      delta0 = delta0, 
-      ratio = ratio,
-      upper = upper,
-      upar = upar,
-      lower = lower,
-      lpar = lpar,
-      info_scale = info_scale,
-      binding = binding,
-      test_upper = test_upper,
-      test_lower = test_lower,
-      r = r,
-      tol = tol)
-    
-    x_temp_power <- x_temp$bounds %>% 
-      filter(Bound == "Upper", Analysis == K) %>% 
-      select(Probability) %>% 
-      unlist() %>% 
-      as.numeric()
-    
-    return(1 - beta - x_temp_power)
-  }
-  
-  res <- try(uniroot(find_xi, lower = 1, upper = 50))
-  if(inherits(res, "try-error")){stop("gs_design_rd: Sample size solution not found")}
-  if(abs(res$f.root) >  1e-5){stop("gs_design_rd: Sample size solution not found")}
-  # --------------------------------------------- #
-  #     combine all the calculations              #
-  # --------------------------------------------- #
-  x_final <- gs_power_rd(
-    p_c = p_c, p_e = p_e,
-    N = N * res$root,
-    theta0 = theta0,
-    delta0 = delta0, 
+    rd0 = rd0,
     ratio = ratio,
-    upper = upper,
-    upar = upar,
-    lower = lower,
-    lpar = lpar,
-    info_scale = info_scale,
-    binding = binding,
-    test_upper = test_upper,
-    test_lower = test_lower,
-    r = r,
-    tol = tol
+    weight = weight)
+  
+  # --------------------------------------------- #
+  #     get statistical information               #
+  # --------------------------------------------- #
+  suppressMessages(
+    allout <- gs_design_npe(
+      theta = x$theta, 
+      info = x$info, info0 = x$info0, info_scale = info_scale,
+      alpha = alpha, beta = beta, binding = binding,
+      upper = upper, upar = upar, test_upper = test_upper,
+      lower = lower, lpar = lpar, test_lower = test_lower,
+      r = r, tol = tol) %>%
+      # add `~HR at bound`, `HR generic` and `Nominal p`
+      mutate("~Risk difference at bound" = exp(-Z / sqrt(info)), 
+             "Nominal p" = pnorm(-Z),
+             IF0 = if(sum(!is.na(info0)) == 0){NA}else{info0 / max(info0)}) %>% 
+      # Add `Time`, `Events`, `AHR`, `N` from gs_info_ahr call above
+      full_join(x %>% select(-c(info, info0, theta)), by = "Analysis") %>%
+      # select variables to be output
+      select(c(Analysis, Bound,  N, rd, rd0, Z, Probability, Probability0, theta, theta0, info, info0, IF, IF0, `~Risk difference at bound`, `Nominal p`)) %>% 
+      # arrange the output table
+      arrange(desc(Bound), Analysis) 
   )
+  allout$N <- allout$N * allout$info[K] / x$info[K]
   
   # --------------------------------------------- #
   #     get bounds to output                      #
   # --------------------------------------------- #
-  bounds <- x_final$bounds %>% arrange(desc(Bound), Analysis)
+  bounds <- allout %>%  
+    select(Analysis, Bound, Probability, Probability0, Z, `~Risk difference at bound`, `Nominal p`)
   # --------------------------------------------- #
   #     get analysis summary to output            #
   # --------------------------------------------- #
-  analysis <- x_final$analysis %>% arrange(Analysis)
+  analysis <- allout %>% 
+    select(Analysis, N, rd, rd0, theta, theta0, info, info0, IF, IF0) 
   
   # --------------------------------------------- #
   #     return the output                         #
@@ -154,6 +137,8 @@ gs_design_rd <- function(
   output <- list(
     bounds = bounds,
     analysis = analysis)
+  
   class(output) <- c("rd", "gs_design", class(output))
+  
   return(output)
 }
