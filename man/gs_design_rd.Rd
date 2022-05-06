@@ -5,14 +5,14 @@
 \title{Group sequential design using average hazard ratio under non-proportional hazards}
 \usage{
 gs_design_rd(
-  p_c = 0.15,
-  p_e = 0.13,
-  N = c(2, 4, 6),
-  theta0 = 0,
-  delta0 = 0,
+  p_c = tibble::tibble(Stratum = "All", Rate = c(0.15, 0.2, 0.25), Analysis = 1:3),
+  p_e = tibble::tibble(Stratum = "All", Rate = c(0.1, 0.15, 0.2), Analysis = 1:3),
+  N = tibble::tibble(Stratum = "All", N = c(20, 30, 50), Analysis = 1:3),
+  rd0 = 0,
   alpha = 0.025,
   beta = 0.1,
   ratio = 1,
+  weight = c("un-stratified", "ss", "invar"),
   upper = gs_b,
   lower = gs_b,
   upar = list(par = gsDesign(k = length(N), test.type = 1, sfu = sfLDOF, sfupar =
@@ -31,15 +31,15 @@ gs_design_rd(
 
 \item{p_e}{rate at the experimental group}
 
-\item{theta0}{the standardized treatment effect under H0}
-
-\item{delta0}{treatment effect under super-superiority designs, the default is 0}
+\item{rd0}{treatment effect under super-superiority designs, the default is 0}
 
 \item{alpha}{One-sided Type I error}
 
 \item{beta}{Type II error}
 
 \item{ratio}{Experimental:Control randomization ratio (not yet implemented)}
+
+\item{weight}{the weighting scheme for stratified population}
 
 \item{upper}{Function to compute upper bound}
 
