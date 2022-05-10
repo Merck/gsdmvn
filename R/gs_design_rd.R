@@ -53,11 +53,9 @@ NULL
 #' gs_design_rd()
 gs_design_rd <- function(
   p_c = tibble::tibble(Stratum = "All", 
-                       Rate = c(.15, .2, .25), 
-                       Analysis = 1:3),
+                       Rate = .2),
   p_e = tibble::tibble(Stratum = "All",
-                       Rate = c(.1, .15, .2),
-                       Analysis = 1:3),
+                       Rate = .15),
   N = tibble::tibble(Stratum = "All",  
                      N = c(20, 30, 50),
                      Analysis = 1:3),
@@ -84,6 +82,12 @@ gs_design_rd <- function(
   info_scale <- if(methods::missingArg(info_scale)){2}else{match.arg(as.character(info_scale), choices = 0:2)}
   weight <- if(methods::missingArg(weight)){"un-stratified"}else{match.arg(weight)}
   
+  # --------------------------------------------- #
+  #     calculate the sample size                 #
+  #          under fixed design                   #
+  # --------------------------------------------- #
+  N_fixed_des <- gsDesign::nBinomial(p1 = p_c$Rate, p2 = p_e$Rate, alpha = alpha, beta = beta, ratio = ratio, delta0 = rd0)
+  
   # ---------------------------------------- #
   #    calculate the asymptotic variance     #
   #       and statistical information        #
@@ -91,7 +95,9 @@ gs_design_rd <- function(
   x <- gs_info_rd(
     p_c = p_c,
     p_e = p_e,
-    N = N,
+    N = tibble::tibble(Stratum = "All",  
+                       N = N_fixed_des *  N$N[1:length(N$N)] / N$N[length(N$N)],
+                       Analysis = 1:K),
     rd0 = rd0,
     ratio = ratio,
     weight = weight)

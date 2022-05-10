@@ -34,10 +34,10 @@ Information and effect size under risk difference
 # un-stratified case with H0: rd0 = 0
 gs_info_rd(
   p_c = tibble::tibble(Stratum = "All",
-                       Rate = c(.15, .18, .2),
+                       Rate = .15,
                        Analysis = 1:3),
   p_e = tibble::tibble(Stratum = "All",
-                       Rate = c(.12, .13, .15),
+                       Rate = .1,
                        Analysis = 1:3),
   N = tibble::tibble(Stratum = "All",
                      N = c(100, 200, 300),
