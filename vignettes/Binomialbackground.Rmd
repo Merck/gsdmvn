@@ -35,11 +35,11 @@ library(gsDesign)
 
 # Overview
 
-We consider group sequential design comparing two binomial distributions based on comparing two treatment groups for a binary outcome.
+We consider group sequential design examining the risk difference between two treatment groups for a binary outcome.
 There are several issues to consider:
 
 - The measure of treatment difference or natural parameter; we focus on risk difference.
-- Null and alternate hypothesis variance incorporation.
+- Incorporation of both null and alternate hypothesis variances.
 - Superiority, non-inferiority and super-superiority designs.
 - Stratified populations.
 - Fixed and group sequential designs.
@@ -58,7 +58,7 @@ For trials with multiple strata, testing for a risk difference is often done by 
 Since risk differences may also be assumed to be different for different strata, we will also explore weighting by strata sample sizes as in @Mehrotra2000.
 
 The focus here is for sample sizes that are large enough for asymptotic theory to work well without continuity corrections.
-The concepts are incorporated in the following functions intended for use in fixed and group sequentials designs:
+The concepts are incorporated in the following functions intended for use in fixed and group sequential designs:
 
 - `gs_info_rd()` to support asymptotic variance and statistical information calculation.
 - `gs_power_rd()` to support power calculations.
@@ -67,17 +67,17 @@ The concepts are incorporated in the following functions intended for use in fix
 Simulation is used throughout to check the examples presented.
 
 
-# Notations
+# Notation
 
-- $K$: total number of analysis (including the final analysis) in the group sequential design. If it is the fixed design, then $K= 1$.
+- $K$: total number of analyses (including the final analysis) in the group sequential design. For fixed design, $K= 1$.
 
-- $S$: total number of stratum. If it is un-stratified population, then $S=1$.
+- $S$: total number of strata. If the population is un-stratified population, then $S=1$.
 
 - $w_{s,k}$: the weight assigned for the $s$-th strata at the $k$-th analysis. 
-  + If it is un-stratified population, then $S = 1$ and $w_{s,k} = 1$ for any $s=1,\ldots, S$ and $k=1,\ldots, K$.
-  + If it is stratified population, see Section 4
+  + For an un-stratified population, $S = 1$ and $w_{1,k} = 1$ for $k=1,\ldots, K$.
+  + For an stratified population, see Section 4.
 
-- $N_{C,k,s}$: sample size in the control group at the $k$-th analysis of the $s$-th strata.
+- $N_{C,k,s}$: sample size in the control group at the $k$-th analysis of the $s$-th strata. WHY SWITH ORDER OF s, k FROM w?
 
 - $N_{E,k,s}$: sample size in the treatment group at the $k$-th analysis of the $s$-th strata.
 
@@ -95,21 +95,21 @@ $$
   \end{array}
 $$
 
-- $N_k$: total sample size at the $k$-th analysis, i.e., 
+- $N_k$: total (INCREMENTAL OR CUMULATIVE?) sample size at the $k$-th analysis, i.e.,
 $$
   N_k = \sum_{s=1}^S N_{k,s} = \sum_{s=1}^S (N_{C,k,s} + N_{E,k,s}).
 $$
 
-- $N$: total sample size, i.e., 
+- $N$: total sample size, i.e., I THINK THIS IS WRONG; YOU HAVE USED $N_k$ AS TOTAL SAMPLE SIZE AT ANALYSIS $k$.
 $$
-  N = \sum_{k=1}^K N_k = \sum_{k=1}^K \sum_{s=1}^S (N_{C,k,s} + N_{E,k,s}).
+  N = N_K = \sum_{k=1}^K N_k = \sum_{k=1}^K \sum_{s=1}^S (N_{C,k,s} + N_{E,k,s}).
 $$
 
-- $p_{C,k,s}$: independent observations in the control group with a binary outcome that is observed with probability $p_{C,k,s}$ at the $k$-th analysis of the $s$-th strata.
+- $p_{C,k,s}$: independent observations in the control group with a binary outcome that is observed with probability $p_{C,k,s}$ at the $k$-th analysis of the $s$-th strata. SHOULD WE SIMPLIFY THIS TO $p_{C,s}$; i.e., ASSUME CONSTANT FOR ALL k? SAME FOR NEXT BULLET
 
 - $p_{E,k,s}$: independent observations in the treatment group with a binary outcome that is observed with probability $p_{E,k,s}$ at the $k$-th analysis of the $s$-th strata.
 
-- $d_{k,s}$: an indicator whether is an outcome is bad or good, i.e.,
+- $d_{k,s}$: an indicator whether is an outcome is failure (bad outcome) or response (good outcome), i.e.,
 $$
   d_{k,s}
   = 
@@ -140,7 +140,7 @@ $$
   \widehat p_{E,k,s} = x_{E,k,s} / N_{E,k,s}.
 $$
 
-- $\theta_{k,s}$: the natural parameter risk difference at the $k$-th analysis of the $s$-th strata is denoted by 
+- $\theta_{k,s}$: the natural parameter risk difference at the $k$-th analysis of the $s$-th strata is denoted by (LAST PART DOES NOT LOOK CORRECT; I WOULD NOT PUT IN ABSOLUTE VALUE)
 $$
   \theta_{k,s} = d_{k,s} \times (p_{C,k,s} - p_{E,k,s}) = |p_{C,k,s} - p_{E,k,s}|. 
 $$ 
@@ -181,6 +181,7 @@ for any $k = 1, \ldots, K$ and $s = 1, \ldots, S$.
 
 - **Variance per strata per analysis:**
   + Under the null hypothesis, we have
+
 $$
   \widehat\sigma^2_{H_0,k,s} 
   = 
@@ -188,10 +189,12 @@ $$
   =
   \widehat p_{k,s}^{pool} \left(1 - \widehat p^{pool}_{k,s} \right) \left(\frac{1}{N_{C,k,s}} + \frac{1}{N_{E,k,s}} \right),
 $$
+
 where $\widehat p_{k,s}^{pool}$ is the estimated pooled observed rates of two groups at the $k$-th analysis of the $s$-th strata, i.e, 
 $\widehat p_{k,s}^{pool} = (x_{C,k,s} + x_{E,k,s}) / (N_{C,k,s} + N_{E,k,s}).$
   
   + Under the alternative hypothesis, we have
+
 $$
   \begin{array}{ll}
   \sigma_{H_1,k,s}^2 
@@ -204,6 +207,7 @@ $$
   \end{array}
 $$
 which can be estimated as
+
 $$
   \widehat\sigma_{H_1,k,s}^2 
   = 
@@ -239,12 +243,14 @@ $$
 Here we propose using the same variance calculations to compute statistical information for a group sequential design and apply the formulation for power and sample size calculation in the vignette _Computing Bounds Under Non-Constant Treatment Effect_.
 
   + Under the null hypothesis, we have
+
 $$
   \widehat{\mathcal I}_{H0,k} = \left[ \sum_{s=1}^S \frac{p_{k,s}^{pool} (1 - p_{k,s}^{pool})}{N_{k,s}} \right]^{-1},
 $$
 where $\widehat p_{k,s}^{pool} = (x_{C,k,s} + x_{E,k,s}) / (N_{C,k,s} + N_{E,k,s})$ and $N_{k,s} = N_{C, k, s} + N_{E, k, s}$.
  
   + Under the alternative hypothesis, we have
+
 $$
   \widehat{\mathcal I}_{H1,k} 
   = 
@@ -288,6 +294,8 @@ $$
 
 - **Variance per strata per analysis:**
   + Under $H_0$, we have 
+
+
 $$
   \hat\sigma^2_{H_0,k,s}
   = 
@@ -295,6 +303,7 @@ $$
 $$
   
   + Under $H_1$, we have
+
 $$
   \widehat\sigma_{H_1,k,s}^2 
   = 
@@ -304,6 +313,7 @@ $$
 
 - **Standardized treatment effect per analysis:**
   + Under the null hypothesis, we have
+
 $$
   \widehat \theta_{H_0,k} 
   = 
@@ -315,6 +325,7 @@ $$
 $$
 
   + Under the alternative hypothesis, we have
+
 $$
   \widehat \theta_{H_1} 
   = 
@@ -327,6 +338,7 @@ $$
 
 - **Standardized information per analysis:**
   + Under the null hypothesis, we have
+
 $$
   \widehat{\mathcal I}_{H0,k} 
   = 
@@ -336,6 +348,7 @@ $$
 $$
  
   + Under the alternative hypothesis, we have
+
 $$
   \widehat{\mathcal I}_{H1,k} 
   = 
