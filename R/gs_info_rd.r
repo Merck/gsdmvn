@@ -171,7 +171,7 @@ gs_info_rd <- function(
       mutate(
         N_e = N / (1 + ratio), N_c = N * ratio / (1 + ratio),
         d = ifelse(p_c > p_e, 1, -1),
-        #p_pool_per_k_per_s = (N_c * p_c + N_e * p_e) / N,
+        p_pool_per_k_per_s = (N_c * p_c + N_e * p_e) / N,
         p_e0 = (p_c + ratio * p_e - d * rd0) / (ratio + 1),
         p_c0 = p_e0 + d * rd0)
   )
@@ -181,15 +181,15 @@ gs_info_rd <- function(
   # -------------------------------------------------#
   #   calculate the variance of the risk difference  #
   # -------------------------------------------------#
-  tbl <- tbl %>% mutate(sigma2_H0_per_k_per_s = (p_c0 * (1 - p_c0) + p_e0 * (1 - p_e0) / ratio) * (ratio + 1),
-                        sigma2_H1_per_k_per_s = (p_c * (1 - p_c)  + p_e * (1 - p_e) / ratio) * (ratio + 1)) 
-  # if(is.numeric(rd0) && rd0 == 0){
-  #   tbl <- tbl %>% mutate(sigma2_H0_per_k_per_s = p_pool_per_k_per_s * (1 - p_pool_per_k_per_s) * (1 / N_c + 1 / N_e),
-  #                         sigma2_H1_per_k_per_s = p_c * (1 - p_c) / N_c  + p_e * (1 - p_e) / N_e)  
-  # }else if("data.frame" %in% class(rd0) || rd0 != 0){
-  #   tbl <- tbl %>% mutate(sigma2_H0_per_k_per_s = p_c0 * (1 - p_c0) / N_c + p_e0 * (1 - p_e0) / N_e,
-  #                         sigma2_H1_per_k_per_s = p_c * (1 - p_c) / N_c  + p_e * (1 - p_e) / N_e) 
-  # }
+  # tbl <- tbl %>% mutate(sigma2_H0_per_k_per_s = (p_c0 * (1 - p_c0) + p_e0 * (1 - p_e0) / ratio) * (ratio + 1),
+  #                       sigma2_H1_per_k_per_s = (p_c * (1 - p_c)  + p_e * (1 - p_e) / ratio) * (ratio + 1)) 
+  if(is.numeric(rd0) && rd0 == 0){
+    tbl <- tbl %>% mutate(sigma2_H0_per_k_per_s = p_pool_per_k_per_s * (1 - p_pool_per_k_per_s) * (1 / N_c + 1 / N_e),
+                          sigma2_H1_per_k_per_s = p_c * (1 - p_c) / N_c  + p_e * (1 - p_e) / N_e)
+  }else if("data.frame" %in% class(rd0) || rd0 != 0){
+    tbl <- tbl %>% mutate(sigma2_H0_per_k_per_s = p_c0 * (1 - p_c0) / N_c + p_e0 * (1 - p_e0) / N_e,
+                          sigma2_H1_per_k_per_s = p_c * (1 - p_c) / N_c  + p_e * (1 - p_e) / N_e)
+  }
   
   # -------------------------------------------------#
   #               assign weights                     #
@@ -222,13 +222,13 @@ gs_info_rd <- function(
               rd0 = sum(rd0 * weight_per_k_per_s),
               sigma2_H0 = sum((weight_per_k_per_s^2 * p_c0 * (1 - p_c0) +  
                                  weight_per_k_per_s^2 * p_e0 * (1 - p_e0) / ratio ) * (1 + ratio)),
-              # sigma2_H0 = sum(if(sum(rd0 == 0) == 0){
-              #     weight_per_k_per_s^2 * p_pool_per_k_per_s * (1 - p_pool_per_k_per_s) * (1/N_c + 1/N_e)
-              #   }else{
-              #     weight_per_k_per_s^2 * p_c0 * (1 - p_c0) / N_c +  weight_per_k_per_s^2 * p_e0 * (1 - p_e0) / N_e
-              #   }),
-              sigma2_H1 = sum((weight_per_k_per_s^2 * p_c * (1 - p_c) + weight_per_k_per_s^2 * p_e * (1 - p_e) / ratio) / (1 + ratio))) %>% 
-              #sigma2_H1 = sum(weight_per_k_per_s^2 * p_c * (1 - p_c) / N_c + weight_per_k_per_s^2 * p_e * (1 - p_e) / N_e)) %>% 
+              sigma2_H0 = sum(if(sum(rd0 == 0) == 0){
+                  weight_per_k_per_s^2 * p_pool_per_k_per_s * (1 - p_pool_per_k_per_s) * (1/N_c + 1/N_e)
+                }else{
+                  weight_per_k_per_s^2 * p_c0 * (1 - p_c0) / N_c +  weight_per_k_per_s^2 * p_e0 * (1 - p_e0) / N_e
+                }),
+              #sigma2_H1 = sum((weight_per_k_per_s^2 * p_c * (1 - p_c) + weight_per_k_per_s^2 * p_e * (1 - p_e) / ratio) / (1 + ratio))) %>% 
+              sigma2_H1 = sum(weight_per_k_per_s^2 * p_c * (1 - p_c) / N_c + weight_per_k_per_s^2 * p_e * (1 - p_e) / N_e)) %>% 
     mutate(theta = rd / sqrt(sigma2_H1),
            theta0 = rd0 / sqrt(sigma2_H0),
            info = 1 / sigma2_H1,

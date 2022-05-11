@@ -486,70 +486,126 @@ ggplot() +
 
 # Examples
 
+## Unstratified Fixed Design  {.tabset}
+
+The example discussed in this section is an unstratified fixed design with eual sized qgoups to detect a 30\% reduction in mortality associated with congestive heart failre, where the 1-year mortality in the control group is assumed to be no greater than 0.4.
+So $p_C=0.4, p_E = .28$. 
+Under the null hypothesisi, we assume $p_C=p_E =0.34$.
+We desire 90\% power for a two-sided test for two propotions at $\alpha = 0.05$.
+And we would like to calculate the sample size to achieve the 90\% power.
+
+### `gs_info_rd()`
+
+First, we set the parameters. 
+```{r}
+p_c <- .28
+p_e <- .4
+p_pool <- (p_c + p_e) / 2
+
+N <- 1
+ratio <- 1
+N_c <- N / (1 + ratio)
+N_e <- N_c * ratio
+```
+
+Then we calculate the variance under $H_0$ and $H_1$.
+Their mathmatical formulation are shown as follows. 
+$$
+  \begin{array}{ll}
+  \sigma^2_{H_0} 
+  =
+  p^{pool} \left(1 - p^{pool} \right) \left(\frac{1}{N_C} + \frac{1}{N_{E}} \right)
+  =
+  p^{pool} \left(1 - p^{pool} \right) \left(\frac{1}{N \xi_C} + \frac{1}{N \xi_E} \right)
+  \overset{r=1}{=}
+  p^{pool} \left(1 - p^{pool} \right) \frac{4}{N} \\
+  \sigma^2_{H_1} 
+  =
+  \frac{p_C \left(1 - p_C \right)}{N_C} +
+  \frac{p_E \left(1 - p_E \right)}{N_E}
+  =
+  \frac{p_C \left(1 - p_C \right)}{N \xi_C} +
+  \frac{p_E \left(1 - p_E \right)}{N \xi_E} 
+  \overset{r=1}{=}
+  \left[
+    p_C \left(1 - p_C \right) +
+    p_E \left(1 - p_E \right)
+  \right] \frac{2}{N}
+  \end{array}
+$$
+And their calculation results are 
+```{r}
+sigma_H0 <-  sqrt(p_pool*(1 - p_pool) * 4 / N)
+sigma_H1 <-  sqrt((p_c*(1 - p_c) + p_e*(1 - p_e)) * 2 / N)
+
+info_H0 <- 1/(sigma_H0^2)
+info_H1 <- 1/(sigma_H1^2)
+```
+
+Next, we calculate the standarized treatment effect under $H_0$ and $H_1$, whose mathmatical formulation are
+$$
+  \begin{array}{ll}
+  \theta_{H_0} = 0; \\
+  \theta_{H_1} = \frac{|p_c - p_e|}{\sigma_{H_1}}
+  \end{array}.
+$$
+And their calculation results are
+```{r}
+theta_H0 <- 0
+theta_H1 <- abs(p_c - p_e)/sigma_H1
+
+tibble::tribble(
+  ~N_c, ~N_e, ~p_c,    ~p_e,   ~theta_H1,    ~theta_H0,    ~info_H1,    ~info_H0,
+   N_c,  N_e,  p_c,     p_e,    theta_H1,     theta_H0,     info_H1,     info_H0,
+) %>% gt::gt()
+```
+
+The above logic is implemented in `gs_info_rd`.
+```{r}
+gs_info_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .28),
+  p_e = tibble::tibble(Stratum = "All", Rate = .4),
+  N = tibble::tibble(Stratum = "All", N = 1, Analysis = 1),
+  rd0 = 0, 
+  ratio = 1,
+  weight = "un-stratified"
+) %>% 
+  gt::gt() %>% 
+  gt::fmt_number(columns = 5:8, decimals = 6)
+```
+
+```{r}
+x <- gs_design_npe(theta = abs(p_e - p_c), 
+              info = info_H1, 
+              info0 = info_H0, 
+              info_scale = 2,
+              alpha = .025, 
+              beta = .1,
+              upper = gs_b, 
+              lower = gs_b,
+              upar = list(par = -qnorm(.025)),
+              lpar = list(par = -Inf))
+cat("The sample size calculated by `gsdmvn` is ", x$info[1] / info_H1 * N) 
+```
+
+### `gsDesign`
+```{r, echo=FALSE}
+x <- nBinomial(p1 = .28, p2 = .4, delta0 = 0, alpha = .025, sided = 1, beta = .1, outtype = 3)
+cat("The sample size calculated by `gsDesign` is ", x$n, "\n")
+```
+
+
+### EAST - Unpooled
+```{r label = esatunpool, echo = FALSE, fig.cap = "Sample size calculated by EAST", out.width = '90%'}
+knitr::include_graphics("./figures/east_n.png")
+```
+
+
+
 The variance derivations of previous sections provide the calculations needed for statistical information under the null and alternate hypotheses that are applicable to the approach for group sequential design applied in the package.
 These are implemented in the `gs_info_rd()`, `gs_power_rd()` and `gs_design_rd()` functions.
 
-## Verification of `gsDesign::nBinomial()`
 
-```{r, eval=FALSE}
-nBinomial(p1 = .2, p2 = .15, delta0 = .02, alpha = .025, sided = 1, beta = .1, outtype = 3)
-
-# gs_design_rd(
-#   p_c = tibble::tibble(Stratum = "All", Rate = .2),
-#   p_e = tibble::tibble(Stratum = "All", Rate = .15),
-#   N = tibble::tibble(Stratum = "All", N = 50, Analysis = 1),
-#   rd0 = .02, 
-#   alpha = 0.025,                   
-#   beta = 0.1,                      
-#   ratio = 1,
-#   weight = "un-stratified")$analysis$N
-```
-
-
-```{r}
-# assuming a slight advantage in the experimental group lowers
-# sample size requirement
-nBinomial(p1 = .2, p2 = .19, delta0 = .05, alpha = .025, sided = 1, beta = .1)
-gs_design_rd(
-  p_c = tibble::tibble(Stratum = "All", Rate = .2, Analysis = 1),
-  p_e = tibble::tibble(Stratum = "All", Rate = .19, Analysis = 1),
-  N = tibble::tibble(Stratum = "All", N = 40, Analysis = 1),
-  rd0 = .05, 
-  alpha = 0.025,                   
-  beta = 0.1,                      
-  ratio = 1,
-  weight = "un-stratified")$analysis$N
-```
-
-```{r}
-# compute a sample size for comparing 15% vs 10% event rates
-# with 1 to 2 randomization
-nBinomial(p1 = .15, p2 = .1, beta = .2, ratio = 2, alpha = .05)
-gs_design_rd(
-  p_c = tibble::tibble(Stratum = "All", Rate = .15, Analysis = 1),
-  p_e = tibble::tibble(Stratum = "All", Rate = .1, Analysis = 1),
-  N = tibble::tibble(Stratum = "All", N = 40, Analysis = 1),
-  rd0 = 0, 
-  alpha = 0.05,                   
-  beta = .2,                      
-  ratio = 2,
-  weight = "un-stratified")$analysis$N
-```
-
-
-```{r}
-# now look at total sample size using 1-1 randomization
-nBinomial(p1 = .15, p2 = .1, beta = .2, alpha = .05)
-gs_design_rd(
-  p_c = tibble::tibble(Stratum = "All", Rate = .15, Analysis = 1),
-  p_e = tibble::tibble(Stratum = "All", Rate = .1, Analysis = 1),
-  N = tibble::tibble(Stratum = "All", N = 40, Analysis = 1),
-  rd0 = 0, 
-  alpha = 0.05,                   
-  beta = .2,                      
-  ratio = 1,
-  weight = "un-stratified")$analysis$N
-```
 
 
 
