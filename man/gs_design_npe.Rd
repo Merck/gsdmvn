@@ -195,5 +195,5 @@ gs_power_npe(theta = c(.1, .2, .3), info = (1:3) * 40,
 
 }
 \author{
-Keaven Anderson \email{keaven\_anderson@merck.}
+Keaven Anderson \email{keaven_anderson@merck.com}
 }
