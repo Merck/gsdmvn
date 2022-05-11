@@ -488,13 +488,13 @@ ggplot() +
 
 ## Unstratified Fixed Design  {.tabset}
 
-The example discussed in this section is an unstratified fixed design with eual sized qgoups to detect a 30\% reduction in mortality associated with congestive heart failre, where the 1-year mortality in the control group is assumed to be no greater than 0.4.
+The example discussed in this section is an unstratified fixed design with equal sized groups to detect a 30\% reduction in mortality associated with congestive heart failure, where the 1-year mortality in the control group is assumed to be no greater than 0.4.
 So $p_C=0.4, p_E = .28$. 
-Under the null hypothesisi, we assume $p_C=p_E =0.34$.
-We desire 90\% power for a two-sided test for two propotions at $\alpha = 0.05$.
+Under the null hypothesis, we assume $p_C=p_E =0.34$.
+We desire 90\% power for a two-sided test for two proportions at $\alpha = 0.05$.
 And we would like to calculate the sample size to achieve the 90\% power.
 
-### `gs_info_rd()`
+### `gs_design_rd()`
 
 First, we set the parameters. 
 ```{r}
@@ -560,33 +560,60 @@ tibble::tribble(
 ) %>% gt::gt()
 ```
 
-The above logic is implemented in `gs_info_rd`.
+The above logic is implemented in teh function `gs_info_rd()`.
 ```{r}
-gs_info_rd(
+x <- gs_info_rd(
   p_c = tibble::tibble(Stratum = "All", Rate = .28),
   p_e = tibble::tibble(Stratum = "All", Rate = .4),
   N = tibble::tibble(Stratum = "All", N = 1, Analysis = 1),
   rd0 = 0, 
   ratio = 1,
-  weight = "un-stratified"
-) %>% 
+  weight = "un-stratified") 
+
+x %>% 
   gt::gt() %>% 
   gt::fmt_number(columns = 5:8, decimals = 6)
 ```
 
+By plugging the `theta` and `info` above into `gs_design_npe()`, one can calculate the sample size to achieve the 90\% power.
 ```{r}
-x <- gs_design_npe(theta = abs(p_e - p_c), 
-              info = info_H1, 
-              info0 = info_H0, 
-              info_scale = 2,
-              alpha = .025, 
-              beta = .1,
-              upper = gs_b, 
-              lower = gs_b,
-              upar = list(par = -qnorm(.025)),
-              lpar = list(par = -Inf))
-cat("The sample size calculated by `gsdmvn` is ", x$info[1] / info_H1 * N) 
+y <- gs_design_npe(theta = abs(p_e - p_c), 
+                   info = x$info, 
+                   info0 = x$info0, 
+                   info_scale = 2,
+                   alpha = .025, 
+                   beta = .1,
+                   upper = gs_b, 
+                   lower = gs_b,
+                   upar = list(par = -qnorm(.025)),
+                   lpar = list(par = -Inf))
+
+cat("The sample size calculated by `gsdmvn` is ", y$info[1] / x$info[1] * N) 
 ```
+
+
+The above logic is implement in `gs_design_rd()` to calcute the sample size given fixed power in one-step.
+
+```{r}
+z <- gs_design_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .28),
+  p_e = tibble::tibble(Stratum = "All", Rate = .4),
+  k = 1,
+  rd0 = 0, 
+  alpha = 0.025,   
+  beta = 0.1,   
+  ratio = 1,
+  weight = "un-stratified",
+  upper = gs_b,
+  lower = gs_b,
+  upar = list(par = -qnorm(.025)),
+  lpar = list(par = -Inf))  
+
+cat("The sample size calculated by `gs_design_rd()` is ", z$analysis$N, "\n")
+
+z %>% summary() %>%  as_gt()
+```
+
 
 ### `gsDesign`
 ```{r, echo=FALSE}
@@ -595,15 +622,194 @@ cat("The sample size calculated by `gsDesign` is ", x$n, "\n")
 ```
 
 
-### EAST - Unpooled
-```{r label = esatunpool, echo = FALSE, fig.cap = "Sample size calculated by EAST", out.width = '90%'}
-knitr::include_graphics("./figures/east_n.png")
+### EAST 
+```{r label = EastFix, echo = FALSE, fig.cap = "Sample size calculated by EAST", out.width = '90%'}
+knitr::include_graphics("./figures/east_n_fix.png")
 ```
 
 
 
-The variance derivations of previous sections provide the calculations needed for statistical information under the null and alternate hypotheses that are applicable to the approach for group sequential design applied in the package.
-These are implemented in the `gs_info_rd()`, `gs_power_rd()` and `gs_design_rd()` functions.
+## Unstratified Group Seqential Design  {.tabset}
+
+The example discussed in this section is an unstratified group sequential design with equal sized groups to detect $p_C = 0.15, p_E = .1$.  
+Under the null hypothesis, we assume $p_C=p_E =0.125$.
+We desire 90\% power for a two-sided test for two propotions at $\alpha = 0.05$.
+And we would like to calculate the sample size to achieve the 90\% power.
+
+### `gs_design_rd()`
+
+```{r}
+gs_design_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .15),
+  p_e = tibble::tibble(Stratum = "All", Rate = .1),
+  k = 3,
+  IF = 1:3/3,
+  rd0 = 0, 
+  alpha = 0.025,                  
+  beta = 0.1,                
+  ratio = 1,
+  weight = "un-stratified",
+  upper = gs_b,
+  lower = gs_b,
+  upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  lpar = list(par = rep(-Inf, 3)),
+  test_lower = FALSE,
+  info_scale = 2
+)$analysis$N
+```
+
+
+### EAST 
+```{r label = EastGs, echo = FALSE, fig.cap = "Sample size calculated by EAST", out.width = '90%'}
+knitr::include_graphics("./figures/east_n_gs.png")
+```
+
+
+## Stratified Group Seqential Design  {.tabset}
+
+The case is 
+```{r, message=FALSE}
+p_c <- tibble::tibble(Stratum = c("S1", "S2", "S3"), Rate = c(.4, .5, .6))
+p_e <- tibble::tibble(Stratum = c("S1", "S2", "S3"), Rate = c(.25, .3, .5))
+ratio <- 1
+N_c <- .5
+N_e <- .5
+IF <- 1:3/3
+
+x <- p_c %>% 
+  rename(p_c = Rate) %>% 
+  left_join(p_e) %>% 
+  rename(p_e = Rate) %>% 
+  mutate(p_pool = (p_c + p_e) / 2) 
+
+x %>% gt::gt()
+```
+
+First, we calculate the variance 
+$$
+  \left\{
+  \begin{array}{ll}
+  \sigma^2_{H_0,k,s} 
+  & =
+  p_{k,s}^{pool} \left(1 - p^{pool}_{k,s} \right) \left(\frac{1}{N_{C,k,s}} + \frac{1}{N_{E,k,s}} \right)
+  =
+  p_{k,s}^{pool} \left(1 - p^{pool}_{k,s} \right) \left(\frac{1}{N_{C,k,s}} + \frac{1}{N_{E,k,s}} \right) \\
+  \sigma_{H_1,k,s}^2 
+  & = 
+  \frac{p_{C,s} (1- p_{C,s})}{N_{C,k,s}} + \frac{p_{E,s} (1 - p_{E,s})}{N_{E,k,s}} 
+  \end{array}
+  \right.
+$$
+
+
+```{r}
+x <- x %>% 
+  union_all(x) %>% 
+  union_all(x) %>% 
+  mutate(Analysis = rep(1:3, each = 3),
+         N_c = rep(N_c * IF / 3, each = 3),
+         N_e = rep(N_e * IF / 3, each = 3)) %>% 
+  select(Analysis, Stratum, p_c, p_pool, p_e, N_c, N_e) %>% 
+  mutate(sigma_H0 = sqrt(p_pool * (1 - p_pool) * (1 / N_c + 1 / N_e)),
+         sigma_H1 = sqrt(p_c * (1 - p_c) / N_c + p_e * (1 - p_e) / N_e))
+```
+
+Second, we calculate the weight by using inverse variance
+
+$$
+  w_{s,k} = \frac{1/\sigma^2_{s,k}}{\sum_{s=1}^S 1/\sigma^2_{s,k}}. 
+$$
+
+```{r}
+temp <- x %>% 
+  group_by(Analysis) %>% 
+  summarise(sum_invar_H0 = sum(1/sigma_H0^2),
+            sum_invar_H1 = sum(1/sigma_H1^2),
+            sum_ss = sum((N_c * N_e) / (N_c + N_e)))
+
+temp 
+
+x <- x %>% 
+  left_join(temp) %>% 
+  mutate(weight_invar_H0 = 1/sigma_H0^2 / sum_invar_H0,
+         weight_invar_H1 = 1/sigma_H1^2 / sum_invar_H1,
+         weight_ss = (N_c * N_e) / (N_c + N_e) / sum_ss) %>% 
+  select(-c(sum_invar_H0, sum_invar_H1, sum_ss))
+```
+
+
+
+Third, we calculate the weighted risk difference and weighted statistical information.
+$$
+  \left\{
+  \begin{array}{ll}
+    \delta_{H_0,k} 
+    & = 0\\
+    \delta_{H_1,k} 
+    & = \sum_{s=1}^S w_{k,s} |p_{C,s} - p_{E,s}|
+  \end{array}
+  \right. \\
+  \left\{
+  \begin{array}{ll}
+    \mathcal I_{H_0,k} 
+    & = 
+    \left[ 
+      \sum_{s=1}^S 
+      w_{k,s}^2 \frac{p_{k,s}^{pool} (1 - p_{k,s}^{pool})}{N_{C, k, s}} + 
+      w_{k,s}^2 \frac{p_{k,s}^{pool} (1 - p_{k,s}^{pool})}{N_{E, k, s}} 
+    \right]^{-1}\\
+    \mathcal I_{H_1,k}  
+    & = 
+    \left[ 
+      \sum_{s=1}^S w_{k,s}^2 \frac{p_{C,k,s} (1 - p_{C,k,s})}{N_{C,k,s}}
+      +
+      \sum_{s=1}^S w_{k,s}^2 \frac{p_{E,k,s} (1 - p_{E,k,s})}{N_{E,k,s}} 
+    \right]^{-1}
+  \end{array}
+  \right. \\
+$$
+```{r}
+x <- x %>% 
+  group_by(Analysis) %>% 
+  summarise(rd_invar_H0 = sum(weight_invar_H0 * abs(p_c - p_e)),
+            rd_invar_H1 = sum(weight_invar_H1 * abs(p_c - p_e)),
+            rd_ss = sum(weight_ss * abs(p_c - p_e)),
+            rd0 = 0,
+            info_invar_H0 = 1 / sum(weight_invar_H0^2*p_c*(1-p_c)/N_c + weight_invar_H0^2*p_e*(1-p_e)/N_e),
+            info_invar_H1 = 1 / sum(weight_invar_H1^2*p_c*(1-p_c)/N_c + weight_invar_H1^2*p_e*(1-p_e)/N_e),
+            info_ss = 1 / sum(weight_invar_H1^2*p_c*(1-p_c)/N_c + weight_invar_H1^2*p_e*(1-p_e)/N_e),
+            info0_invar_H0 = 1 / sum(weight_invar_H0^2*p_pool*(1-p_pool)/N_c + weight_invar_H0^2*p_pool*(1-p_pool)/N_e),
+            info0_invar_H1 = 1 / sum(weight_invar_H1^2*p_pool*(1-p_pool)/N_c + weight_invar_H1^2*p_pool*(1-p_pool)/N_e),
+            info0_ss = 1 / sum(weight_ss^2*p_pool*(1-p_pool)/N_c + weight_ss^2*p_pool*(1-p_pool)/N_e)
+            ) 
+x %>% gt::gt()
+```
+
+```{r}
+y <- gs_design_npe(
+  theta = x$rd_invar_H0,
+  info = x$info_invar_H0, 
+  info0 = x$info0_invar_H0, 
+  info_scale = 2,
+  alpha = 0.025,                  
+  beta = 0.1,                
+  upper = gs_b,
+  lower = gs_b,
+  upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  lpar = list(par = rep(-Inf, 3)),
+  test_lower = FALSE,
+)
+
+y$info[3] / x$info_invar_H0[3]
+```
+
+
+
+
+
+
+
+
 
 
 

@@ -56,9 +56,8 @@ gs_design_rd <- function(
                        Rate = .2),
   p_e = tibble::tibble(Stratum = "All",
                        Rate = .15),
-  N = tibble::tibble(Stratum = "All",  
-                     N = c(20, 30, 50),
-                     Analysis = 1:3),
+  k = 3,
+  IF = 1:k/k,
   rd0 = 0, 
   alpha = 0.025,                   # One-sided Type I error
   beta = 0.1,                      # NULL if enrollment is not adapted
@@ -66,7 +65,7 @@ gs_design_rd <- function(
   weight = c("un-stratified", "ss", "invar"),
   upper = gs_b,
   lower = gs_b,
-  upar = list(par = gsDesign(k = length(N), test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  upar = list(par = gsDesign(k = k, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
   lpar = list(par = c(qnorm(.1), rep(-Inf, length(N) - 1))),
   test_upper = TRUE,
   test_lower = TRUE,
@@ -78,7 +77,6 @@ gs_design_rd <- function(
   # --------------------------------------------- #
   #     check input values                        #
   # --------------------------------------------- #
-  K <- length(N$N)
   info_scale <- if(methods::missingArg(info_scale)){2}else{match.arg(as.character(info_scale), choices = 0:2)}
   weight <- if(methods::missingArg(weight)){"un-stratified"}else{match.arg(weight)}
   
@@ -86,45 +84,53 @@ gs_design_rd <- function(
   #     calculate the sample size                 #
   #          under fixed design                   #
   # --------------------------------------------- #
-  N_fixed_des <- gsDesign::nBinomial(p1 = p_c$Rate, p2 = p_e$Rate, alpha = alpha, beta = beta, ratio = ratio, delta0 = rd0)
-  
-  # ---------------------------------------- #
-  #    calculate the asymptotic variance     #
-  #       and statistical information        #
-  # ---------------------------------------- #
-  x <- gs_info_rd(
-    p_c = p_c,
+  x_fix <- gs_info_rd(
+    p_c = p_c, 
     p_e = p_e,
-    N = tibble::tibble(Stratum = "All",  
-                       N = N_fixed_des *  N$N[1:length(N$N)] / N$N[length(N$N)],
-                       Analysis = 1:K),
+    N = tibble::tibble(Stratum = p_c$Stratum, N = 1, Analysis = 1),
+    rd0 = rd0,
+    ratio = ratio,
+    weight = weight) 
+  
+  x_gs <- gs_info_rd(
+    p_c = p_c, 
+    p_e = p_e,
+    N = tibble::tibble(Stratum = p_c$Stratum, N = 1:k/k, Analysis = 1:k),
     rd0 = rd0,
     ratio = ratio,
     weight = weight)
   
+  y_fix <- gs_design_npe(
+    theta = abs(p_c$Rate - p_e$Rate), 
+    info = x_fix$info, 
+    info0 = x_fix$info0, 
+    info_scale = info_scale,
+    alpha = alpha, beta = beta, binding = binding,
+    upper = upper, upar = upar, test_upper = test_upper,
+    lower = lower, lpar = lpar, test_lower = test_lower,
+    r = r, tol = tol)
+  
   # --------------------------------------------- #
   #     get statistical information               #
   # --------------------------------------------- #
-  suppressMessages(
-    allout <- gs_design_npe(
-      theta = x$theta, 
-      info = x$info, info0 = x$info0, info_scale = info_scale,
-      alpha = alpha, beta = beta, binding = binding,
-      upper = upper, upar = upar, test_upper = test_upper,
-      lower = lower, lpar = lpar, test_lower = test_lower,
-      r = r, tol = tol) %>%
-      # add `~HR at bound`, `HR generic` and `Nominal p`
-      mutate("~Risk difference at bound" = exp(-Z / sqrt(info)), 
-             "Nominal p" = pnorm(-Z),
-             IF0 = if(sum(!is.na(info0)) == 0){NA}else{info0 / max(info0)}) %>% 
-      # Add `Time`, `Events`, `AHR`, `N` from gs_info_ahr call above
-      full_join(x %>% select(-c(info, info0, theta)), by = "Analysis") %>%
-      # select variables to be output
-      select(c(Analysis, Bound,  N, rd, rd0, Z, Probability, Probability0, theta, theta0, info, info0, IF, IF0, `~Risk difference at bound`, `Nominal p`)) %>% 
-      # arrange the output table
-      arrange(desc(Bound), Analysis) 
-  )
-  allout$N <- allout$N * allout$info[K] / x$info[K]
+  allout <- gs_design_npe(
+    theta = y_fix$theta, 
+    info = y_fix$info * IF, 
+    info0 = y_fix$info0 * IF, 
+    info_scale = info_scale,
+    alpha = alpha, beta = beta, binding = binding,
+    upper = upper, upar = upar, test_upper = test_upper,
+    lower = lower, lpar = lpar, test_lower = test_lower,
+    r = r, tol = tol) %>%
+    mutate(rd = x_fix$rd,
+           rd0 = rd0,
+           "~Risk difference at bound" = exp(-Z / sqrt(info)), 
+           "Nominal p" = pnorm(-Z),
+           IF0 = if(sum(!is.na(info0)) == 0){NA}else{info0 / max(info0)},
+           N = y_fix$info[1] / x_fix$info[1]  * IF) %>% 
+    select(c(Analysis, Bound,  N, rd, rd0, Z, Probability, Probability0, info, info0, IF, IF0, `~Risk difference at bound`, `Nominal p`)) %>% 
+    arrange(desc(Bound), Analysis) 
+  
   
   # --------------------------------------------- #
   #     get bounds to output                      #
@@ -135,7 +141,7 @@ gs_design_rd <- function(
   #     get analysis summary to output            #
   # --------------------------------------------- #
   analysis <- allout %>% 
-    select(Analysis, N, rd, rd0, theta, theta0, info, info0, IF, IF0) 
+    select(Analysis, N, rd, rd0, info, info0, IF, IF0) 
   
   # --------------------------------------------- #
   #     return the output                         #
