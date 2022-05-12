@@ -18,9 +18,8 @@ knitr::opts_chunk$set(
 
 ## Overview
 
-We consider one- and two-sided hypothesis testing using a group sequential design with possibly non-constant treatment effect.
-That can be useful for situations such as an assumed non-proportional hazards model or using weighted logrank tests for a time-to-event endpoint. 
-Asymptotic distributional assumptions for this document have been laid out in the vignette *Non-Proportional Effect Size in Group Sequential Design.*
+We consider group sequential designs with possibly non-constant treatment effects over time.
+This can be useful for situations such as an assumed non-proportional hazards model as laid out in `vignette("NPEbackground", package="gsdmvn")`. 
 In general, we assume $K\ge 1$ analyses with statistical information $\mathcal{I}_k$ and information fraction $t_k=\mathcal{I}_k/\mathcal{I}_k$ at analysis $k$, $1\le k\le K$.
 We denote the null hypothesis $H_{0}$: $\theta(t)=0$ and an alternate hypothesis $H_1$: $\theta(t)=\theta_1(t)$ for $t> 0$ where $t$ represents the information fraction for a study.
 While a study is planned to stop at information fraction $t=1$, we define $\theta(t)$ for $t>0$ since a trial can overrun its planned statistical information at the final analysis. 
@@ -31,7 +30,7 @@ For our purposes, $H_0$ will represent no treatment difference, but it could rep
 Recall that we assume $K$ analyses and bounds $-\infty \le a_k< b_k<\le \infty$ for $1\le k < K$ and $-\infty \le a_K\le b_K<\infty$. 
 We denote the probability of crossing the upper boundary at analysis $k$ without previously crossing a bound by
 
-$$\alpha_{k}(\theta)=P_{\theta}(\{Z_{k}\geq b_{k}\}\cap_{j=1}^{i-1}\{a_{j}\le Z_{j}< b_{j}\}),$$
+$$\alpha_{k}(\theta)=P_{\theta}(\{Z_{k}\geq b_{k}\}\cap_{j=1}^{k-1}\{a_{j}\le Z_{j}< b_{j}\}),$$
 $k=1,2,\ldots,K.$
 The total probability of crossing an upper bound prior to crossing a lower bound is denoted by 
 
@@ -70,28 +69,45 @@ $\mathcal{I}(t)=\mathcal{I}^{(0)}(t)=\mathcal{I}^{(1)}(t)=\mathcal{I}^{(a)}(t).$
 We note that information may differ under different values of $\theta(t)$. 
 For fixed designs, \cite{LachinBook} computes sample size based on different variances under the null and alternate hypothesis.
 
-## Bounds
+## Spending bounds
 
-We consider different boundary types as in the **gsDesign** package.
-We include the `test.type` argument from the `gsDesign::gsDesign()` function for reference. 
+We consider different boundary types in the **gsDesign** package and simplify them into two types according to whether lower bounds are binding or non-binding.
+The concept is to implicitly derive Z-value bounds $a_k, b_k, k=1,\cdots,K$ based on probabilities specified in the following table. 
+We include the `test.type` argument from the `gsDesign::gsDesign()` function for reference.
+
 
    `test.type`      Upper bound         Lower bound        Design type
-  ------------- ------------------- -------------------    ------------------------------------------
-        1        $\alpha_k^{+}(0)$         None            One-sided efficacy
-        2           $\alpha_k(0)$        $\beta_k(0)$      2-sided
-        3          $\alpha_k(0)$     $\beta_k(\theta_a)$   $\beta$-spending with binding futility
-        4        $\alpha_k^{+}(0)$   $\beta_k(\theta_a)$   $\beta$-spending with non-binding futility
-        5           $\alpha(0)$        $\beta_i(\theta_1)$ $\theta$-spending with binding futility   
-        6         $\alpha^{+}(0)$      $\beta_i(\theta_1)$ $\theta$-spending with non-binding futility
+  ------------- ------------------- -------------------  ------------------------------------------
+        1        $\alpha_k^{+}(0)$       None            One-sided efficacy
+        2        $\alpha_k(0)$      $\alpha_k(0)$        2-sided symmetric
+        3        $\alpha_k(0)$      $\beta_k(\theta_a)$  $\beta$-spending with binding futility
+        4        $\alpha_k^{+}(0)$  $\beta_k(\theta_a)$  $\beta$-spending with non-binding futility
+        5        $\alpha_k(0)$      $\beta_i(\theta_1)$  $\theta$-spending with binding futility   
+        6        $\alpha^{+}(0)$    $\beta_i(\theta_1)$  $\theta$-spending with non-binding futility
 
-  : Boundary crossing probabilities used to set boundaries
+  : Boundary crossing probabilities used to set Z-value boundaries
 
+This can be reduced to just two types distinguishing by whether or not lower bounds are binding or non-binding:
+
+   `test.type`      Upper bound         Lower bound        Design type
+  ------------- ------------------- -------------------  ------------------------------------------
+    2, 3, 5     $\alpha_k(0)$       $\beta_k(\theta)$    Binding lower bound
+    1, 4, 6     $\alpha_k^{+}(0)$   $\beta_k(\theta)$    Non-binding lower bound
+
+  : Reduced options for boundary crossing probabilities used to set Z-value boundaries
+
+
+In this second table we have used $\theta=0$ to derive the upper bound to control Type I error in all cases.
+We have chosen some arbitrary $\theta$ which could be 0 for any other `test.type`, $\theta_a$ for $\beta$-spending or some arbitrary $\theta_1$ otherwise.
+We note that for a one-sided design we let $\beta_k(\theta)=0$ so that $a_k=-\infty, k=1,\cdots,K$.
+For `test.type=3, 4` we let $\theta=\theta_a$, while for `test.type=5, 6` $\theta\ge 0$ is arbitrary.
+We note that asymmetric $\alpha$-spending bounds can be derived using `test.type > 2` and $\theta=0.$
 
 ## Two-sided testing and design
 
-We denote an alternative $H_{1}$: $\theta(t)=\theta_1(t)$; we will always assume $H_1$ for power calculations and sometimes will use $H_1$ for controlling lower boundary $a_k$ crossing probabilities. 
+We denote an alternative $H_{a}$: $\theta(t)=\theta_a(t)$; we will always assume $H_a$ for power calculations; when using $\beta$-spending we will also use $H_a$ for controlling lower boundary $a_k$ crossing probabilities by letting $\theta=\theta_a$ for lower bound spending. 
 A value of $\theta(t)>0$ will reflect a positive benefit. 
-We will not restrict the alternate hypothesis to $\theta_1(t)>0$ for all $t$.
+We will not restrict the alternate hypothesis to $\theta_a(t)>0$ for all $t$.
 The value of $\theta(t)$ will be referred to as the (standardized) treatment effect at information fraction $t$.
 
 We assume there is interest in stopping early if there is good evidence to reject one hypothesis in favor of the other. 
@@ -99,7 +115,7 @@ We assume there is interest in stopping early if there is good evidence to rejec
 If $a_k= -\infty$ at analysis $k$ for some $1\le k\le K$ then the alternate hypothesis cannot be rejected at analysis $k$; i.e., there is no futility bound at analysis $k$. 
 For $k=1,2,\ldots,K$, the trial is stopped at analysis $k$ to reject $H_0$ if $a_j<Z_j< b_j$, $j=1,2,\dots,i-1$ and $Z_k\geq b_k$. 
 If the trial continues until stage $k$ without crossing a bound and $Z_k\leq a_k$ then $H_1$ is rejected in favor of $H_0$, $k=1,2,\ldots,K$. 
-Note that if $a_K< b_K$ there is the possibility of completing the trial without rejecting $H_0$ or $H_1$. 
+Note that if $a_K< b_K$ there is the possibility of completing the trial without rejecting $H_0$ or $H_1$ unless $a_K=b_K.$ 
 
 ### Haybittle-Peto and spending bounds
 
