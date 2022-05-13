@@ -59,8 +59,8 @@ gs_design_rd <- function(
   k = 3,
   IF = 1:k/k,
   rd0 = 0, 
-  alpha = 0.025,                   # One-sided Type I error
-  beta = 0.1,                      # NULL if enrollment is not adapted
+  alpha = .025,                  
+  beta = .1,                    
   ratio = 1,
   weight = c("un-stratified", "ss", "invar"),
   upper = gs_b,
@@ -92,16 +92,8 @@ gs_design_rd <- function(
     ratio = ratio,
     weight = weight) 
   
-  x_gs <- gs_info_rd(
-    p_c = p_c, 
-    p_e = p_e,
-    N = tibble::tibble(Stratum = p_c$Stratum, N = 1:k/k, Analysis = 1:k),
-    rd0 = rd0,
-    ratio = ratio,
-    weight = weight)
-  
   y_fix <- gs_design_npe(
-    theta = abs(p_c$Rate - p_e$Rate), 
+    theta = x_fix$rd, 
     info = x_fix$info, 
     info0 = x_fix$info0, 
     info_scale = info_scale,
@@ -111,26 +103,39 @@ gs_design_rd <- function(
     r = r, tol = tol)
   
   # --------------------------------------------- #
-  #     get statistical information               #
+  #     calculate the sample size                 #
+  #     under group sequential design             #
   # --------------------------------------------- #
-  allout <- gs_design_npe(
-    theta = y_fix$theta, 
-    info = y_fix$info * IF, 
-    info0 = y_fix$info0 * IF, 
+  x_gs <- gs_info_rd(
+    p_c = p_c, 
+    p_e = p_e,
+    N = tibble::tibble(Stratum = p_c$Stratum, N = 1:k/k, Analysis = 1:k),
+    rd0 = rd0,
+    ratio = ratio,
+    weight = weight)
+
+  y_gs <- gs_design_npe(
+    theta = x_gs$rd, 
+    info = x_gs$info, 
+    info0 = x_gs$info0, 
     info_scale = info_scale,
     alpha = alpha, beta = beta, binding = binding,
     upper = upper, upar = upar, test_upper = test_upper,
     lower = lower, lpar = lpar, test_lower = test_lower,
-    r = r, tol = tol) %>%
+    r = r, tol = tol)
+  
+  # --------------------------------------------- #
+  #     get statistical information               #
+  # --------------------------------------------- #
+  allout <-  y_gs%>%
     mutate(rd = x_fix$rd,
            rd0 = rd0,
-           "~Risk difference at bound" = exp(-Z / sqrt(info)), 
+           "~Risk difference at bound" = Z / sqrt(info) / theta * (rd -rd0)  + rd0, 
            "Nominal p" = pnorm(-Z),
            IF0 = if(sum(!is.na(info0)) == 0){NA}else{info0 / max(info0)},
-           N = y_fix$info[1] / x_fix$info[1]  * IF) %>% 
+           N = y_gs$info[k] / x_fix$info[1]  * IF) %>% 
     select(c(Analysis, Bound,  N, rd, rd0, Z, Probability, Probability0, info, info0, IF, IF0, `~Risk difference at bound`, `Nominal p`)) %>% 
     arrange(desc(Bound), Analysis) 
-  
   
   # --------------------------------------------- #
   #     get bounds to output                      #

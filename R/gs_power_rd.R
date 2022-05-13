@@ -260,7 +260,7 @@ gs_power_rd <- function(
   # summarize the bounds
   suppressMessages(
     bounds <- y_H0 %>% 
-      mutate(`~Risk difference at bound` = exp(-Z / sqrt(info)),  `Nominal p` = pnorm(-Z)) %>% 
+      mutate(`~Risk difference at bound` = Z / sqrt(info) / theta * (rd -rd0)  + rd0,  `Nominal p` = pnorm(-Z)) %>% 
       dplyr::rename(Probability0 = Probability) %>% 
       left_join(y_H1 %>% select(Analysis, Bound, Probability)) %>% 
       select(Analysis, Bound, Probability, Probability0, Z, `~Risk difference at bound`, `Nominal p`)

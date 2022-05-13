@@ -390,45 +390,6 @@ $$
 $$
 where $N_{C,s,k}, N_{E,s,k}$ are the planned sample size of the $s$-th strata and $k$-th analysis of the control group and experimental group, respectively. And $\widehat N_{C,s,k}, \widehat N_{E,s,k}$ are the observed sample size of the $s$-th strata and $k$-th analysis of the control group and experimental group, respectively.
 
-# Power
-
-The power under a fixed sample size
-$$
-  Pr\left(\cup_{k=1}^K Z_k \geq b_k  | H_1 \right)
-$$
-
-
-# Sample Size
-
-```{r, eval=FALSE}
-x <- gs_info_rd(
-  p_c = tibble::tibble(Stratum = "All",
-                       Rate = .2),
-  p_e = tibble::tibble(Stratum = "All",
-                       Rate = .15), 
-  N = tibble::tibble(Stratum = "All",
-                     N = seq(1,3),
-                     Analysis = 1:3), 
-  rd0 = 0, 
-  ratio = 1, 
-  weight = "un-stratified")
-x
-```
-
-```{r,eval=FALSE}
-y <- gs_design_npe(theta = 0.43,#x$theta - x$theta0, 
-                   info = x$info, info0 = x$info0, info_scale = 2,
-                   alpha = 0.025, beta = 0.2,
-                   upper = gs_b, lower = gs_b,
-                   upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
-                   lpar = list(par = c(qnorm(.1), -Inf, -Inf)))
-y
-```
-
-```{r,eval=FALSE}
-N$N * y$info[3] / x$info[3]
-```
-
 # Simulations
 
 We do a quick 20,000 simulations and compare the density histogram of outcomes to the standard normal density.
@@ -469,21 +430,6 @@ ggplot() +
 ```
 
 
-
-# Summary
-
-|  Parameters                 | Notes                                         |
-|:----------------------------|:----------------------------------------------|
-| **_risk difference:_**        |                                               |
-| $\widehat\delta_{H_0,k} = \sum_{s=1}^S w_{k,s} \delta_{k,s}^{null}$| $\delta_{k,s}^{null}$ is the risk difference under $H_0$. It is 0, positive, and negative for superiority, super-superiority and non-inferiority design, respectively.|                                      
-| $\widehat\delta_{H_1,k} = \sum_{s=1}^S w_{k,s} (\widehat p_{C,k,s} - \widehat p_{E,k,s})$ | $\widehat p_{C,k,s} = \frac{x_{C,k,s}}{N_{C,k,s}}, \; \widehat p_{E,k,s} = \frac{x_{E,k,s} }{N_{E,k,s}}$|
-| **_standardized treatment effect:_**
-| $\widehat\theta_{H_0,k} = \frac{\sum_{s=1}^S w_{k,s} \delta_{s,k}^{null}}{\sqrt{\sum_{s=1}^S w_{k,s}^2 \widehat \sigma_{H_0,k,s}^2}}$|For superiority design, $\widehat\sigma^2_{H_0,k,s} = \widehat p_{k,s}^{pool} \left(1 - \widehat p^{pool}_{k,s} \right) \left(\frac{1}{N_{C,k,s}} + \frac{1}{N_{E,k,s}} \right)$ <br> For super-superiority design and non-inferiority design, $\hat\sigma^2_{H_0,k,s} = \frac{\widehat p_{C0,k,s}(1- \widehat p_{C0,k,s})}{N_{C,k,s}} + \frac{ \widehat p_{E0,k,s} (1 - \widehat p_{E0,k,s})}{N_{E,k,s}}$  |       
-| $\widehat\theta_{H_1,k} = \frac{\sum_{s=1}^S w_{k,s} (\widehat p_{C,k,s} - \widehat p_{E,k,s})}{\sqrt{\sum_{s=1}^S w_{k,s}^2 \widehat\sigma_{H_1,k,s}^2}}$ | $\widehat\sigma_{H_1,k,s} = \sqrt{\frac{\widehat p_{C,k,s} (1- \widehat p_{C,k,s})}{N_{C,k,s}} + \frac{\widehat p_{E,k,s} (1 - \widehat p_{E,k,s})}{N_{E,k,s}}}$|
-| **_statistical information:_**|                                               |
-| $\widehat{\mathcal I}_{H_0,k} = \left\{ \begin{array}{ll} \left[ \sum_{s=1}^S w_{k,s}^2 \frac{p_{k,s}^{pool} (1 - p_{k,s}^{pool})}{N_{k,s}} \right]^{-1} & \text{for superioirty design} \\ \left[ \sum_{s=1}^S w_{k,s}^2 \frac{\bar p_{C0,s} (1 - \bar p_{C0,s})}{N_{C,s}} + w_{k,s}^2\frac{\bar p_{E0,s} (1 - \bar p_{E0,s})}{N_{E,s}} \right]^{-1} & \text{for super-superiority and non-inferiority design} \end{array} \right.$ | $N_{k,s} = N_{C,k,s} + N_{E,k,s}$ and $\widehat p_{k,s} = (x_{C,k,s} + x_{E,k,s}) / N_{k,s}$|
-| $\widehat{\mathcal I}_{H_1,k} = \left[ \sum_{s=1}^S w_{k,s}^2 \frac{\widehat p_{C,k,s} (1 - \widehat p_{C,k,s})}{N_{C,k,s}} + \sum_{s=1}^S w_{k,s}^2 \frac{\widehat p_{E,k,s} (1 - \widehat p_{E,k,s})}{N_{E,k,s}}  \right]^{-1}$ | |
-
 # Examples
 
 ## Unstratified Fixed Design  {.tabset}
@@ -493,6 +439,7 @@ So $p_C=0.4, p_E = .28$.
 Under the null hypothesis, we assume $p_C=p_E =0.34$.
 We desire 90\% power for a two-sided test for two proportions at $\alpha = 0.05$.
 And we would like to calculate the sample size to achieve the 90\% power.
+
 
 ### `gs_design_rd()`
 
@@ -592,7 +539,7 @@ cat("The sample size calculated by `gsdmvn` is ", y$info[1] / x$info[1] * N)
 ```
 
 
-The above logic is implement in `gs_design_rd()` to calcute the sample size given fixed power in one-step.
+The above logic is implement in `gs_design_rd()` to calculate the sample size given fixed power in one-step.
 
 ```{r}
 z <- gs_design_rd(
@@ -618,6 +565,7 @@ z %>% summary() %>%  as_gt()
 ### `gsDesign`
 ```{r, echo=FALSE}
 x <- nBinomial(p1 = .28, p2 = .4, delta0 = 0, alpha = .025, sided = 1, beta = .1, outtype = 3)
+x
 cat("The sample size calculated by `gsDesign` is ", x$n, "\n")
 ```
 
@@ -629,24 +577,80 @@ knitr::include_graphics("./figures/east_n_fix.png")
 
 
 
-## Unstratified Group Seqential Design  {.tabset}
+## Unstratified Group Sequential Design  {.tabset}
 
 The example discussed in this section is an unstratified group sequential design with equal sized groups to detect $p_C = 0.15, p_E = .1$.  
 Under the null hypothesis, we assume $p_C=p_E =0.125$.
-We desire 90\% power for a two-sided test for two propotions at $\alpha = 0.05$.
+We desire 90\% power for a two-sided test for two proportions at $\alpha = 0.05$.
 And we would like to calculate the sample size to achieve the 90\% power.
 
-### `gs_design_rd()`
+### `gsdmvn`
+
+To calculate the sample size, one can use `gs_design_rd()`.
+The logic of `gs_design_rd()` is to calculate the sample size of fixed design first.
+```{r}
+x_fix <- gs_info_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .15),
+  p_e = tibble::tibble(Stratum = "All", Rate = .1),
+  N = tibble::tibble(Stratum = "All", N = 1, Analysis = 1),
+  rd0 = 0, 
+  ratio = 1,
+  weight = "un-stratified"
+)
+
+y_fix <- gs_design_npe(
+    theta = .05, 
+    info = x_fix$info, 
+    info0 = x_fix$info0, 
+    info_scale = 2,
+    alpha = .025, beta = .1, binding = FALSE,
+    upper = gs_b,
+    lower = gs_b,
+    upar = list(par = gsDesign(k = 1, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+    lpar = list(par = -Inf),
+    test_lower = FALSE)
+
+cat("The sample size of the fixed design is ", y_fix$info/x_fix$info, ".\n")
+```
+
+Then the sample size of the group sequential design is a product of 1834.641 and an inflation factor. 
 
 ```{r}
-gs_design_rd(
+x_gs <- gs_info_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .15),
+  p_e = tibble::tibble(Stratum = "All", Rate = .1),
+  N = tibble::tibble(Stratum = "All", N = 1:3/3, Analysis = 1:3),
+  rd0 = 0, 
+  ratio = 1,
+  weight = "un-stratified"
+)
+
+y_gs <- gs_design_npe(
+    theta = .05, 
+    info = x_gs$info, 
+    info0 = x_gs$info0, 
+    info_scale = 2,
+    alpha = .025, beta = .1, binding = FALSE,
+    upper = gs_b,
+    lower = gs_b,
+    upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+    lpar = list(par = rep(-Inf, 3)),
+    test_lower = FALSE)
+
+cat("The sample size of the group sequential design is ", y_gs$info/x_gs$info[3], "\n")
+```
+
+
+The above logic is implemented in `gs_design_rd()`.
+```{r}
+x <- gs_design_rd(
   p_c = tibble::tibble(Stratum = "All", Rate = .15),
   p_e = tibble::tibble(Stratum = "All", Rate = .1),
   k = 3,
   IF = 1:3/3,
   rd0 = 0, 
-  alpha = 0.025,                  
-  beta = 0.1,                
+  alpha = .025,                  
+  beta = .1,                
   ratio = 1,
   weight = "un-stratified",
   upper = gs_b,
@@ -655,7 +659,60 @@ gs_design_rd(
   lpar = list(par = rep(-Inf, 3)),
   test_lower = FALSE,
   info_scale = 2
-)$analysis$N
+)
+
+x
+
+cat("The sample size calculated by `gsdmvn` is ", x$analysis$N)
+```
+
+### `gsDesign`
+
+```{r}
+n_fix <- nBinomial(
+  # Control event rate
+  p1 = .15, 
+  # Experimental event rate
+  p2 = .1, 
+  # Null hypothesis event rate difference (control - experimental)
+  delta0 = 0, 
+  # 1-sided Type I error
+  alpha = .025, 
+  # Type II error (1 - Power)
+  beta = .1, 
+  # Experimental/Control randomization ratio
+  ratio = 1) 
+
+cat("The sample size of fixed-design calculated by `gsDesign` is ", n_fix, ".\n")
+
+x <- gsDesign(
+  k = 3,
+  test.type = 1,
+  # 1-sided Type I error
+  alpha = .025, 
+  # Type II error (1 - Power)
+  beta = .1,    
+  # If test.type = 5 or 6, this sets maximum spending for futility
+  # under the null hypothesis. Otherwise, this is ignored.
+  astar = 0,
+  timing = 1:3/3,
+  sfu = sfLDOF,
+  sfupar = NULL,
+  sfl = sfLDOF,
+  sflpar = NULL,
+  # Difference in event rates under alternate hypothesis
+  delta = 0,
+  # Difference in rates under H1
+  delta1 = .05,
+  # Difference in rates under H0
+  delta0 = 0,
+  endpoint = "Binomial",
+  # Fixed design sample size from nBinomial above
+  n.fix = n_fix)
+
+cat("The sample size calcuated by `gsDesign` is ", x$n.I, ".\n")
+
+gsBoundSummary(x, digits = 4, ddigits = 2, tdigits = 1)
 ```
 
 
@@ -665,7 +722,7 @@ knitr::include_graphics("./figures/east_n_gs.png")
 ```
 
 
-## Stratified Group Seqential Design  {.tabset}
+## Stratified Group Sequential Design  {.tabset}
 
 The case is 
 ```{r, message=FALSE}
@@ -768,6 +825,8 @@ $$
   \end{array}
   \right. \\
 $$
+
+
 ```{r}
 x <- x %>% 
   group_by(Analysis) %>% 
@@ -786,7 +845,7 @@ x %>% gt::gt()
 ```
 
 ```{r}
-y <- gs_design_npe(
+y_invar_H0 <- gs_design_npe(
   theta = x$rd_invar_H0,
   info = x$info_invar_H0, 
   info0 = x$info0_invar_H0, 
@@ -800,7 +859,60 @@ y <- gs_design_npe(
   test_lower = FALSE,
 )
 
-y$info[3] / x$info_invar_H0[3]
+y_invar_H1 <- gs_design_npe(
+  theta = x$rd_invar_H1,
+  info = x$info_invar_H1, 
+  info0 = x$info0_invar_H1, 
+  info_scale = 2,
+  alpha = 0.025,                  
+  beta = 0.1,                
+  upper = gs_b,
+  lower = gs_b,
+  upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  lpar = list(par = rep(-Inf, 3)),
+  test_lower = FALSE,
+)
+
+y_ss <- gs_design_npe(
+  theta = x$rd_ss,
+  info = x$info_ss, 
+  info0 = x$info0_ss, 
+  info_scale = 2,
+  alpha = 0.025,                  
+  beta = 0.1,                
+  upper = gs_b,
+  lower = gs_b,
+  upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  lpar = list(par = rep(-Inf, 3)),
+  test_lower = FALSE,
+)
+
+tibble::tibble(Method = c("INVAR-H0", "INVAR-H1", "SS"),
+               `Sample size` = c(y_invar_H0$info[3] / x$info_invar_H0[3], 
+                                 y_invar_H1$info[3] / x$info_invar_H1[3], 
+                                 y_ss$info[3] / x$info_ss[3])) %>% gt::gt()
+
+```
+
+
+The above logic is implemented in `gs_design_rd()`.
+```{r, eval=FALSE}
+gs_design_rd(
+  p_c = p_c,
+  p_e = p_e,
+  k = 3,
+  IF = 1:3/3,
+  rd0 = 0, 
+  alpha = .025,                  
+  beta = .1,                    
+  ratio = 1,
+  weight = "ss",
+  upper = gs_b,
+  lower = gs_b,
+  upar = list(par = gsDesign(k = k, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  lpar = list(par = c(qnorm(.1), rep(-Inf, 2))),
+  info_scale = 2,
+  binding = FALSE)
 ```
 
 
@@ -808,6 +920,19 @@ y$info[3] / x$info_invar_H0[3]
 
 
 
+# Summary
+
+|  Parameters                 | Notes                                         |
+|:----------------------------|:----------------------------------------------|
+| **_risk difference:_**        |                                               |
+| $\widehat\delta_{H_0,k} = \sum_{s=1}^S w_{k,s} \delta_{k,s}^{null}$| $\delta_{k,s}^{null}$ is the risk difference under $H_0$. It is 0, positive, and negative for superiority, super-superiority and non-inferiority design, respectively.|                                      
+| $\widehat\delta_{H_1,k} = \sum_{s=1}^S w_{k,s} (\widehat p_{C,k,s} - \widehat p_{E,k,s})$ | $\widehat p_{C,k,s} = \frac{x_{C,k,s}}{N_{C,k,s}}, \; \widehat p_{E,k,s} = \frac{x_{E,k,s} }{N_{E,k,s}}$|
+| **_standardized treatment effect:_**
+| $\widehat\theta_{H_0,k} = \frac{\sum_{s=1}^S w_{k,s} \delta_{s,k}^{null}}{\sqrt{\sum_{s=1}^S w_{k,s}^2 \widehat \sigma_{H_0,k,s}^2}}$|For superiority design, $\widehat\sigma^2_{H_0,k,s} = \widehat p_{k,s}^{pool} \left(1 - \widehat p^{pool}_{k,s} \right) \left(\frac{1}{N_{C,k,s}} + \frac{1}{N_{E,k,s}} \right)$ <br> For super-superiority design and non-inferiority design, $\hat\sigma^2_{H_0,k,s} = \frac{\widehat p_{C0,k,s}(1- \widehat p_{C0,k,s})}{N_{C,k,s}} + \frac{ \widehat p_{E0,k,s} (1 - \widehat p_{E0,k,s})}{N_{E,k,s}}$  |       
+| $\widehat\theta_{H_1,k} = \frac{\sum_{s=1}^S w_{k,s} (\widehat p_{C,k,s} - \widehat p_{E,k,s})}{\sqrt{\sum_{s=1}^S w_{k,s}^2 \widehat\sigma_{H_1,k,s}^2}}$ | $\widehat\sigma_{H_1,k,s} = \sqrt{\frac{\widehat p_{C,k,s} (1- \widehat p_{C,k,s})}{N_{C,k,s}} + \frac{\widehat p_{E,k,s} (1 - \widehat p_{E,k,s})}{N_{E,k,s}}}$|
+| **_statistical information:_**|                                               |
+| $\widehat{\mathcal I}_{H_0,k} = \left\{ \begin{array}{ll} \left[ \sum_{s=1}^S w_{k,s}^2 \frac{p_{k,s}^{pool} (1 - p_{k,s}^{pool})}{N_{k,s}} \right]^{-1} & \text{for superioirty design} \\ \left[ \sum_{s=1}^S w_{k,s}^2 \frac{\bar p_{C0,s} (1 - \bar p_{C0,s})}{N_{C,s}} + w_{k,s}^2\frac{\bar p_{E0,s} (1 - \bar p_{E0,s})}{N_{E,s}} \right]^{-1} & \text{for super-superiority and non-inferiority design} \end{array} \right.$ | $N_{k,s} = N_{C,k,s} + N_{E,k,s}$ and $\widehat p_{k,s} = (x_{C,k,s} + x_{E,k,s}) / N_{k,s}$|
+| $\widehat{\mathcal I}_{H_1,k} = \left[ \sum_{s=1}^S w_{k,s}^2 \frac{\widehat p_{C,k,s} (1 - \widehat p_{C,k,s})}{N_{C,k,s}} + \sum_{s=1}^S w_{k,s}^2 \frac{\widehat p_{E,k,s} (1 - \widehat p_{E,k,s})}{N_{E,k,s}}  \right]^{-1}$ | |
 
 
 
