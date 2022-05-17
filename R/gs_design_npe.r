@@ -85,7 +85,7 @@ NULL
 #' @details The inputs \code{info} and \code{info0} should be vectors of the same length with increasing positive numbers.
 #' The design returned will change these by some constant scale factor to ensure the design has power \code{1 - beta}.
 #' The bound specifications in \code{upper, lower, upar, lpar} will be used to ensure Type I error and other boundary properties are as specified.
-#' @author Keaven Anderson \email{keaven\_anderson@@merck.}
+#' @author Keaven Anderson \email{keaven_anderson@@merck.com}
 #'
 #' @export
 #'

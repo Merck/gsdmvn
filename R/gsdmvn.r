@@ -55,7 +55,7 @@
 #' \item gs_power_npe - general non-constant-effect size boundary crossing probability calculation for group sequential design
 #' }
 #'
-#' @author Keaven Anderson \email{keaven\_anderson@@merck.}
+#' @author Keaven Anderson \email{keaven_anderson@@merck.com}
 #' @references Jennison C and Turnbull BW (2000), \emph{Group Sequential
 #' Methods with Applications to Clinical Trials}. Boca Raton: Chapman and Hall.
 #' @docType package

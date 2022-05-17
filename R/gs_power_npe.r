@@ -74,7 +74,7 @@ NULL
 #' }
 #' \if{html}{The contents of this section are shown in PDF user manual only.}
 #'
-#' @author Keaven Anderson \email{keaven\_anderson@@merck.}
+#' @author Keaven Anderson \email{keaven_anderson@@merck.com}
 #'
 #' @export
 #'

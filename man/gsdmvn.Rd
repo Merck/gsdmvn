@@ -55,7 +55,7 @@ Jennison C and Turnbull BW (2000), \emph{Group Sequential
 Methods with Applications to Clinical Trials}. Boca Raton: Chapman and Hall.
 }
 \author{
-Keaven Anderson \email{keaven\_anderson@merck.}
+Keaven Anderson \email{keaven_anderson@merck.com}
 }
 \keyword{design}
 \keyword{nonparametric}

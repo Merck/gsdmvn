@@ -233,5 +233,5 @@ gs_power_npe(
   
 }
 \author{
-Keaven Anderson \email{keaven\_anderson@merck.}
+Keaven Anderson \email{keaven_anderson@merck.com}
 }
