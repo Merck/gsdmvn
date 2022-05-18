@@ -33,6 +33,7 @@
 #'   tab_footnote("Note that footnotes cannot be made for individual variables in the row groups generated using table a.",
 #'                cells_row_groups(groups = 2))
 
+
 table_ab <- function(table_a, table_b, byvar, decimals = 1, aname = names(table_a)[1]){
   # Convert tibbles to data frames, if needed
   if(tibble::is_tibble(table_a)) table_a <- data.frame(table_a, check.names = FALSE)

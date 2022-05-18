@@ -1,0 +1,54 @@
+---
+title: "`info_scale` in `gs_power_npe`"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    code_folding: hide
+    toc: yes
+    toc_depth: 4
+    number_sections: yes
+---
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+library(gsDesign)
+library(dplyr)
+library(gt)
+library(testthat)
+library(tibble)
+devtools::load_all()
+```
+
+# Binary Endpoint {.tabset}
+
+## `gsdmvn`
+
+```{r, eval=FALSE}
+x <- gs_design_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .28),
+  p_e = tibble::tibble(Stratum = "All", Rate = .4),
+  k = 1,
+  rd0 = 0, 
+  alpha = 0.025,   
+  beta = 0.1,   
+  ratio = 1,
+  weight = "un-stratified",
+  upper = gs_b,
+  lower = gs_b,
+  upar = list(par = -qnorm(.025)),
+  lpar = list(par = -Inf))  
+
+cat("The sample size calculated by `gs_design_rd()` is ", x$analysis$N, "\n")
+```
+
+
+## `gsDesign`
+```{r}
+x <- nBinomial(p1 = .28, p2 = .4, delta0 = 0, alpha = .025, sided = 1, beta = .1, outtype = 3)
+cat("The sample size calculated by `gsDesign` is ", x$n, "\n")
+```
+
+
+## EAST 
+```{r label = EastFix, echo = FALSE, fig.cap = "Sample size calculated by EAST", out.width = '90%'}
+knitr::include_graphics("./figures/east_n_fix.png")
+```

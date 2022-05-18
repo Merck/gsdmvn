@@ -5,9 +5,9 @@
 \title{Group sequential design power under risk difference}
 \usage{
 gs_power_rd(
-  p_c = tibble::tibble(Stratum = "All", Rate = c(0.15, 0.2, 0.25), Analysis = 1:3),
-  p_e = tibble::tibble(Stratum = "All", Rate = c(0.1, 0.15, 0.2), Analysis = 1:3),
-  N = tibble::tibble(Stratum = "All", N = c(50, 80, 120), Analysis = 1:3),
+  p_c = tibble::tibble(Stratum = "All", Rate = 0.2),
+  p_e = tibble::tibble(Stratum = "All", Rate = 0.15),
+  N = tibble::tibble(Stratum = "All", N = c(40, 50, 60), Analysis = 1:3),
   rd0 = 0,
   ratio = 1,
   weight = c("un-stratified", "ss", "invar"),
@@ -75,11 +75,9 @@ Group sequential design power under risk difference
 # un-stratified case with H0: rd0 = 0
 gs_power_rd(
   p_c = tibble::tibble(Stratum = "All",
-                       Rate = c(.15, .18, .2),
-                       Analysis = 1:3),
+                       Rate = .2),
   p_e = tibble::tibble(Stratum = "All",
-                       Rate = c(.13, .16, .17),
-                       Analysis = 1:3),
+                       Rate = .15),
   N = tibble::tibble(Stratum = "All",
                      N = c(20, 40, 60),
                      Analysis = 1:3),
@@ -97,11 +95,9 @@ gs_power_rd(
 # un-stratified case with H0: rd0 != 0
 gs_power_rd(
   p_c = tibble::tibble(Stratum = "All",
-                       Rate = c(.15, .18, .2),
-                       Analysis = 1:3),
+                       Rate = .2),
   p_e = tibble::tibble(Stratum = "All",
-                       Rate = c(.13, .16, .17),
-                       Analysis = 1:3),
+                       Rate = .15),
   N = tibble::tibble(Stratum = "All",
                      N = c(20, 40, 60),
                      Analysis = 1:3),
@@ -112,14 +108,13 @@ gs_power_rd(
   upar = list(par = gsDesign(k = length(N), test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
   lpar = list(par = c(qnorm(.1), rep(-Inf, length(N) - 1)))
 )
+
 # use spending function
 gs_power_rd(
   p_c = tibble::tibble(Stratum = "All",
-                       Rate = c(.15, .18, .2),
-                       Analysis = 1:3),
+                       Rate = .2),
   p_e = tibble::tibble(Stratum = "All",
-                       Rate = c(.13, .16, .17),
-                       Analysis = 1:3),
+                       Rate = .15),
   N = tibble::tibble(Stratum = "All",
                      N = c(20, 40, 60),
                      Analysis = 1:3),
@@ -136,12 +131,10 @@ gs_power_rd(
 # --------------------- #
 # stratified case under sample size weighting and H0: rd0 = 0
 gs_power_rd(
-  p_c = tibble::tibble(Stratum = rep(c("S1", "S2", "S3"), each = 3),
-                       Analysis = rep(1:3, 3),
-                       Rate = c(.15, .2, .25, .13, .15, .18, .17, .22, .28)),
-  p_e = tibble::tibble(Stratum = rep(c("S1", "S2", "S3"), each = 3),
-                       Analysis = rep(1:3, 3),
-                       Rate = c(.12, .18, .21, .1, .11, .12, .11, .19, .26)),
+  p_c = tibble::tibble(Stratum = c("S1", "S2", "S3"),
+                       Rate = c(.15, .2, .25)),
+  p_e = tibble::tibble(Stratum = c("S1", "S2", "S3"),
+                       Rate = c(.1, .16, .19)),
   N = tibble::tibble(Stratum = rep(c("S1", "S2", "S3"), each = 3),
                      Analysis = rep(1:3, 3),
                      N = c(10, 20, 24, 18, 26, 30, 10, 20, 24)),
@@ -158,12 +151,10 @@ gs_power_rd(
 # --------------------- #
 # stratified case under inverse variance weighting and H0: rd0 = 0
 gs_power_rd(
-  p_c = tibble::tibble(Stratum = rep(c("S1", "S2", "S3"), each = 3),
-                       Analysis = rep(1:3, 3),
-                       Rate = c(.15, .2, .25, .13, .15, .18, .17, .22, .28)),
-  p_e = tibble::tibble(Stratum = rep(c("S1", "S2", "S3"), each = 3),
-                       Analysis = rep(1:3, 3),
-                       Rate = c(.12, .18, .21, .1, .11, .12, .11, .19, .26)),
+  p_c = tibble::tibble(Stratum = c("S1", "S2", "S3"),
+                       Rate = c(.15, .2, .25)),
+  p_e = tibble::tibble(Stratum = c("S1", "S2", "S3"),
+                       Rate = c(.1, .16, .19)),
   N = tibble::tibble(Stratum = rep(c("S1", "S2", "S3"), each = 3),
                      Analysis = rep(1:3, 3),
                      N = c(10, 20, 24, 18, 26, 30, 10, 20, 24)),
@@ -180,12 +171,10 @@ gs_power_rd(
 # --------------------- #
 # stratified case under sample size weighting and H0: rd0 != 0
 gs_power_rd(
-  p_c = tibble::tibble(Stratum = rep(c("S1", "S2", "S3"), each = 3),
-                       Analysis = rep(1:3, 3),
-                       Rate = c(.15, .2, .25, .13, .15, .18, .17, .22, .28)),
-  p_e = tibble::tibble(Stratum = rep(c("S1", "S2", "S3"), each = 3),
-                       Analysis = rep(1:3, 3),
-                       Rate = c(.12, .18, .21, .1, .11, .12, .11, .19, .26)),
+  p_c = tibble::tibble(Stratum = c("S1", "S2", "S3"),
+                       Rate = c(.15, .2, .25)),
+  p_e = tibble::tibble(Stratum = c("S1", "S2", "S3"),
+                       Rate = c(.1, .16, .19)),
   N = tibble::tibble(Stratum = rep(c("S1", "S2", "S3"), each = 3),
                      Analysis = rep(1:3, 3),
                      N = c(10, 20, 24, 18, 26, 30, 10, 20, 24)),
@@ -202,12 +191,10 @@ gs_power_rd(
 # --------------------- #
 # stratified case under inverse variance weighting and H0: rd0 != 0
 gs_power_rd(
-  p_c = tibble::tibble(Stratum = rep(c("S1", "S2", "S3"), each = 3),
-                       Analysis = rep(1:3, 3),
-                       Rate = c(.15, .2, .25, .13, .15, .18, .17, .22, .28)),
-  p_e = tibble::tibble(Stratum = rep(c("S1", "S2", "S3"), each = 3),
-                       Analysis = rep(1:3, 3),
-                       Rate = c(.12, .18, .21, .1, .11, .12, .11, .19, .26)),
+  p_c = tibble::tibble(Stratum = c("S1", "S2", "S3"),
+                       Rate = c(.15, .2, .25)),
+  p_e = tibble::tibble(Stratum = c("S1", "S2", "S3"),
+                       Rate = c(.1, .16, .19)),
   N = tibble::tibble(Stratum = rep(c("S1", "S2", "S3"), each = 3),
                      Analysis = rep(1:3, 3),
                      N = c(10, 20, 24, 18, 26, 30, 10, 20, 24)),

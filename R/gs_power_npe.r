@@ -252,8 +252,7 @@ gs_power_npe <- function(
     Probability = c(cumsum(upperProb), cumsum(lowerProb)),
     theta = rep(theta, 2),
     IF = rep(info / max(info), 2),
-    info = rep(info, 2),
-  ) %>% 
+    info = rep(info, 2)) %>% 
     mutate(info0 = if(is.null(info0)){NA}else{rep(info0, 2)}) %>% 
     filter(abs(Z) < Inf) %>% 
     arrange(desc(Bound), Analysis)

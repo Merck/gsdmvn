@@ -102,8 +102,8 @@ summary.fixed_design <- function(x, ...){
                      "MaxCombo" = {paste0("MaxCombo with (rho, gamma, tau) = (",
                                           paste(apply(do.call(rbind, x$design_par), 2 , paste , collapse = "," ), collapse = ") and ("),
                                           ")")}
-  )
-  
+                     )
+ 
   ans <- x$analysis %>% mutate(Design = x_design)
   class(ans) <- c("fixed_design", x$design, class(ans))
   return(ans)
@@ -277,6 +277,7 @@ summary.fixed_design <- function(x, ...){
 #'   lower = gs_b,
 #'   lpar = list(par = c(qnorm(.1), rep(-Inf, length(n) - 1)))
 #' ) %>% summary()
+#' 
 summary.gs_design <- function(
   x,
   analysis_vars = NULL,
@@ -285,7 +286,6 @@ summary.gs_design <- function(
   col_decimals = NULL,
   bound_names = c("Efficacy", "Futility")
 ){
-  
   method <- class(x)[class(x) %in% c("ahr", "wlr", "combo", "rd")]
   x_bounds <- x$bounds
   x_analysis <- x$analysis
@@ -321,6 +321,7 @@ summary.gs_design <- function(
       x_decimals <- tibble::tibble(col_vars = col_vars, col_decimals = col_decimals)
     }
   }
+  
   if(method == "rd"){
     if(is.null(col_vars) & is.null(col_decimals)){
       x_decimals <- tibble::tibble(
@@ -373,6 +374,35 @@ summary.gs_design <- function(
     # change Upper -> bound_names[1], e.g., Efficacy
     # change Lower -> bound_names[2], e.g., Futility
     dplyr::mutate(Bound = dplyr::recode(Bound, "Upper" = bound_names[1], "Lower" = bound_names[2])) 
+
+  if("Probability0" %in% colnames(x_bounds)){
+    xy <- x_bounds %>% 
+      dplyr::rename("Alternate hypothesis" = Probability) %>%
+      dplyr::rename("Null hypothesis" = Probability0) 
+  }else{
+    xy <- x_bounds %>% 
+      dplyr::rename("Alternate hypothesis" = Probability) %>%
+      tibble::add_column("Null hypothesis" = "-") 
+  }
+  # change Upper -> bound_names[1], e.g., Efficacy
+  # change Lower -> bound_names[2], e.g., Futility
+  xy <- xy %>% dplyr::mutate(Bound = dplyr::recode(Bound, "Upper" = bound_names[1], "Lower" = bound_names[2])) 
+  
+  # tbl_a <- x_bounds %>% 
+  #   dplyr::filter(hypothesis == "H1") %>% 
+  #   dplyr::rename("Alternate hypothesis" = Probability) %>%
+  #   # change Upper -> bound_names[1], e.g., Efficacy
+  #   # change Lower -> bound_names[2], e.g., Futility
+  #   dplyr::mutate(Bound = dplyr::recode(Bound, "Upper" = bound_names[1], "Lower" = bound_names[2])) 
+  # 
+  # # table B: a table under null hypothesis  
+  # tbl_b <- x_bounds %>% 
+  #   dplyr::filter(hypothesis == "H0") %>%
+  #   dplyr::rename("Null hypothesis" = Probability) %>% 
+  #   dplyr::mutate(Bound = dplyr::recode(Bound, "Upper" = bound_names[1], "Lower" = bound_names[2])) %>%
+  #   dplyr::select(all_of(c("Analysis", "Bound", "Null hypothesis")))
+  # 
+  # xy <- full_join(tbl_a, tbl_b, by = c("Analysis", "Bound"))
   
   # --------------------------------------------- #
   #             merge 2 tables:                   #
@@ -436,6 +466,7 @@ summary.gs_design <- function(
     byvar = "Analysis"
     ) %>% 
     dplyr::group_by(Analysis) 
+
   
   if(method == "ahr"){
     output <- output %>% select(Analysis, Bound, Z, `~HR at bound`, `Nominal p`, `Alternate hypothesis`, `Null hypothesis`)

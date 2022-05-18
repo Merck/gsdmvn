@@ -14,12 +14,13 @@ gs_power_ahr(
   analysisTimes = NULL,
   binding = FALSE,
   upper = gs_b,
-  upar = gsDesign(k = length(events), test.type = 1, n.I = events, maxn.IPlan =
-    max(events), sfu = sfLDOF, sfupar = NULL)$upper$bound,
-  lower = gs_b,
-  lpar = c(qnorm(0.1), rep(-Inf, length(events) - 1)),
+  upar = list(par = gsDesign(k = length(events), test.type = 1, n.I = events,
+    maxn.IPlan = max(events), sfu = sfLDOF, sfupar = NULL)$upper$bound),
   test_upper = TRUE,
+  lower = gs_b,
+  lpar = list(par = c(qnorm(0.1), rep(-Inf, length(events) - 1))),
   test_lower = TRUE,
+  info_scale = c(0, 1, 2),
   r = 18,
   tol = 1e-06
 )
@@ -41,12 +42,12 @@ gs_power_ahr(
 
 \item{upar}{Parameter passed to \code{upper()}}
 
+\item{test_upper}{indicator of which analyses should include an upper (efficacy) bound; single value of TRUE (default) indicates all analyses;
+otherwise, a logical vector of the same length as \code{info} should indicate which analyses will have an efficacy bound}
+
 \item{lower}{Function to compute lower bound}
 
 \item{lpar}{Parameter passed to \code{lower()}}
-
-\item{test_upper}{indicator of which analyses should include an upper (efficacy) bound; single value of TRUE (default) indicates all analyses;
-otherwise, a logical vector of the same length as \code{info} should indicate which analyses will have an efficacy bound}
 
 \item{test_lower}{indicator of which analyses should include an lower bound; single value of TRUE (default) indicates all analyses;
 single value FALSE indicated no lower bound; otherwise, a logical vector of the same length as \code{info} should indicate which analyses will have a
@@ -84,15 +85,89 @@ The \code{tEvents()} function is used to get events and average HR at targeted \
 library(gsDesign2)
 library(dplyr)
 
-gs_power_ahr() \%>\% filter(abs(Z) < Inf)
+# -------------------------#
+#       example 1          #
+# ------------------------ #
+# The default output of \code{gs_power_ahr} is driven by events, i.e.,
+# \code{events = c(30, 40, 50), analysisTimes = NULL}
+gs_power_ahr() 
 
-# 2-sided symmetric O'Brien-Fleming spending bound
-# NOT CURRENTLY WORKING
-gs_power_ahr(analysisTimes = c(12, 24, 36),
-              binding = TRUE,
-              upper = gs_spending_bound,
-              upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
-              lower = gs_spending_bound,
-              lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL))
+# -------------------------#
+#       example 2          #
+# -------------------------#
+# 2-sided symmetric O'Brien-Fleming spending bound, 
+# driven by analysis time, i.e., `events = NULL, analysisTimes = c(12, 24, 36)`
+gs_power_ahr(
+  analysisTimes = c(12, 24, 36),
+  events = NULL,
+  binding = TRUE,
+  upper = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  lower = gs_spending_bound,
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL))) 
 
+# if users change the info in `upar`, the the boundary will be changed
+gs_power_ahr(
+  analysisTimes = c(12, 24, 36),
+  events = NULL,
+  binding = TRUE,
+  upper = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = c(5, 15, 20)),
+  lower = gs_spending_bound,
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)))
+
+# -------------------------#
+#       example 3          #
+# -------------------------#
+# 2-sided symmetric O'Brien-Fleming spending bound,
+# driven by events, i.e., `events = c(20, 50, 70), analysisTimes = NULL`
+gs_power_ahr(
+  analysisTimes = NULL,
+  events = c(20, 50, 70),
+  binding = TRUE,
+  upper = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  lower = gs_spending_bound,
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)))
+
+# if users change the info in `upar`, the the boundary will be changed
+gs_power_ahr(
+  analysisTimes = NULL,
+  events = c(20, 50, 70),
+  binding = TRUE,
+  upper = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = c(5, 15, 20)),
+  lower = gs_spending_bound,
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)))
+# -------------------------#
+#       example 4          #
+# -------------------------#
+# 2-sided symmetric O'Brien-Fleming spending bound,
+# driven by both `events` and `analysisTimes`, i.e.,
+# both `events` and `analysisTimes` are not `NULL`,
+# then the analysis will driven by the maximal one, i.e.,
+# Time = max(analysisTime, calculated Time for targeted events)
+# Events = max(events, calculated events for targeted analysisTime)
+gs_power_ahr(
+  analysisTimes = c(12, 24, 36),
+  events = c(30, 40, 50),
+  binding = TRUE,
+  upper = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  lower = gs_spending_bound,
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)))
+  
+# if users change the info in `upar`, the the boundary will be changed  
+gs_power_ahr(
+  analysisTimes = c(12, 24, 36),
+  events = c(30, 40, 50),
+  binding = TRUE,
+  upper = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = c(8, 15, 20)),
+  lower = gs_spending_bound,
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)))
+  
 }

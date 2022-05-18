@@ -123,7 +123,7 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
                      "LF" = {"Fixed Design under Lachin and Foulkes Method"},
                      "RD" = {"Fixed Design of Risk Difference under Farrington-Manning Method"},
                      "MaxCombo" = {"Fixed Design under Max Combo Method"}
-    )
+                     )
   }
   
   
@@ -142,8 +142,7 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
                         "MaxCombo" = {paste0("Power for MaxCombo test with Fleming-Harrington tests",
                                              substr(x$Design, 9, nchar(x$Design)), "."
                                              # paste(apply(do.call(rbind, x$design_par), 2 , paste , collapse = "," ), collapse = ") and ("),
-                        )}
-    )  
+                                             )})  
   }
   
   ans <- x %>% 
@@ -261,6 +260,7 @@ as_gt.gs_design <- function(
   display_inf_bound = TRUE
 ){
   method <- class(x)[class(x) %in% c("ahr", "wlr", "combo", "rd")]
+
   
   # --------------------------------------------- #
   #     set defaults                              #
@@ -275,6 +275,7 @@ as_gt.gs_design <- function(
   if(method == "combo" && is.null(title)){
     title <- "Bound summary for Max Combo design"
   }
+
   if(method == "rd" && is.null(title)){
     title <- "Bound summary of Binary Endpoint"
   }
@@ -292,7 +293,7 @@ as_gt.gs_design <- function(
   if(method == "rd" && is.null(subtitle)){
     subtitle <- "measured by risk difference"
   }
-  
+
   # set different default columns to display
   if(is.null(display_columns)){
     if(method == "ahr"){
@@ -378,8 +379,7 @@ as_gt.gs_design <- function(
       columns = all_of(colname_spannersub),
       label = colname_spanner) %>% 
     gt::tab_header(title = title, subtitle = subtitle)
-  
-  
+
   # --------------------------------------------- #
   #     add footnotes                             #
   # --------------------------------------------- # 

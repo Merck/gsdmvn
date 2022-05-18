@@ -5,9 +5,10 @@
 \title{Group sequential design using average hazard ratio under non-proportional hazards}
 \usage{
 gs_design_rd(
-  p_c = tibble::tibble(Stratum = "All", Rate = c(0.15, 0.2, 0.25), Analysis = 1:3),
-  p_e = tibble::tibble(Stratum = "All", Rate = c(0.1, 0.15, 0.2), Analysis = 1:3),
-  N = tibble::tibble(Stratum = "All", N = c(20, 30, 50), Analysis = 1:3),
+  p_c = tibble::tibble(Stratum = "All", Rate = 0.2),
+  p_e = tibble::tibble(Stratum = "All", Rate = 0.15),
+  k = 3,
+  IF = 1:k/k,
   rd0 = 0,
   alpha = 0.025,
   beta = 0.1,
@@ -15,7 +16,7 @@ gs_design_rd(
   weight = c("un-stratified", "ss", "invar"),
   upper = gs_b,
   lower = gs_b,
-  upar = list(par = gsDesign(k = length(N), test.type = 1, sfu = sfLDOF, sfupar =
+  upar = list(par = gsDesign(k = k, test.type = 1, sfu = sfLDOF, sfupar =
     NULL)$upper$bound),
   lpar = list(par = c(qnorm(0.1), rep(-Inf, length(N) - 1))),
   test_upper = TRUE,

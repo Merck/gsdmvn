@@ -188,4 +188,5 @@ gs_design_rd(
   lower = gs_b,
   lpar = list(par = c(qnorm(.1), rep(-Inf, length(n) - 1)))
 ) \%>\% summary()
+
 }
