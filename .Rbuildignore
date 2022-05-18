@@ -25,3 +25,4 @@
 ^data-raw$
 ^\.github$
 ^simulation$
+^_config\.yml$

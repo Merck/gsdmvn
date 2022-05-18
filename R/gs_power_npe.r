@@ -74,7 +74,7 @@ NULL
 #' }
 #' \if{html}{The contents of this section are shown in PDF user manual only.}
 #'
-#' @author Keaven Anderson \email{keaven\_anderson@@merck.}
+#' @author Keaven Anderson \email{keaven_anderson@@merck.com}
 #'
 #' @export
 #'
@@ -252,8 +252,7 @@ gs_power_npe <- function(
     Probability = c(cumsum(upperProb), cumsum(lowerProb)),
     theta = rep(theta, 2),
     IF = rep(info / max(info), 2),
-    info = rep(info, 2),
-    ) %>% 
+    info = rep(info, 2)) %>% 
     mutate(info0 = if(is.null(info0)){NA}else{rep(info0, 2)}) %>% 
     filter(abs(Z) < Inf) %>% 
     arrange(desc(Bound), Analysis)

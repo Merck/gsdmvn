@@ -132,6 +132,7 @@ gs_power_wlr(
   lower = lower,
   lpar = lpar
 ) \%>\% summary()
+
 # ---------------------------- #
 #         max combo            #
 # ---------------------------- #
@@ -157,6 +158,35 @@ gs_power_combo(
   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
   lower = gsdmvn::gs_spending_combo,
   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.2)
+) \%>\% summary()
+
+# ---------------------------- #
+#      risk difference         #
+# ---------------------------- #
+gs_power_rd(
+  p_c = .15,
+  p_e = .13,
+  n = c(50, 80, 100),
+  ratio = 1,
+  theta0 = 0,
+  delta0 = 0, 
+  upper = gs_b,
+  upar = list(par = gsDesign(k = length(n), test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  lower = gs_b,
+  lpar = list(par = c(qnorm(.1), rep(-Inf, length(n) - 1)))
+) \%>\% summary()
+
+gs_design_rd(
+  p_c = .15,
+  p_e = .13,
+  n = 1:3,
+  ratio = 1,
+  theta0 = 0,
+  delta0 = 0, 
+  upper = gs_b,
+  upar = list(par = gsDesign(k = length(n), test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  lower = gs_b,
+  lpar = list(par = c(qnorm(.1), rep(-Inf, length(n) - 1)))
 ) \%>\% summary()
 
 }

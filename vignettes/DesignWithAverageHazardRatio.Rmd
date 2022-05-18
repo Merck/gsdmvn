@@ -108,6 +108,29 @@ We will consider the following failure rate assumptions:
     - Control group has exponential failure rate with a median of 10 months.
     - Hazard ratio of 1.5 for 4 months followed by a hazard ratio of 0.5.
 
+<<<<<<< HEAD
+```{r, eval=FALSE}
+Month <- c(0,4,6,44)
+duration <- Month - c(0,Month[1:3])
+control_rate <- log(2) / c(rep(16,4), rep(14, 4), rep(14, 4))
+s <- tibble::tibble(Scenario = c(rep("PH",4), rep("Delayed effect", 4), rep("Crossing", 4)),
+                    Treatment = rep("Control", 12),
+                    Month = rep(Month, 3),
+                    duration = rep(duration, 3),
+                    rate = control_rate,
+                    hr = c(rep(.7, 4), c(1, 1, 1, .575), c(1.5,1.5, .5, .5)),
+)
+s <- rbind(s,
+           s %>% mutate(Treatment = "Experimental",
+                        rate = rate * hr)
+) %>%
+  group_by(Scenario, Treatment) %>%
+  mutate(Survival = exp(-cumsum(duration * rate)))
+ggplot(s, aes(x = Month, y = Survival, col = Scenario, lty = Treatment)) + 
+  geom_line() +
+  scale_y_log10(breaks = (1:10) /10, lim=c(.1,1))+
+  scale_x_continuous(breaks = seq(0,42, 6))
+=======
 ```{r}
 # get 4 scenarios
 control_median <- c(14, 12, 12, 12)
@@ -118,6 +141,7 @@ hr <- c(rep(.7, 4),         # constant hazard ratio of 0.7
         1, 1, .6, .6,       # hazard ratio of 1 for 4 months followed by a hazard ratio of 0.6.
         1, 1, 1, .6,        # hr = 1 for 6 months followed by hr = .6
         1.5, 1.5, .5, .5)   # hazard ratio of 1.5 for 4 months followed by a hazard ratio of 0.5.
+>>>>>>> issue-04-table-bound
 ```
 
 The survival curves for these 4 scenarios are shown below:

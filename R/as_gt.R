@@ -142,8 +142,7 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
                         "MaxCombo" = {paste0("Power for MaxCombo test with Fleming-Harrington tests",
                                              substr(x$Design, 9, nchar(x$Design)), "."
                                              # paste(apply(do.call(rbind, x$design_par), 2 , paste , collapse = "," ), collapse = ") and ("),
-                                             )}
-    )  
+                                             )})  
   }
   
   ans <- x %>% 
@@ -200,6 +199,14 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
 #' gs_power_combo() %>% 
 #'   summary() %>% 
 #'   as_gt()
+#' 
+#' gs_design_rd() %>% 
+#'   summary() %>% 
+#'   as_gt()
+#' 
+#' gs_power_rd() %>% 
+#'   summary() %>% 
+#'   as_gt()
 #'   
 #' # usage of title = ..., subtitle = ...
 #' # to edit the title/subtitle 
@@ -252,7 +259,8 @@ as_gt.gs_design <- function(
   display_columns = NULL,
   display_inf_bound = TRUE
 ){
-  method <- class(x)[class(x) %in% c("ahr", "wlr", "combo")]
+  method <- class(x)[class(x) %in% c("ahr", "wlr", "combo", "rd")]
+
   
   # --------------------------------------------- #
   #     set defaults                              #
@@ -267,6 +275,10 @@ as_gt.gs_design <- function(
   if(method == "combo" && is.null(title)){
     title <- "Bound summary for Max Combo design"
   }
+
+  if(method == "rd" && is.null(title)){
+    title <- "Bound summary of Binary Endpoint"
+  }
   
   # set different default subtitle to different methods
   if(method == "ahr" && is.null(subtitle)){
@@ -278,7 +290,10 @@ as_gt.gs_design <- function(
   if(method == "combo" && is.null(subtitle)){
     subtitle <- "Max Combo approximation"
   }
-  
+  if(method == "rd" && is.null(subtitle)){
+    subtitle <- "measured by risk difference"
+  }
+
   # set different default columns to display
   if(is.null(display_columns)){
     if(method == "ahr"){
@@ -287,6 +302,8 @@ as_gt.gs_design <- function(
       display_columns <- c("Analysis", "Bound", "Nominal p", "~wHR at bound", "Alternate hypothesis", "Null hypothesis")
     }else if(method == "combo"){
       display_columns <- c("Analysis", "Bound", "Nominal p", "Alternate hypothesis", "Null hypothesis")
+    }else if(method == "rd"){
+      display_columns <- c("Analysis", "Bound", "Nominal p", "~Risk difference at bound", "Alternate hypothesis", "Null hypothesis")
     }
   }
   # filter the columns to display as the output
@@ -334,7 +351,13 @@ as_gt.gs_design <- function(
                               "analysis"))
     footnote <- lapply(footnote, function(x) x[!is.na(x)])
   }
-  
+  if(method == "rd" && is.null(footnote)){
+    
+    footnote <- list(content = c(ifelse("Nominal p" %in% display_columns, "One-sided p-value for experimental vs control treatment. Values < 0.5 favor experimental, > 0.5 favor control.", NA)),
+                     location = c(ifelse("Nominal p" %in% display_columns, "Nominal p", NA)),
+                     attr = c(ifelse("Nominal p" %in% display_columns, "colname", NA)))
+    footnote <- lapply(footnote, function(x) x[!is.na(x)])
+  }
   # --------------------------------------------- #
   #     filter out inf bound                      #
   # --------------------------------------------- # 
@@ -356,8 +379,7 @@ as_gt.gs_design <- function(
       columns = all_of(colname_spannersub),
       label = colname_spanner) %>% 
     gt::tab_header(title = title, subtitle = subtitle)
-     
-  
+
   # --------------------------------------------- #
   #     add footnotes                             #
   # --------------------------------------------- # 

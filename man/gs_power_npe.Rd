@@ -173,5 +173,5 @@ gs_power_npe(
   lpar = list(par = -(x \%>\% filter(Bound == "Upper"))$Z))
 }
 \author{
-Keaven Anderson \email{keaven\_anderson@merck.}
+Keaven Anderson \email{keaven_anderson@merck.com}
 }

@@ -62,7 +62,7 @@ NULL
 #' \if{html}{The contents of this section are shown in PDF user manual only.}
 #'
 #' @return returns a numeric bound (possibly infinite) or, upon failure, generates an error message.
-#' @author Keaven Anderson \email{keaven\_anderson@@merck.}
+#' @author Keaven Anderson \email{keaven_anderson@@merck.com}
 #' @references Jennison C and Turnbull BW (2000), \emph{Group Sequential
 #' Methods with Applications to Clinical Trials}. Boca Raton: Chapman and Hall.
 #' @export

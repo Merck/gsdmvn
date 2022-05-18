@@ -33,7 +33,8 @@
 #'   tab_footnote("Note that footnotes cannot be made for individual variables in the row groups generated using table a.",
 #'                cells_row_groups(groups = 2))
 
-  table_ab <- function(table_a, table_b, byvar, decimals = 1, aname = names(table_a)[1]){
+
+table_ab <- function(table_a, table_b, byvar, decimals = 1, aname = names(table_a)[1]){
   # Convert tibbles to data frames, if needed
   if(tibble::is_tibble(table_a)) table_a <- data.frame(table_a, check.names = FALSE)
   if(tibble::is_tibble(table_b)) table_b <- data.frame(table_b, check.names = FALSE)
@@ -51,7 +52,7 @@
   astring <- cbind(table_a %>% select(all_of(byvar)), astring)
   # Now merge with table_b
   ab <- left_join(astring, table_b, by = byvar) %>%
-        select(-one_of(!!byvar)) %>%
+    select(-one_of(!!byvar)) %>%
     # select(-!!byvar) %>%
     dplyr::rename(!!aname := !!"_alab")
   return(ab)

@@ -1,6 +1,6 @@
 Package: gsdmvn
 Title: Group sequential design with non-constant effect
-Version: 0.1.1.9000
+Version: 0.2.0
 Authors@R: c(
     person("Keaven", "Anderson", email = "keaven_anderson@merck.com", role = c("aut", "cre")),
     person("Merck Sharp & Dohme Corp", role = "cph")

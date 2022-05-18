@@ -103,7 +103,7 @@ summary.fixed_design <- function(x, ...){
                                           paste(apply(do.call(rbind, x$design_par), 2 , paste , collapse = "," ), collapse = ") and ("),
                                           ")")}
                      )
-  
+ 
   ans <- x$analysis %>% mutate(Design = x_design)
   class(ans) <- c("fixed_design", x$design, class(ans))
   return(ans)
@@ -221,6 +221,7 @@ summary.fixed_design <- function(x, ...){
 #'   lower = lower,
 #'   lpar = lpar
 #' ) %>% summary()
+#' 
 #' # ---------------------------- #
 #' #         max combo            #
 #' # ---------------------------- #
@@ -248,6 +249,35 @@ summary.fixed_design <- function(x, ...){
 #'   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.2)
 #' ) %>% summary()
 #' 
+#' # ---------------------------- #
+#' #      risk difference         #
+#' # ---------------------------- #
+#' gs_power_rd(
+#'   p_c = .15,
+#'   p_e = .13,
+#'   n = c(50, 80, 100),
+#'   ratio = 1,
+#'   theta0 = 0,
+#'   delta0 = 0, 
+#'   upper = gs_b,
+#'   upar = list(par = gsDesign(k = length(n), test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+#'   lower = gs_b,
+#'   lpar = list(par = c(qnorm(.1), rep(-Inf, length(n) - 1)))
+#' ) %>% summary()
+#' 
+#' gs_design_rd(
+#'   p_c = .15,
+#'   p_e = .13,
+#'   n = 1:3,
+#'   ratio = 1,
+#'   theta0 = 0,
+#'   delta0 = 0, 
+#'   upper = gs_b,
+#'   upar = list(par = gsDesign(k = length(n), test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+#'   lower = gs_b,
+#'   lpar = list(par = c(qnorm(.1), rep(-Inf, length(n) - 1)))
+#' ) %>% summary()
+#' 
 summary.gs_design <- function(
   x,
   analysis_vars = NULL,
@@ -256,8 +286,7 @@ summary.gs_design <- function(
   col_decimals = NULL,
   bound_names = c("Efficacy", "Futility")
 ){
-  
-  method <- class(x)[class(x) %in% c("ahr", "wlr", "combo")]
+  method <- class(x)[class(x) %in% c("ahr", "wlr", "combo", "rd")]
   x_bounds <- x$bounds
   x_analysis <- x$analysis
   K <- max(x_analysis$Analysis)
@@ -293,6 +322,15 @@ summary.gs_design <- function(
     }
   }
   
+  if(method == "rd"){
+    if(is.null(col_vars) & is.null(col_decimals)){
+      x_decimals <- tibble::tibble(
+        col_vars = c("Analysis", "Bound", "Z", "~Risk difference at bound", "Nominal p", "Alternate hypothesis", "Null hypothesis"), 
+        col_decimals = c(NA, NA, 2, 4, 4, 4, 4))
+    }else{
+      x_decimals <- tibble::tibble(col_vars = col_vars, col_decimals = col_decimals)
+    }
+  }
   
   # --------------------------------------------- #
   #     prepare the analysis summary row          #
@@ -301,8 +339,18 @@ summary.gs_design <- function(
   # (1) analysis variables to be displayed on the header
   # (2) decimals to be displayed for the analysis variables in (3)
   if(is.null(analysis_vars) & is.null(analysis_decimals)){
-    analysis_vars <- c("Time", "N", "Events", "AHR", ifelse(method == "ahr" || method == "wlr", "IF", "EF"))
-    analysis_decimals <- c(1, 1, 1, 2, 2)  
+    if(method %in% c("ahr", "wlr")){
+      analysis_vars <- c("Time", "N", "Events", "AHR", "IF")
+      analysis_decimals <- c(1, 1, 1, 2, 2) 
+    }
+    if(method == "combo"){
+      analysis_vars <- c("Time", "N", "Events", "AHR", "EF")
+      analysis_decimals <- c(1, 1, 1, 2, 2) 
+    }
+    if(method == "rd"){
+      analysis_vars <- c("N", "rd", "IF")
+      analysis_decimals <- c(1, 4, 2) 
+    }
   }else if(is.null(analysis_vars) & !is.null(analysis_decimals)){
     stop("summary: please input analysis_vars and analysis_decimals in pairs!")
   }else if(!is.null(analysis_vars) & is.null(analysis_decimals)){
@@ -320,6 +368,13 @@ summary.gs_design <- function(
   #         (2) null hypothesis table             #
   # --------------------------------------------- #
   # table A: a table under alternative hypothesis
+  xy <- x_bounds %>% 
+    dplyr::rename("Alternate hypothesis" = Probability) %>%
+    dplyr::rename("Null hypothesis" = Probability0) %>% 
+    # change Upper -> bound_names[1], e.g., Efficacy
+    # change Lower -> bound_names[2], e.g., Futility
+    dplyr::mutate(Bound = dplyr::recode(Bound, "Upper" = bound_names[1], "Lower" = bound_names[2])) 
+
   if("Probability0" %in% colnames(x_bounds)){
     xy <- x_bounds %>% 
       dplyr::rename("Alternate hypothesis" = Probability) %>%
@@ -390,6 +445,16 @@ summary.gs_design <- function(
     }
   }
   
+  # if the method is RD
+  if(method == "rd"){
+    # header
+    analysis_summary_header <- analyses %>% 
+      dplyr::select(all_of(c("Analysis", analysis_vars))) %>% 
+      dplyr::rename("risk difference" = rd)
+    # bound details
+    bound_summary_detail <- xy
+  }
+  
   output <- table_ab(
     # A data frame to be show as the summary header
     # It has only ONE record for each value of `byvar`
@@ -400,7 +465,8 @@ summary.gs_design <- function(
     decimals = c(0, analysis_decimals),
     byvar = "Analysis"
     ) %>% 
-    group_by(Analysis) 
+    dplyr::group_by(Analysis) 
+
   
   if(method == "ahr"){
     output <- output %>% select(Analysis, Bound, Z, `~HR at bound`, `Nominal p`, `Alternate hypothesis`, `Null hypothesis`)
@@ -408,6 +474,8 @@ summary.gs_design <- function(
     output <- output %>% select(Analysis, Bound, Z, `~wHR at bound`, `Nominal p`, `Alternate hypothesis`, `Null hypothesis`)
   }else if(method == "combo"){
     output <- output %>% select(Analysis, Bound, Z, `Nominal p`, `Alternate hypothesis`, `Null hypothesis`)
+  }else if(method == "rd"){
+    output <- output %>% select(Analysis, Bound, Z, `~Risk difference at bound`, `Nominal p`, `Alternate hypothesis`, `Null hypothesis`)
   }
   
   # --------------------------------------------- #
@@ -419,6 +487,9 @@ summary.gs_design <- function(
   }
   if("~HR at bound" %in% colnames(output)){
     output <- output %>% dplyr::mutate_at("~HR at bound", round, (x_decimals %>% filter(col_vars == "~HR at bound"))$col_decimals)
+  }
+  if("~Risk difference at bound" %in% colnames(output)){
+    output <- output %>% dplyr::mutate_at("~Risk difference at bound", round, (x_decimals %>% filter(col_vars == "~Risk difference at bound"))$col_decimals)
   }
   if("Nominal p" %in% colnames(output)){
     output <- output %>% dplyr::mutate_at("Nominal p", round, (x_decimals %>% filter(col_vars == "Nominal p"))$col_decimals)
