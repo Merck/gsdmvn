@@ -215,26 +215,45 @@ gs_design_npe <- function(
   info = 1, 
   info0 = NULL, 
   info_scale = c(0, 1, 2),
-  alpha = 0.025, beta = .1, 
+  alpha = 0.025, 
+  beta = .1, 
   binding = FALSE,
-  upper = gs_b, upar = list(par = qnorm(.975)), test_upper = TRUE,
-  lower = gs_b, lpar = list(par = -Inf), test_lower = TRUE,
-  r = 18, tol = 1e-6){
+  upper = gs_b, 
+  lower = gs_b, 
+  upar = list(par = qnorm(.975)), 
+  lpar = list(par = -Inf), 
+  test_upper = TRUE,
+  test_lower = TRUE,
+  r = 18, 
+  tol = 1e-6){
   
-  # --------------------------------------------- #
-  #     check info, info0                         #
-  # --------------------------------------------- #
-  if (!is.vector(info, mode = "numeric")) stop("gs_design_npe(): info must be specified numeric vector")
   K <- length(info)
-  if (is.null(info0)) info0 <- info
+  info_scale <- if(methods::missingArg(info_scale)){2}else{match.arg(as.character(info_scale), choices = 0:2)}
+  # --------------------------------------------- #
+  #     info, info0 under fixed bound             #
+  # --------------------------------------------- #
+  if(identical(upper, gs_b)){
+    info0 <- if(is.null(info0)){info}
+  }
+  # --------------------------------------------- #
+  #     info, info0 under spending bound          #
+  # --------------------------------------------- #
+  if(identical(upper, gs_spending_bound)){
+    if(is.null(info0)){
+      info0 <- if("info" %in% names(upar)){upar$info}else{info}
+    }
+  }
+  # --------------------------------------------- #
+  #     set info_scale                            #
+  # --------------------------------------------- #
+  if(info_scale == 0){info <- info0}
+  if(info_scale == 1){info0 <- info}
+  if (!is.vector(info, mode = "numeric")) stop("gs_design_npe(): info must be specified numeric vector")
   if (!is.vector(info0, mode = "numeric")) stop("gs_design_npe(): info0 must be specified numeric vector or NULL")
   if (length(info0) != length(info) ) stop("gs_design_npe(): length of info, info0 must be the same")
   if (min(info - lag(info, default = 0) <= 0)) stop("gs_design_npe(): info much be strictly increasing and positive")
   if (min(info0 - lag(info0, default = 0) <= 0)) stop("gs_design_npe(): info0 much be NULL or strictly increasing and positive")
   
-  if(identical(upper, gs_spending_bound)){
-    info_scale <- if(methods::missingArg(info_scale)){2}else{match.arg(as.character(info_scale), choices = 0:2)}
-  }
   # --------------------------------------------- #
   #     check theta, theta0, theta1               #
   # --------------------------------------------- #
@@ -441,8 +460,6 @@ gs_design_npe <- function(
   }
   out <- out %>% arrange(desc(Bound), Analysis)
   return(out)
-  
-  
 }
 
 
