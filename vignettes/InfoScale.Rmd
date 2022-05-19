@@ -222,7 +222,9 @@ gs_design_npe(
 
 # Binary Endpoint {.tabset}
 
-## `gsdmvn`
+## Fixed Design with Un-stratified Population {.tabset}
+
+### `gsdmvn`
 
 If one use `gs_spending_bound`, one can add `info` into the arguments `upar` and `lpar` as follows.
 ```{r}
@@ -349,14 +351,217 @@ cat("The sample size calculated by `gs_design_rd()` under `info_scale = 2` is ",
 ```
 
 
-## `gsDesign`
+### `gsDesign`
 ```{r}
 x <- nBinomial(p1 = .28, p2 = .4, delta0 = 0, alpha = .025, sided = 1, beta = .1, outtype = 3)
 cat("The sample size calculated by `gsDesign` is ", x$n, "\n")
 ```
 
 
-## EAST 
+### EAST 
 ```{r label = EastFix, echo = FALSE, fig.cap = "Sample size calculated by EAST", out.width = '90%'}
 knitr::include_graphics("./figures/east_n_fix.png")
+```
+
+
+## Group Sequential Design with Un-stratified Population 
+
+
+### `gsdmvn` {.tabset}
+
+```{r}
+y0 <- gs_design_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .15),
+  p_e = tibble::tibble(Stratum = "All", Rate = .1),
+  k = 3,
+  IF = 1:3/3,
+  rd0 = 0, 
+  alpha = .025,                  
+  beta = .1,                
+  ratio = 1,
+  weight = "un-stratified",
+  upper = gs_b,
+  lower = gs_b,
+  upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  lpar = list(par = rep(-Inf, 3)),
+  test_lower = FALSE,
+  info_scale = 0
+)
+
+y1 <- gs_design_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .15),
+  p_e = tibble::tibble(Stratum = "All", Rate = .1),
+  k = 3,
+  IF = 1:3/3,
+  rd0 = 0, 
+  alpha = .025,                  
+  beta = .1,                
+  ratio = 1,
+  weight = "un-stratified",
+  upper = gs_b,
+  lower = gs_b,
+  upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  lpar = list(par = rep(-Inf, 3)),
+  test_lower = FALSE,
+  info_scale = 1
+)
+
+y2 <- gs_design_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .15),
+  p_e = tibble::tibble(Stratum = "All", Rate = .1),
+  k = 3,
+  IF = 1:3/3,
+  rd0 = 0, 
+  alpha = .025,                  
+  beta = .1,                
+  ratio = 1,
+  weight = "un-stratified",
+  upper = gs_b,
+  lower = gs_b,
+  upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  lpar = list(par = rep(-Inf, 3)),
+  test_lower = FALSE,
+  info_scale = 2
+)
+
+
+cat("The sample size calculated by `gsdmvn` is ", y0$analysis$N, ".\n")
+cat("The sample size calculated by `gsdmvn` is ", y1$analysis$N, ".\n")
+cat("The sample size calculated by `gsdmvn` is ", y2$analysis$N, ".\n")
+```
+
+
+```{r}
+y_info <- gs_info_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .15),
+  p_e = tibble::tibble(Stratum = "All", Rate = .1),
+  N = tibble::tibble(Stratum = "All", N = c(600, 1200, 1800), Analysis = 1:3),
+  rd0 = 0,
+  ratio = 1
+)
+
+y_info %>% gt()
+```
+
+
+```{r}
+yy0 <- gs_design_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .15),
+  p_e = tibble::tibble(Stratum = "All", Rate = .1),
+  k = 3,
+  IF = 1:3/3,
+  rd0 = 0, 
+  alpha = .025,                  
+  beta = .1,                
+  ratio = 1,
+  weight = "un-stratified",
+  upper = gs_spending_bound,
+  lower = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = y_info$info0),
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = y_info$info),
+  test_lower = FALSE,
+  info_scale = 0
+)
+
+yy1 <- gs_design_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .15),
+  p_e = tibble::tibble(Stratum = "All", Rate = .1),
+  k = 3,
+  IF = 1:3/3,
+  rd0 = 0, 
+  alpha = .025,                  
+  beta = .1,                
+  ratio = 1,
+  weight = "un-stratified",
+  upper = gs_spending_bound,
+  lower = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = y_info$info0),
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = y_info$info),
+  test_lower = FALSE,
+  info_scale = 1
+)
+
+yy2 <- gs_design_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .15),
+  p_e = tibble::tibble(Stratum = "All", Rate = .1),
+  k = 3,
+  IF = 1:3/3,
+  rd0 = 0, 
+  alpha = .025,                  
+  beta = .1,                
+  ratio = 1,
+  weight = "un-stratified",
+  upper = gs_spending_bound,
+  lower = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = y_info$info0),
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = y_info$info),
+  test_lower = FALSE,
+  info_scale = 2
+)
+
+
+cat("The sample size calculated by `gsdmvn` is ", yy0$analysis$N, ".\n")
+cat("The sample size calculated by `gsdmvn` is ", yy1$analysis$N, ".\n")
+cat("The sample size calculated by `gsdmvn` is ", yy2$analysis$N, ".\n")
+```
+
+### `gsDesign`
+
+```{r}
+n_fix <- nBinomial(
+  # Control event rate
+  p1 = .15, 
+  # Experimental event rate
+  p2 = .1, 
+  # Null hypothesis event rate difference (control - experimental)
+  delta0 = 0, 
+  # 1-sided Type I error
+  alpha = .025, 
+  # Type II error (1 - Power)
+  beta = .1, 
+  # Experimental/Control randomization ratio
+  ratio = 1) 
+
+cat("The sample size of fixed-design calculated by `gsDesign` is ", n_fix, ".\n")
+
+x <- gsDesign(
+  k = 3,
+  test.type = 1,
+  # 1-sided Type I error
+  alpha = .025, 
+  # Type II error (1 - Power)
+  beta = .1,    
+  # If test.type = 5 or 6, this sets maximum spending for futility
+  # under the null hypothesis. Otherwise, this is ignored.
+  astar = 0,
+  timing = 1:3/3,
+  sfu = sfLDOF,
+  sfupar = NULL,
+  sfl = sfLDOF,
+  sflpar = NULL,
+  # Difference in event rates under alternate hypothesis
+  delta = 0,
+  # Difference in rates under H1
+  delta1 = .05,
+  # Difference in rates under H0
+  delta0 = 0,
+  endpoint = "Binomial",
+  # Fixed design sample size from nBinomial above
+  n.fix = n_fix)
+
+cat("The sample size calcuated by `gsDesign` is ", x$n.I, ".\n")
+
+gsBoundSummary(x, digits = 4, ddigits = 2, tdigits = 1)
+```
+
+
+### EAST 
+```{r label = EastGs, echo = FALSE, fig.cap = "Sample size calculated by EAST", out.width = '90%'}
+knitr::include_graphics("./figures/east_n_gs.png")
 ```

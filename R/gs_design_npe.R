@@ -233,7 +233,7 @@ gs_design_npe <- function(
   #     info, info0 under fixed bound             #
   # --------------------------------------------- #
   if(identical(upper, gs_b)){
-    info0 <- if(is.null(info0)){info}
+    info0 <- if(is.null(info0)){info}else{info0}
   }
   # --------------------------------------------- #
   #     info, info0 under spending bound          #

@@ -92,15 +92,15 @@ gs_design_rd <- function(
     ratio = ratio,
     weight = weight) 
   
-  y_fix <- gs_design_npe(
-    theta = x_fix$rd, 
-    info = x_fix$info, 
-    info0 = x_fix$info0, 
-    info_scale = info_scale,
-    alpha = alpha, beta = beta, binding = binding,
-    upper = upper, upar = upar, test_upper = test_upper,
-    lower = lower, lpar = lpar, test_lower = test_lower,
-    r = r, tol = tol)
+  # y_fix <- gs_design_npe(
+  #   theta = x_fix$rd, 
+  #   info = x_fix$info, 
+  #   info0 = x_fix$info0, 
+  #   info_scale = info_scale,
+  #   alpha = alpha, beta = beta, binding = binding,
+  #   upper = upper, upar = upar, test_upper = test_upper,
+  #   lower = lower, lpar = lpar, test_lower = test_lower,
+  #   r = r, tol = tol)
   
   # --------------------------------------------- #
   #     calculate the sample size                 #
