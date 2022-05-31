@@ -229,30 +229,45 @@ gs_design_npe <- function(
   
   K <- length(info)
   info_scale <- if(methods::missingArg(info_scale)){2}else{match.arg(as.character(info_scale), choices = 0:2)}
+  
   # --------------------------------------------- #
-  #     info, info0 under fixed bound             #
+  #     set up info, info0                        #
   # --------------------------------------------- #
-  if(identical(upper, gs_b)){
+  if(identical(upper, gs_spending_bound) & ("info" %in% names(upar))){
+    if(is.null(info0)){
+      info0 <- upar$info
+      warning(paste0("gs_design_npe: we use the statistical information in upar and ignore the argumet info0 = ", info0))
+    }
+  }else{
     info0 <- if(is.null(info0)){info}else{info0}
   }
-  # --------------------------------------------- #
-  #     info, info0 under spending bound          #
-  # --------------------------------------------- #
-  if(identical(upper, gs_spending_bound)){
-    if(is.null(info0)){
-      info0 <- if("info" %in% names(upar)){upar$info}else{info}
-    }
+  ## if `gs_spending_bound` is used for lower bound
+  if(identical(lower, gs_spending_bound) & ("info" %in% names(lpar))){
+    info1 <- lpar$info
+  }else{
+    info1 <- info
   }
+  
   # --------------------------------------------- #
   #     set info_scale                            #
   # --------------------------------------------- #
-  if(info_scale == 0){info <- info0}
-  if(info_scale == 1){info0 <- info}
+  if(info_scale == 0){
+    info <- info0
+    info1 <- info0
+  }
+  if(info_scale == 1){
+    info <- info1
+    info0 <- info1
+  }
+  
   if (!is.vector(info, mode = "numeric")) stop("gs_design_npe(): info must be specified numeric vector")
   if (!is.vector(info0, mode = "numeric")) stop("gs_design_npe(): info0 must be specified numeric vector or NULL")
+  if (!is.vector(info1, mode = "numeric")) stop("gs_design_npe(): info1 must be specified numeric vector or NULL")
   if (length(info0) != length(info) ) stop("gs_design_npe(): length of info, info0 must be the same")
+  if (length(info1) != length(info) ) stop("gs_design_npe(): length of info, info1 must be the same")
   if (min(info - lag(info, default = 0) <= 0)) stop("gs_design_npe(): info much be strictly increasing and positive")
   if (min(info0 - lag(info0, default = 0) <= 0)) stop("gs_design_npe(): info0 much be NULL or strictly increasing and positive")
+  if (min(info1 - lag(info1, default = 0) <= 0)) stop("gs_design_npe(): info1 much be NULL or strictly increasing and positive")
   
   # --------------------------------------------- #
   #     check theta, theta0, theta1               #
@@ -304,19 +319,28 @@ gs_design_npe <- function(
   minx <- ((qnorm(alpha) / sqrt(info0[K]) + qnorm(beta) / sqrt(info[K])) / theta[K])^2
   # for a fixed design, this is all you need.
   if (K == 1){
-    out <- tibble::tibble(Analysis = 1, Bound = "Upper", Z = qnorm(1 - alpha),
-                          Probability = 1 - beta, Probability0 = alpha, theta = theta, 
-                          info = info * minx, info0 = info0 * minx, IF = info / max(info))
+    out <- tibble::tibble(
+      Analysis = 1, Bound = "Upper", Z = qnorm(1 - alpha),
+      Probability = 1 - beta, Probability0 = alpha, theta = theta, 
+      info = info * minx, info0 = info0 * minx, info1 = info1 * minx,
+      IF = info / max(info)
+      )
     return(out)
   } 
   
   # find an interval for information inflation to give correct power
+  if(!"info" %in% names(upar)){
+    upar_new <- c(upar, info = list(info0 * minx))
+  }else{
+    upar_new <- upar
+  }
+  
   minpwr <- gs_power_npe(
     theta = theta, 
     info = info * minx, 
     info_scale = info_scale,
     binding = binding,
-    upper = upper, upar = c(upar, info = list(info0 * minx)), test_upper = test_upper,
+    upper = upper, upar = upar_new, test_upper = test_upper,
     lower = lower, lpar = lpar, test_lower = test_lower,
     r = r, tol = tol
   ) %>% 
@@ -338,13 +362,14 @@ gs_design_npe <- function(
     ## Ensure maxx is sufficient information inflation to overpower
     maxx <- 1.05 * minx
     err <- 1
+    upar_new$info <- info * maxx
     for(i in 1:10){
       maxpwr <- gs_power_npe(
         theta = theta, 
         info = info * maxx, 
         info_scale = info_scale,
         binding = binding,
-        upper = upper, upar = c(upar, info = list(info * maxx)), test_upper = test_upper, 
+        upper = upper, upar = upar_new, test_upper = test_upper, 
         lower = lower, lpar = lpar, test_lower = test_lower,
         r = r, tol = tol
       )%>% 
@@ -453,11 +478,9 @@ gs_design_npe <- function(
   suppressMessages(
     out <- out_H1 %>% full_join(out_H0 %>% select(Analysis, Bound, Z, Probability) %>% dplyr::rename(Probability0 = Probability))
   )
-  if ("info0" %in% colnames(out)){
-    out <- out %>% select(Analysis, Bound, Z, Probability, Probability0, theta, IF, info, info0) 
-  }else{
-    out <- out %>% select(Analysis, Bound, Z, Probability, Probability0, theta, IF, info) 
-  }
+  
+  out <- out %>% select(Analysis, Bound, Z, Probability, Probability0, theta, IF, info, info0, info1) 
+  
   out <- out %>% arrange(desc(Bound), Analysis)
   return(out)
 }

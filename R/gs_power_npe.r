@@ -177,19 +177,30 @@ gs_power_npe <- function(
   if (length(test_upper) == 1 && K > 1) test_upper <- rep(test_upper, K)
   if (length(test_lower) == 1 && K > 1) test_lower <- rep(test_lower, K)
   
+  # --------------------------------------------- #
+  #     set up info & info_scale                  #
+  # --------------------------------------------- #
   ## if `gs_spending_bound` is used for upper bound
-  if(identical(upper, gs_spending_bound)){
-    info0 <- if(!"info" %in% names(upar)){info}else{upar$info}
-    if (length(info0) != length(info)){stop("gs_power_npe: length of info, info0 must be the same")}
-    info_scale <- if(methods::missingArg(info_scale)){2}else{match.arg(as.character(info_scale), choices = 0:2)}
-    if(info_scale == 0){info <- info0}
-    if(info_scale == 1){info0 <- info}
+  if(identical(upper, gs_spending_bound) & ("info" %in% names(upar))){
+    info0 <- upar$info
   }else{
-    info0 <- NULL
+    info0 <- info
   }
   ## if `gs_spending_bound` is used for lower bound
   if(identical(lower, gs_spending_bound) & ("info" %in% names(lpar))){
-    if(lpar$info != info){warning("gs_power_npe: the info for lower spending is ignored!")}
+    info1 <- lpar$info
+  }else{
+    info1 <- info
+  }
+  # set up info_scale
+  info_scale <- if(methods::missingArg(info_scale)){2}else{match.arg(as.character(info_scale), choices = 0:2)}
+  if(info_scale == 0){
+    info <- info0
+    info1 <- info0
+  }
+  if(info_scale == 1){
+    info <- info1
+    info0 <- info1
   }
   
   # --------------------------------------------- #
@@ -253,7 +264,8 @@ gs_power_npe <- function(
     theta = rep(theta, 2),
     IF = rep(info / max(info), 2),
     info = rep(info, 2)) %>% 
-    mutate(info0 = if(is.null(info0)){NA}else{rep(info0, 2)}) %>% 
+    mutate(info0 = if(is.null(info0)){NA}else{rep(info0, 2)},
+           info1 = if(is.null(info1)){NA}else{rep(info1, 2)}) %>% 
     filter(abs(Z) < Inf) %>% 
     arrange(desc(Bound), Analysis)
   

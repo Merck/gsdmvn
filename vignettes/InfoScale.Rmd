@@ -1,27 +1,45 @@
 ---
-title: "`info_scale` in `gs_power_npe`"
+title: "Usage of `info_scale`"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
-  html_document:
+  rmarkdown::html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    theme: flatly
     code_folding: hide
-    toc: yes
-    toc_depth: 4
-    number_sections: yes
+    number_sections: true
+    highlight: "textmate"
+    css: "custom.css"
+vignette: |
+  %\VignetteIndexEntry{Usage of `info_scale`}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
 ---
 
-```{r, message=FALSE, warning=FALSE, echo=FALSE}
+```{r, message=FALSE, warning=FALSE, echo=FALSE, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
 library(gsDesign)
 library(dplyr)
 library(gt)
 library(testthat)
 library(tibble)
-library(gsdmvn)
-#devtools::load_all()
+#library(gsdmvn)
+devtools::load_all()
 ```
 
 # `gs_power_npe` 
 
 ## Case 1 {.tabset}
+
+```{r}
+tibble(info = 700, info0 = 500, info1 = "NULL") %>% gt() %>% tab_header(title = "Input Information")
+```
+
 
 ### `info_scale = 0`
 ```{r}
@@ -71,6 +89,10 @@ gs_power_npe(
 
 ## Case 2 {.tabset}
 
+```{r}
+tibble(info = 700, info0 = "NULL", info1 = "NULL") %>% gt() %>% tab_header(title = "Input Information")
+```
+
 ### `info_scale = 0`
 ```{r}
 gs_power_npe(
@@ -117,6 +139,10 @@ gs_power_npe(
 
 
 ## Case 3 {.tabset}
+
+```{r}
+tibble(info = 700, info0 = 500, info1 = 800) %>% gt() %>% tab_header(title = "Input Information")
+```
 
 ### `info_scale = 0`
 ```{r}
@@ -174,6 +200,10 @@ gs_power_npe(
 
 ## Case 1 {.tabset}
 
+```{r}
+tibble(info = 700, info0 = 500, info1 = "NULL") %>% gt() %>% tab_header(title = "Input Information")
+```
+
 ### `info_scale = 0`
 ```{r}
 gs_design_npe(
@@ -186,7 +216,7 @@ gs_design_npe(
   upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
               info = 500),
   lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL))
-  )
+  ) %>% gt()
 ```
 
 ### `info_scale = 1`
@@ -201,7 +231,7 @@ gs_design_npe(
   upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
               info = 500),
   lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL))
-  )
+  ) %>% gt()
 ```
 
 ### `info_scale = 2`
@@ -216,29 +246,72 @@ gs_design_npe(
   upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
               info = 500),
   lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL))
-  )
+  ) %>% gt()
 ```
 
 
-# Binary Endpoint {.tabset}
+## Case 2 {.tabset}
+
+```{r}
+tibble(info = 700, info0 = 500, info1 = 800) %>% gt() %>% tab_header(title = "Input Information")
+```
+
+### `info_scale = 0`
+```{r}
+gs_design_npe(
+  theta = .1,
+  info = 700,
+  info0 = NULL,
+  info_scale = 0,
+  upper = gs_spending_bound,
+  lower = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = 500),
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = 800)
+  ) %>% gt()
+```
+
+### `info_scale = 1`
+```{r}
+gs_design_npe(
+  theta = .1,
+  info = 700,
+  info0 = NULL,
+  info_scale = 1,
+  upper = gs_spending_bound,
+  lower = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = 500),
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = 800)
+  ) %>% gt()
+```
+
+### `info_scale = 2`
+```{r}
+gs_design_npe(
+  theta = .1,
+  info = 700,
+  info0 = NULL,
+  info_scale = 2,
+  upper = gs_spending_bound,
+  lower = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = 500),
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = 800)
+  ) %>% gt()
+```
+
+
+
+
+# Binary Endpoint 
 
 ## Fixed Design with Un-stratified Population {.tabset}
 
 ### `gsdmvn`
-
-If one use `gs_spending_bound`, one can add `info` into the arguments `upar` and `lpar` as follows.
-```{r}
-x_info <- gs_info_rd(
-  p_c = tibble::tibble(Stratum = "All", Rate = .28),
-  p_e = tibble::tibble(Stratum = "All", Rate = .4),
-  N = tibble::tibble(Stratum = "All", N = 650, Analysis = 1),
-  rd0 = 0,
-  ratio = 1
-)
-
-x_info %>% gt()
-```
-
 
 ```{r}
 x0 <- gs_design_rd(
@@ -251,12 +324,10 @@ x0 <- gs_design_rd(
   ratio = 1,
   weight = "un-stratified",
   upper = gs_spending_bound,
-  lower = gs_spending_bound,
-  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
-              info = x_info$info0),
-  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
-              info = x_info$info),
-  info_scale = 0)  
+  lower = gs_b,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  lpar = list(par = -Inf),
+  info_scale = 0)
 
 x1 <- gs_design_rd(
   p_c = tibble::tibble(Stratum = "All", Rate = .28),
@@ -268,12 +339,10 @@ x1 <- gs_design_rd(
   ratio = 1,
   weight = "un-stratified",
   upper = gs_spending_bound,
-  lower = gs_spending_bound,
-  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
-              info = x_info$info0),
-  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
-              info = x_info$info),
-  info_scale = 1) 
+  lower = gs_b,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  lpar = list(par = -Inf),
+  info_scale = 1)
 
 x2 <- gs_design_rd(
   p_c = tibble::tibble(Stratum = "All", Rate = .28),
@@ -285,76 +354,28 @@ x2 <- gs_design_rd(
   ratio = 1,
   weight = "un-stratified",
   upper = gs_spending_bound,
-  lower = gs_spending_bound,
-  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
-              info = x_info$info0),
-  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
-              info = x_info$info),
-  info_scale = 2) 
-
-cat("The sample size calculated by `gs_design_rd()` under `info_scale = 0` is ", x0$analysis$N, "\n")
-cat("The sample size calculated by `gs_design_rd()` under `info_scale = 1` is ", x1$analysis$N, "\n")
-cat("The sample size calculated by `gs_design_rd()` under `info_scale = 2` is ", x2$analysis$N, "\n")
-```
-
-
-But the above input of `info` in the arguments `upar` and `lpar` is optional. 
-```{r}
-xx0 <- gs_design_rd(
-  p_c = tibble::tibble(Stratum = "All", Rate = .28),
-  p_e = tibble::tibble(Stratum = "All", Rate = .4),
-  k = 1,
-  rd0 = 0, 
-  alpha = 0.025,   
-  beta = 0.1,   
-  ratio = 1,
-  weight = "un-stratified",
-  upper = gs_spending_bound,
-  lower = gs_spending_bound,
+  lower = gs_b,
   upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
-  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
-  info_scale = 0)
-
-xx1 <- gs_design_rd(
-  p_c = tibble::tibble(Stratum = "All", Rate = .28),
-  p_e = tibble::tibble(Stratum = "All", Rate = .4),
-  k = 1,
-  rd0 = 0, 
-  alpha = 0.025,   
-  beta = 0.1,   
-  ratio = 1,
-  weight = "un-stratified",
-  upper = gs_spending_bound,
-  lower = gs_spending_bound,
-  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
-  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
-  info_scale = 1)
-
-xx2 <- gs_design_rd(
-  p_c = tibble::tibble(Stratum = "All", Rate = .28),
-  p_e = tibble::tibble(Stratum = "All", Rate = .4),
-  k = 1,
-  rd0 = 0, 
-  alpha = 0.025,   
-  beta = 0.1,   
-  ratio = 1,
-  weight = "un-stratified",
-  upper = gs_spending_bound,
-  lower = gs_spending_bound,
-  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
-  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  lpar = list(par = -Inf),
   info_scale = 2)
 
-cat("The sample size calculated by `gs_design_rd()` under `info_scale = 0` is ", xx0$analysis$N, "\n")
-cat("The sample size calculated by `gs_design_rd()` under `info_scale = 1` is ", xx1$analysis$N, "\n")
-cat("The sample size calculated by `gs_design_rd()` under `info_scale = 2` is ", xx2$analysis$N, "\n")
+tibble(`info_scale = 0` = x0$analysis$N,
+       `info_scale = 1` = x1$analysis$N,
+       `info_scale = 2` = x2$analysis$N
+       ) %>% 
+  gt() %>% 
+  tab_header(title = "Sample Size Calculated by `gs_design_rd()`", 
+             subtitle = "under spending bound without info in `upar`/ `lpar`")
 ```
 
 
 ### `gsDesign`
 ```{r}
 x <- nBinomial(p1 = .28, p2 = .4, delta0 = 0, alpha = .025, sided = 1, beta = .1, outtype = 3)
-cat("The sample size calculated by `gsDesign` is ", x$n, "\n")
+
+tibble(n = x$n) %>% 
+  gt() %>% 
+  tab_header(title = "Sample Size Calculated by `gsDesign`")
 ```
 
 
@@ -364,11 +385,11 @@ knitr::include_graphics("./figures/east_n_fix.png")
 ```
 
 
-## Group Sequential Design with Un-stratified Population 
-
+## Group Sequential Design with Un-stratified Population   {.tabset}
 
 ### `gsdmvn` {.tabset}
 
+#### Fixed Boundary
 ```{r}
 y0 <- gs_design_rd(
   p_c = tibble::tibble(Stratum = "All", Rate = .15),
@@ -424,26 +445,16 @@ y2 <- gs_design_rd(
   info_scale = 2
 )
 
-
-cat("The sample size calculated by `gsdmvn` is ", y0$analysis$N, ".\n")
-cat("The sample size calculated by `gsdmvn` is ", y1$analysis$N, ".\n")
-cat("The sample size calculated by `gsdmvn` is ", y2$analysis$N, ".\n")
+tibble(`info_scale = 0` = y0$analysis$N,
+       `info_scale = 1` = y1$analysis$N,
+       `info_scale = 2` = y2$analysis$N) %>% 
+  gt() %>% 
+  tab_header(title = "Sample Size Calculated by `gsdmvn`",
+             subtitle = "under Group Sequential Design with Fixed Boundary")
 ```
 
 
-```{r}
-y_info <- gs_info_rd(
-  p_c = tibble::tibble(Stratum = "All", Rate = .15),
-  p_e = tibble::tibble(Stratum = "All", Rate = .1),
-  N = tibble::tibble(Stratum = "All", N = c(600, 1200, 1800), Analysis = 1:3),
-  rd0 = 0,
-  ratio = 1
-)
-
-y_info %>% gt()
-```
-
-
+#### Spending Boundary
 ```{r}
 yy0 <- gs_design_rd(
   p_c = tibble::tibble(Stratum = "All", Rate = .15),
@@ -456,11 +467,9 @@ yy0 <- gs_design_rd(
   ratio = 1,
   weight = "un-stratified",
   upper = gs_spending_bound,
-  lower = gs_spending_bound,
-  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
-              info = y_info$info0),
-  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
-              info = y_info$info),
+  lower = gs_b,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  lpar = list(par = rep(-Inf, 3)),
   test_lower = FALSE,
   info_scale = 0
 )
@@ -476,11 +485,9 @@ yy1 <- gs_design_rd(
   ratio = 1,
   weight = "un-stratified",
   upper = gs_spending_bound,
-  lower = gs_spending_bound,
-  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
-              info = y_info$info0),
-  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
-              info = y_info$info),
+  lower = gs_b,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  lpar = list(par = rep(-Inf, 3)),
   test_lower = FALSE,
   info_scale = 1
 )
@@ -496,19 +503,20 @@ yy2 <- gs_design_rd(
   ratio = 1,
   weight = "un-stratified",
   upper = gs_spending_bound,
-  lower = gs_spending_bound,
-  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
-              info = y_info$info0),
-  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
-              info = y_info$info),
+  lower = gs_b,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  lpar = list(par = rep(-Inf, 3)),
   test_lower = FALSE,
   info_scale = 2
 )
 
-
-cat("The sample size calculated by `gsdmvn` is ", yy0$analysis$N, ".\n")
-cat("The sample size calculated by `gsdmvn` is ", yy1$analysis$N, ".\n")
-cat("The sample size calculated by `gsdmvn` is ", yy2$analysis$N, ".\n")
+tibble(`info_scale = 0` = yy0$analysis$N,
+       `info_scale = 1` = yy1$analysis$N,
+       `info_scale = 2 without info1 in lpar` = yy2$analysis$N
+       ) %>% 
+  gt() %>% 
+  tab_header(title = "Sample Size Calculated by `gsdmvn`",
+             subtitle = "under Group Sequential Design with Spending Boundary and info specified in the upar/lpar")
 ```
 
 ### `gsDesign`
@@ -555,10 +563,11 @@ x <- gsDesign(
   # Fixed design sample size from nBinomial above
   n.fix = n_fix)
 
-cat("The sample size calcuated by `gsDesign` is ", x$n.I, ".\n")
-
-gsBoundSummary(x, digits = 4, ddigits = 2, tdigits = 1)
+tibble(n = x$n.I) %>% 
+  gt() %>% 
+  tab_header(title = "Sample Size Calcuated by `gsDesign`")
 ```
+
 
 
 ### EAST 

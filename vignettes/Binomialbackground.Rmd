@@ -588,7 +588,7 @@ And we would like to calculate the sample size to achieve the 90\% power.
 
 To calculate the sample size, one can use `gs_design_rd()`.
 The logic of `gs_design_rd()` is to calculate the sample size of fixed design first.
-```{r}
+```{r, eval=FALSE}
 x_fix <- gs_info_rd(
   p_c = tibble::tibble(Stratum = "All", Rate = .15),
   p_e = tibble::tibble(Stratum = "All", Rate = .1),
@@ -615,7 +615,7 @@ cat("The sample size of the fixed design is ", y_fix$info/x_fix$info, ".\n")
 
 Then the sample size of the group sequential design is a product of 1834.641 and an inflation factor. 
 
-```{r}
+```{r, eval=FALSE}
 x_gs <- gs_info_rd(
   p_c = tibble::tibble(Stratum = "All", Rate = .15),
   p_e = tibble::tibble(Stratum = "All", Rate = .1),
@@ -642,7 +642,7 @@ cat("The sample size of the group sequential design is ", y_gs$info/x_gs$info[3]
 
 
 The above logic is implemented in `gs_design_rd()`.
-```{r}
+```{r, eval=FALSE}
 x <- gs_design_rd(
   p_c = tibble::tibble(Stratum = "All", Rate = .15),
   p_e = tibble::tibble(Stratum = "All", Rate = .1),

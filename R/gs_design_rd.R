@@ -92,16 +92,6 @@ gs_design_rd <- function(
     ratio = ratio,
     weight = weight) 
   
-  # y_fix <- gs_design_npe(
-  #   theta = x_fix$rd, 
-  #   info = x_fix$info, 
-  #   info0 = x_fix$info0, 
-  #   info_scale = info_scale,
-  #   alpha = alpha, beta = beta, binding = binding,
-  #   upper = upper, upar = upar, test_upper = test_upper,
-  #   lower = lower, lpar = lpar, test_lower = test_lower,
-  #   r = r, tol = tol)
-  
   # --------------------------------------------- #
   #     calculate the sample size                 #
   #     under group sequential design             #
@@ -109,11 +99,14 @@ gs_design_rd <- function(
   x_gs <- gs_info_rd(
     p_c = p_c, 
     p_e = p_e,
-    N = tibble::tibble(Stratum = p_c$Stratum, N = 1:k/k, Analysis = 1:k),
+    N = tibble::tibble(Stratum = p_c$Stratum, N = IF, Analysis = 1:k),
     rd0 = rd0,
     ratio = ratio,
     weight = weight)
-
+  
+  #upar_new <- c(upar, list(info = x_gs$info0))
+  #lpar_new <- c(lpar, list(info = x_gs$info))
+  
   y_gs <- gs_design_npe(
     theta = x_gs$rd, 
     info = x_gs$info, 
@@ -133,7 +126,7 @@ gs_design_rd <- function(
            "~Risk difference at bound" = Z / sqrt(info) / theta * (rd -rd0)  + rd0, 
            "Nominal p" = pnorm(-Z),
            IF0 = if(sum(!is.na(info0)) == 0){NA}else{info0 / max(info0)},
-           N = y_gs$info[k] / x_fix$info[1]  * IF) %>% 
+           N = y_gs$info[k] / ifelse(info_scale == 0, x_fix$info0[1], x_fix$info[1])  * IF) %>% 
     select(c(Analysis, Bound,  N, rd, rd0, Z, Probability, Probability0, info, info0, IF, IF0, `~Risk difference at bound`, `Nominal p`)) %>% 
     arrange(desc(Bound), Analysis) 
   
