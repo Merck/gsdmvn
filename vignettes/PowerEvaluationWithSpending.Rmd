@@ -1,13 +1,16 @@
 ---
-title: "Power Evaluation with Spending bounds"
+title: "Statistical information applications"
 subtitle: "Binomial Trial Example"
 output:
   html_vignette
 bibliography: gsDesign.bib
 vignette: >
-  %\VignetteIndexEntry{Power Evaluation with Spending bounds}
+  %\VignetteIndexEntry{Statistical information in binomial endpoint trials}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{r, include = FALSE}
@@ -19,94 +22,215 @@ knitr::opts_chunk$set(
 
 ## Overview
 
-This vignette covers how to compute power or Type I error for a design derived with a spending bound. 
-We will write this with a general non-constant treatment effect using `gs_design_npe()` to derived the design under one parameter setting and computing power under another setting.
-We will use a trial with a binary endpoint to enable a full illustration.
+This vignette demonstrates different applications of statistical
+information in clinical trials studying a binary outcome. Potential
+applications include but are not limited to
 
-## Scenario for consideration
+1)  power calculations,
+2)  $\beta$-spending for futility,
+3)  $\alpha$-spending for efficacy, and
+4)  blinded sample size adaptation.
 
-We consider a scenario largely based on the CAPTURE study @CAPTURE where the primary endpoint was a composite of death, acute myocardial infarction or the need for recurrent percutaneous intervention within 30 days of randomization.
-That is, we consider a 2-arm trial with an experimental arm and a control arm.
-The primary endpoint for the trial is a binary indicator for each participant if they have a failed outcome. 
-For this case, we consider the parameter $\theta = p_1 - p _2$ where $p_1$ denotes the probability that a trial participant in the control group experiences a failure and $p_2$ represents the same probability for a trial participant in the experimental group. 
-We will assume $K=3$ analyses after 350, 700, and 1400 patients have been observed with equal randomization between the treatment groups. 
-The study was designed with approximately 80% power (Type II error $\beta = 1 - 0.8 = 0.2$) and 2.5% one-sided Type I error ($\alpha = 0.025$) to detect a reduction from a 15% event rate ($p_1 = 0.15$) in the control group to 10% ($p_2 = 0.1$) in the experimental group.
-The parameter of interest is $\theta = p_1 - p_2$. We denote the alternate hypothesis as 
-$$H_1: \theta = \theta_1= p_1^1 - p_2^1 = 0.15 - 0.10 = 0.05$$ and the null hypothesis
-$$H_0: \theta = \theta_0 = 0 = p_1^0 - p_2^0$$ where $p^0_1 = p^0_2= (p_1^1+p_2^1)/2 = 0.125$ 
-as laid out in @LachinBook. 
+While we focus mainly on design using a risk-difference formulation, we
+also consider risk-ratios. The main underlying rationale for this to
+guide appropriate use of statistical information under different
+scenarios. The key citation for this is @FarringtonManning which builds
+on much previous literature. This citation deals with parameter
+estimation variance issues for fixed designs; here we apply their
+concepts to group sequential design which we believe is a new
+application.
+
+We will demonstrate this with the general design function
+`gs_design_npe()` and power function `gs_power_npe()` to show different
+spending considerations under the null, alternate and other hypotheses
+as well as how to update bounds and/or sample size at the time of
+interim analysis.
+
+## Example scenario
+
+We consider a scenario largely based on the @CAPTURE where the primary
+endpoint was a composite of death, acute myocardial infarction or the
+need for recurrent percutaneous intervention within 30 days of
+randomization. That is, we consider a 2-arm trial with an experimental
+arm and a control arm. The primary endpoint for the trial is a binary
+indicator for each participant if they have a failed outcome. For this
+case, we consider the parameter $\theta_{rd} = p_1 - p _2$ where We let
+$p_1, p_2$ denote the probability that a trial participant in the
+control and experimental groups, respectively, experiences a failure. We
+wish to test the null hypothesis $H_0: p_1=p_2$ against the alternative
+$H_1: p_1 > p_2$. More specifically, we wish to compute power for the
+scenario:
+
+$$H_1: p_1^1 = 0.15, p_2^1 = 0.10.$$
+
+## Testing
+
+We consider two formulations for testing as in @FarringtonManning.
+
+-   Risk difference: $\theta_{rd} = p_1 - p_2= 0.15 - 0.1 = 0.05.$
+-   Risk ratio: $\theta_{rr}=p_2/p1=0.1/0.15 = 2/3.$
+
+We assume an overall sample size of $N$ and a sample size ratio for
+experimental versus control of $r=N_2/N_1$. We begin by defining test
+statistic and estimated variance formulas for a given hypothesized
+$\theta_{rd}$ or $\theta_{rr}.$
+
++--------+---------------+---------------+---------------------------+
+| Par    | Hypothesized  | Test          | $\widehat{\hbox{Var}}(X)$ |
+| ameter | $\theta$      |               |                           |
++========+:=============:+:=============:+:=========================:+
+| Risk   | $\theta_{r    | \$            | $\h at                    |
+| diff   | d} = p_1-p_2$ | X\_{rd}=\hat  | V_{rd}=\frac{1+r}{N}\l ef |
+| erence |               | p *1-*\hat    | t(\tilde p_{1,rd}\tilde   |
+|        |               | p_2 -         | q_{1,rd}+\tilde p_{2,rd}  |
+|        |               | \theta{rd}\$  | \tilde q_{2,rd}/r\right)$ |
++--------+---------------+---------------+---------------------------+
+| Risk   | $\theta_{r    | $X_{r r}      | $\hat V_{rr}=\fr ac{      |
+| ratio  | r} = p_2/p_1$ | =\theta_{rr } | 1+r}{N}\left(\theta_{r r} |
+|        |               | \times\hat p  | ^2\tilde p_{1,rr}\tilde   |
+|        |               | _1 -\hat p_2$ | q_{1,rr}+\tilde p_{2,rr}  |
+|        |               |               | \tilde q_{2,rr}/r\right)$ |
++--------+---------------+---------------+---------------------------+
+
+We will provide the estimates
+$\tilde p_{1,rd}, \tilde p_{2,rd}, \tilde p_{1,rr}, \tilde p_{2,rr}$
+below, noting that $\tilde q_{1,rd}= 1-\tilde p_{1,rd},$
+$\tilde q_{2,rd}=1-\tilde p_{2,rd},$
+$\tilde q_{1,rr}=1 -\tilde p_{1,rr},$
+$\tilde q_{2,rr}=1-\tilde p_{2,rr}.$
+
+Some applications of the above will be:
+
+-   Testing for superiority: $\theta_{rd}=0$ or $\theta_{rr}=0$
+-   Testing for non-inferiority: $\theta_{rd}<0$ or $\theta_{rr} < 0$
+-   Testing for super-superiority (e.g., for a vaccine trial):
+    $\theta_{rd}>0$ or $\theta_{rr}> 0$
+
+We will also extend the above variance forms to compute the probability
+of crossing a fixed or group sequential bound under any assumed
+treatment effect. This formulation will also be used compute statistical
+information and spending bounds.
+
+## Estimating $\tilde p_{1,rd}, \tilde p_{2,rd}, \tilde p_{1,rr}, \tilde p_{2,rr}$
+
++--------------+-------------+--------------------------------+
+| Nan Xiao     | $\alpha$    | Col3                           |
++=============:+:============+===============================:+
+| $\mu$        |             |                                |
++--------------+-------------+--------------------------------+
+|              |             |                                |
++--------------+-------------+--------------------------------+
+|              |             |                                |
++--------------+-------------+--------------------------------+
+
+: xyzzy
+
+@FarringtonManning recommended the maximum likelihood approach for
+estimating
+$\tilde p_{1,rd}, \tilde p_{2,rd}, \tilde p_{1,rr}, \tilde p_{2,rr}$ as
+previously suggested by @MiettinenNurminen and @Koopman. Rather than
+repeating the estimation formula, we build functions to compute the
+statistical information \#\# xx
+
+and $\theta_{rd}$ represents the risk difference. We further define the
+risk ratio $\theta_{rr}=p_2/p_1=2/3.$ We denote the alternate hypothesis
+as
+$$, \theta_{rd}^1=p_1^1-p_2^2=0.05, \theta_{rr}^1=\theta_2/\theta_1=2/3.$$
+
+For the null hypothesis, we let
+
+$$H_0: \theta_{rd} = \theta^0_{rd} = p_1^0 - p_2^0$$
+
+$$H_0: p^0_1=p^0_2=(p_1^1+p_2^2)/2= 0.125, \theta_{rd} = \theta^0_{rd}=p_1^0-p_2^0=0 $$
+as laid out in @LachinBook.
 
 ```{r}
 library(gsdmvn)
-
 p0 <- 0.15 # assumed failure rate in control group
 p1 <- 0.10 # assumed failure rate in experimental group
 alpha <- 0.025 # Design Type I error
 beta <- 0.2 # Design Type II error for 80% power
 ```
 
-We note that had we considered a success outcome such as objective response in an oncology study, we would let $p_1$ denote the experimental group and $p_2$ the control group response rate.
-Thus, we always set up the notation so the $p_1>p_2$ represents superiority for the experimental group.
+We note that had we considered a success outcome such as objective
+response in an oncology study, we would let $p_1$ denote the
+experimental group and $p_2$ the control group response rate. Thus, we
+always set up the notation so the $p_1>p_2$ represents superiority for
+the experimental group.
 
 ## Notation and Statistical Testing
 
-We let $X_{ij}\sim \hbox{Bernoulli}(p_i),$ $j=1,2,\ldots,n_{ik}$ denote independent random variables in the control ($i=1$) and experimental ($i=2$) groups through analysis $k=1,2,\ldots,K$ where $n_{i1} < n_{i2}<\ldots<n_K$.
-We let $Y_{ik}=\sum_{j=1}^{n_k}X_{ij}$.
-At analysis $k=1,2,\ldots$ and for $j=1,2$ we denote the proportion of failures in group $i$ at analysis $k$
+We let $X_{ij}\sim \hbox{Bernoulli}(p_i),$ $j=1,2,\ldots,n_{ik}$ denote
+independent random variables in the control ($i=1$) and experimental
+($i=2$) groups through analysis $k=1,2,\ldots,K$ where
+$n_{i1} < n_{i2}<\ldots<n_K$. We let $Y_{ik}=\sum_{j=1}^{n_k}X_{ij}$. At
+analysis $k=1,2,\ldots$ and for $j=1,2$ we denote the proportion of
+failures in group $i$ at analysis $k$
 
-$$ \hat{p}_{ik}=Y_{ik}/n_{ik}.$$
-Estimating under null hypothesis $H_0: p_1=p_2\equiv  p_0$ we estimate
+$$ \hat{p}_{ik}=Y_{ik}/n_{ik}.$$ Estimating under null hypothesis
+$H_0: p_1=p_2\equiv p_0$ we estimate
 
 $$ \hat{p}_{0k}=\frac{Y_{1k}+ Y_{2k}}{n_{1k}+ n_{2k}}=
-\frac{n_{1k}\hat p_{1k} + n_{2k}\hat p_{2k}}{n_{1k} + n_{2k}}. $$
-We note
+\frac{n_{1k}\hat p_{1k} + n_{2k}\hat p_{2k}}{n_{1k} + n_{2k}}. $$ We
+note
 
-$$\hbox{Var}(\hat p_{ik})=\frac{p_{i}(1-p_i)}{n_{ik}},$$
-and its consistent estimatator
+$$\hbox{Var}(\hat p_{ik})=\frac{p_{i}(1-p_i)}{n_{ik}},$$ and its
+consistent estimatator
 $$\widehat{\hbox{Var}}(\hat p_{ik})=\frac{\hat p_{ik}(1-\hat p_{ik})}{n_{ik}},$$
-$i=1,2$, $k=1,2,\ldots,K$.
-Letting $\hat\theta_k=\hat p_{1k}-\hat p_{2k},$ we also have
+$i=1,2$, $k=1,2,\ldots,K$. Letting
+$\hat\theta_k=\hat p_{1k}-\hat p_{2k},$ we also have
 
 $$\sigma^2_k\equiv \hbox{Var}(\hat\theta_i)=\frac{p_1(1-p_1)}{n_{1k}}+\frac{p_2(1-p_2)}{n_{2k}},$$
-its consistent estimator 
+its consistent estimator
 $$\hat\sigma^2_k=\frac{\hat p_{1k}(1-\hat p_{1k})}{n_{1k}}+\frac{\hat p_{2k}(1-\hat p_{2k})}{n_{2k}},$$
 and the corresponding null hypothesis estimator
 $$\hat\sigma^2_{0k}=\hat p_{0k}(1-\hat p_{0k})\left(\frac{1}{n_{1k}}+ \frac{1}{n_{2k}}\right),$$
-$k=1,2,\ldots,K$. Statistical information for each of these quantities and their corresponding estimators are denoted by
+$k=1,2,\ldots,K$. Statistical information for each of these quantities
+and their corresponding estimators are denoted by
 
 $$\begin{align}
 \mathcal{I}_k = &1/\sigma^2_k,\\
 \mathcal{\hat I}_k = &1/\hat \sigma^2_k,\\
 \mathcal{I}_{0k} =& 1/ \sigma^2_{0k},\\
 \mathcal{\hat I}_{0k} =& 1/\hat \sigma^2_{0k},
-\end{align}$$
-$k=1,2,\ldots,K$. 
-Testing, as recommended by @LachinBook, is done with the large sample test with the null hypothesis variance estimate and without continuity correction:
+\end{align}$$ $k=1,2,\ldots,K$. Testing, as recommended by @LachinBook,
+is done with the large sample test with the null hypothesis variance
+estimate and without continuity correction:
 $$Z_k = \hat\theta_k/\hat\sigma_{0k}=\frac{\hat p_{1k} - \hat p_{2k}}{\sqrt{(1/n_{1k}+ 1/n_{2k})\hat p_{0k}(1-\hat p_{0k})} },$$
-which is asymptotically Normal(0,1) if $p_1=p_2$ and Normal(0, $\sigma_{0k}^2/\sigma_k^2$) more generally for any $p_1, p_2$, $k=1,2,\ldots,K$.
-We note that $\chi^2=Z^2_k$ is the $\chi^2$ test without continuity correction as recommended by @CCmyth. 
-Note finally that this extends in a straightforward way the non-inferiority test of @FarringtonManning if the null hypothesis is $\theta = p_1 - p_2 - \delta = 0$ for some non-inferiority margin $\delta > 0$; $\delta < 0$ would correspond to what is referred to as super-superiority @Chan2002, requiring that experimental therapy has been shown to be superior to control by at least a margin $-\delta>0$.
+which is asymptotically Normal(0,1) if $p_1=p_2$ and Normal(0,
+$\sigma_{0k}^2/\sigma_k^2$) more generally for any $p_1, p_2$,
+$k=1,2,\ldots,K$. We note that $\chi^2=Z^2_k$ is the $\chi^2$ test
+without continuity correction as recommended by @CCmyth. Note finally
+that this extends in a straightforward way the non-inferiority test of
+@FarringtonManning if the null hypothesis is
+$\theta = p_1 - p_2 - \delta = 0$ for some non-inferiority margin
+$\delta > 0$; $\delta < 0$ would correspond to what is referred to as
+super-superiority @Chan2002, requiring that experimental therapy has
+been shown to be superior to control by at least a margin $-\delta>0$.
 
 ## Power Calculations
 
-We begin with a fixed design to simplify.
-We follow the approach of @LachinBook to compute power accounting for the different variance (statistical information) computations under the null hypothesis noted in the previous section.
-Noting the asymptotic equivalence
+We begin with a fixed design to simplify. We follow the approach of
+@LachinBook to compute power accounting for the different variance
+(statistical information) computations under the null hypothesis noted
+in the previous section. Noting the asymptotic equivalence
 
 $$Z_k\approx \hat\theta_k/\sigma_{0k}=\frac{\hat p_{1k} - \hat p_{2k}}{\sqrt{(1/n_{1k}+ 1/n_{2k})p_{0}(1- p_0)} }.$$
-We denote $n_k=n_{1k}+n_{2k},$ $k=1,2,\ldots, K$ and assume a constant proportion $\xi_i$ randomized to each group $i=1,2.$ Thus, 
+We denote $n_k=n_{1k}+n_{2k},$ $k=1,2,\ldots, K$ and assume a constant
+proportion $\xi_i$ randomized to each group $i=1,2.$ Thus,
 
 $$Z_k\approx \frac{\sqrt{n_k}(\hat p_{1k} - \hat p_{2k})}{\sqrt{(1/\xi_1+ 1/\xi_2)p_{0}(1- p_0)} }.$$
 
 we have the asymptotic distribution
 
 $$Z_k\sim\hbox{Normal}\left(\sqrt{n_k}\frac{p_1 - p_2}{\sqrt{(1/\xi_1+ 1/\xi_2) p_0(1- p_0)} },\sigma^2_{0k}/\sigma^2_{1k}\right).$$
-We note that 
+We note that
 
-$$ \sigma^2_{0k}/\sigma^2_{1k} = \frac{ p_0(1-p_0)\left(1/\xi_1+ 1/\xi_2\right)}{p_1(1-p_1)/\xi_1+p_2(1-p_2)/\xi_2}.$$ 
-We also note by definition that $\sigma^2_{0k}/\sigma^2_{1k}=\mathcal I_k/\mathcal I_{0k}.$
-Based on an input $p_1, p_2, \xi_1, \xi_2 = 1-\xi_1, n_k$ we will compute $\theta, \mathcal{I}_k, \mathcal{I}_{0k}$, $k=1,2,\ldots,K$.
-
+$$ \sigma^2_{0k}/\sigma^2_{1k} = \frac{ p_0(1-p_0)\left(1/\xi_1+ 1/\xi_2\right)}{p_1(1-p_1)/\xi_1+p_2(1-p_2)/\xi_2}.$$
+We also note by definition that
+$\sigma^2_{0k}/\sigma^2_{1k}=\mathcal I_k/\mathcal I_{0k}.$ Based on an
+input $p_1, p_2, \xi_1, \xi_2 = 1-\xi_1, n_k$ we will compute
+$\theta, \mathcal{I}_k, \mathcal{I}_{0k}$, $k=1,2,\ldots,K$.
 
 ```{r}
 library(tibble)
@@ -142,15 +266,16 @@ h1 <- gs_info_binomial(p1 = .15, p2 = .1, xi1 = .5, n = c(350, 700, 1400))
 h1
 ```
 
-Now we examine information for a smaller assumed treatment difference than the alternative:
+Now we examine information for a smaller assumed treatment difference
+than the alternative:
 
 ```{r}
 h <- gs_info_binomial(p1 = .15, p2 = .12, xi1 = .5, delta = .05, n = c(350, 700, 1400))
 h
 ```
 
-We can plug these into `gs_power_npe()` with the intended spending functions.
-We begin with power under the alternate hypothesis
+We can plug these into `gs_power_npe()` with the intended spending
+functions. We begin with power under the alternate hypothesis
 
 ```{r}
 gs_power_npe(theta = h1$theta, theta1 = h1$theta, info = h1$info,
