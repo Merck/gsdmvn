@@ -28,8 +28,9 @@ applications include but are not limited to
 
 1)  power calculations,
 2)  $\beta$-spending for futility,
-3)  $\alpha$-spending for efficacy, and
-4)  blinded sample size adaptation.
+3)  $\alpha$-spending for efficacy,
+4)  two-sided designs, and
+5)  blinded sample size adaptation.
 
 While we focus mainly on design using a risk-difference formulation, we
 also consider risk-ratios. The main underlying rationale for this to
@@ -75,22 +76,27 @@ experimental versus control of $r=N_2/N_1$. We begin by defining test
 statistic and estimated variance formulas for a given hypothesized
 $\theta_{rd}$ or $\theta_{rr}.$
 
-+--------+---------------+---------------+---------------------------+
-| Par    | Hypothesized  | Test          | $\widehat{\hbox{Var}}(X)$ |
-| ameter | $\theta$      |               |                           |
-+========+:=============:+:=============:+:=========================:+
-| Risk   | $\theta_{r    | \$            | $\h at                    |
-| diff   | d} = p_1-p_2$ | X\_{rd}=\hat  | V_{rd}=\frac{1+r}{N}\l ef |
-| erence |               | p *1-*\hat    | t(\tilde p_{1,rd}\tilde   |
-|        |               | p_2 -         | q_{1,rd}+\tilde p_{2,rd}  |
-|        |               | \theta{rd}\$  | \tilde q_{2,rd}/r\right)$ |
-+--------+---------------+---------------+---------------------------+
-| Risk   | $\theta_{r    | $X_{r r}      | $\hat V_{rr}=\fr ac{      |
-| ratio  | r} = p_2/p_1$ | =\theta_{rr } | 1+r}{N}\left(\theta_{r r} |
-|        |               | \times\hat p  | ^2\tilde p_{1,rr}\tilde   |
-|        |               | _1 -\hat p_2$ | q_{1,rr}+\tilde p_{2,rr}  |
-|        |               |               | \tilde q_{2,rr}/r\right)$ |
-+--------+---------------+---------------+---------------------------+
++----+-------+----------------+---------------------------------------+
+| P  | Hy    | Test           | $\widehat{\hbox{Var}}(X)$             |
+| ar | pothe |                |                                       |
+| am | sized |                |                                       |
+| et | $\t   |                |                                       |
+| er | heta$ |                |                                       |
++====+:=====:+:==============:+:=====================================:+
+| Ri | $\th  | $X_{rd}=\hat   | $\ha t V_{rd}=\frac{1+r}{N}\le f      |
+| sk | eta_{ |  p_1 -\hat p_2 | t(\tilde p_{1,rd}\tilde q_{1,rd}+\til |
+| di | r d}  |  -\theta_{rd}$ | de p_{2,rd} \tilde q_{2,rd}/r\right)$ |
+| ff | = p_1 |                |                                       |
+| er | -p_2$ |                |                                       |
+| en |       |                |                                       |
+| ce |       |                |                                       |
++----+-------+----------------+---------------------------------------+
+| Ri | $\th  | $X_{r r        | $\hat V_{                             |
+| sk | eta_{ | } =\theta_{rr  | rr}=\frac{ 1+r}{N}\left(\theta_{r r}  |
+| r  | r r}  | } \times\hat p | ^2\tilde p_{1,rr}\tilde q_{1,rr}+\til |
+| at | = p_2 |  _1 -\hat p_2$ | de p_{2,rr} \tilde q_{2,rr}/r\right)$ |
+| io | /p_1$ |                |                                       |
++----+-------+----------------+---------------------------------------+
 
 We will provide the estimates
 $\tilde p_{1,rd}, \tilde p_{2,rd}, \tilde p_{1,rr}, \tilde p_{2,rr}$
@@ -113,15 +119,11 @@ information and spending bounds.
 
 ## Estimating $\tilde p_{1,rd}, \tilde p_{2,rd}, \tilde p_{1,rr}, \tilde p_{2,rr}$
 
-+--------------+-------------+--------------------------------+
-| Nan Xiao     | $\alpha$    | Col3                           |
-+=============:+:============+===============================:+
-| $\mu$        |             |                                |
-+--------------+-------------+--------------------------------+
-|              |             |                                |
-+--------------+-------------+--------------------------------+
-|              |             |                                |
-+--------------+-------------+--------------------------------+
+| Nan Xiao | $\alpha$ | Col3 |
+|---------:|:---------|-----:|
+|    $\mu$ |          |      |
+|          |          |      |
+|          |          |      |
 
 : xyzzy
 
@@ -130,7 +132,41 @@ estimating
 $\tilde p_{1,rd}, \tilde p_{2,rd}, \tilde p_{1,rr}, \tilde p_{2,rr}$ as
 previously suggested by @MiettinenNurminen and @Koopman. Rather than
 repeating the estimation formula, we build functions to compute the
-statistical information \#\# xx
+statistical information. We begin with risk difference.
+
+```{r}
+info_rd <- function(N1 = 100, N2 = 100, p1 = .2, p2 = .1, theta = 0){
+    d0 <- (theta == 0)
+    ratio <- N2 / N1
+    a <- 1 + ratio
+    b <- -(a + p1 + ratio * p2 + theta * (ratio + 2))
+    c <- theta^2 + theta * (2 * p1 + a) + p1 + ratio * p2
+    d <- -p1 * theta * (1 + theta)
+    v <- (b / (3 * a))^3 - b * c / 6 / a^2 + d / 2 / a
+    u <- (sign(v) + (v == 0)) * sqrt((b / 3 / a)^2 - c / 3 / a)
+    w <- (pi + acos(v / u^3)) / 3
+    p1t <- 2 * u * cos(w) - b / 3 / a
+    p2t <- p1t - theta
+    p1t[d0] <- (p1[d0] + ratio[d0] * p2[d0]) / (1 + ratio[d0])
+    p2t[d0] <- p1t[d0]
+    sigmat <- sqrt((p1t * (1 - p1t) + p2t * (1 - p2t) / ratio) * (ratio + 1))
+    sigma <- sqrt((p1 * (1 - p1) + p2 * (1 - p2) / ratio) * (ratio + 1))
+    return(tibble::tibble(N1 = N1, N2 = N2, ratio = ratio, p1 = p1, p2 = p2, theta = theta, infot = 1/sigmat, info = 1 / sigma))
+  }
+```
+
+Now we test this:
+
+```{r}
+info_rd()
+```
+
+Try 3 different $\theta_{rd}$ values:
+
+```{r}
+info_rd(theta=c(0,.1,.05))
+```
+
 
 and $\theta_{rd}$ represents the risk difference. We further define the
 risk ratio $\theta_{rr}=p_2/p_1=2/3.$ We denote the alternate hypothesis
