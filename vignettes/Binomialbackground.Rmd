@@ -29,6 +29,7 @@ library(knitr)
 #library(gsdmvn)
 devtools::load_all()
 library(gsDesign)
+library(gt)
 ```
 
 
@@ -724,22 +725,41 @@ knitr::include_graphics("./figures/east_n_gs.png")
 
 ## Stratified Group Sequential Design  {.tabset}
 
-The case is 
+In this example, we consider 3 strata in a group sequential design with 3 analyses.
+
 ```{r, message=FALSE}
 p_c <- tibble::tibble(Stratum = c("S1", "S2", "S3"), Rate = c(.4, .5, .6))
 p_e <- tibble::tibble(Stratum = c("S1", "S2", "S3"), Rate = c(.25, .3, .5))
 ratio <- 1
-N_c <- .5
-N_e <- .5
+ratio_strata_c <- tibble::tibble(Stratum = c("S1", "S2", "S3"), ratio = c(1, 2, 3))
+ratio_strata_e <- ratio_strata_c
+N <- 1
 IF <- 1:3/3
+N_c <- N / (1 + ratio) 
+N_e <- ratio * N_c 
 
 x <- p_c %>% 
   rename(p_c = Rate) %>% 
   left_join(p_e) %>% 
   rename(p_e = Rate) %>% 
-  mutate(p_pool = (p_c + p_e) / 2) 
+  mutate(p_pool = (p_c + p_e) / 2) %>% 
+  mutate(xi_c = round((ratio_strata_c %>% mutate(prop = ratio / sum(ratio)))$prop, 4)) %>% 
+  mutate(xi_e = round((ratio_strata_e %>% mutate(prop = ratio / sum(ratio)))$prop, 4)) %>% 
+  mutate(N_c = N_c * xi_c, N_e = N_e * xi_e)
 
-x %>% gt::gt()
+x %>% 
+  gt::gt() %>% 
+  gt::tab_footnote(footnote = "p_pool = (p_c * N_c + p_e * N_e) / (N_c * N_e).",
+                   locations = gt::cells_column_labels(columns = p_pool)) %>% 
+  gt::tab_footnote(footnote = "xi_c = sample size of a strata / sample size of the control arm.",
+                   locations = gt::cells_column_labels(columns = xi_c)) %>% 
+  gt::tab_footnote(footnote = "xi_e = sample size of a strata / sample size of the experimental arm.",
+                   locations = gt::cells_column_labels(columns = xi_e)) %>% 
+  gt::tab_footnote(footnote = "N_c = total sample size of the control arm.",
+                   locations = gt::cells_column_labels(columns = N_c)) %>% 
+  gt::tab_footnote(footnote = "N_e = total size of the experimental arm.",
+                   locations = gt::cells_column_labels(columns = N_e)) %>% 
+  gt::tab_header(title = "Stratified Example")
 ```
 
 First, we calculate the variance 
@@ -748,27 +768,39 @@ $$
   \begin{array}{ll}
   \sigma^2_{H_0,k,s} 
   & =
-  p_{k,s}^{pool} \left(1 - p^{pool}_{k,s} \right) \left(\frac{1}{N_{C,k,s}} + \frac{1}{N_{E,k,s}} \right)
+  p_{k,s}^{pool} \left(1 - p^{pool}_{k,s} \right) 
+  \left(\frac{1}{N_{C,k,s}} + \frac{1}{N_{E,k,s}} \right) 
   =
-  p_{k,s}^{pool} \left(1 - p^{pool}_{k,s} \right) \left(\frac{1}{N_{C,k,s}} + \frac{1}{N_{E,k,s}} \right) \\
+  p_{k,s}^{pool} \left(1 - p^{pool}_{k,s} \right) 
+  \left(\frac{1}{ \frac{\xi_s}{1+r} N_{k}} + \frac{1}{ \frac{r \xi_s}{1+r} N_{k}} \right) \\
   \sigma_{H_1,k,s}^2 
   & = 
   \frac{p_{C,s} (1- p_{C,s})}{N_{C,k,s}} + \frac{p_{E,s} (1 - p_{E,s})}{N_{E,k,s}} 
+  = 
+  \frac{p_{C,s} (1- p_{C,s})}{\frac{\xi_s}{1+r} N_{k}} + \frac{p_{E,s} (1 - p_{E,s})}{\frac{r \xi_s}{1+r} N_{k}} 
   \end{array}
   \right.
 $$
 
 
-```{r}
+```{r, message=FALSE}
 x <- x %>% 
   union_all(x) %>% 
   union_all(x) %>% 
-  mutate(Analysis = rep(1:3, each = 3),
-         N_c = rep(N_c * IF / 3, each = 3),
-         N_e = rep(N_e * IF / 3, each = 3)) %>% 
-  select(Analysis, Stratum, p_c, p_pool, p_e, N_c, N_e) %>% 
+  mutate(Analysis = rep(1:3, each = 3)) %>% 
+  left_join(tibble(Analysis = 1:3, IF = IF)) %>% 
+  mutate(N_c = N_c * IF, N_e = N_e * IF) %>% 
+  select(Analysis, Stratum, p_c, p_pool, p_e, N_c, N_e, xi_c, xi_e) %>% 
   mutate(sigma_H0 = sqrt(p_pool * (1 - p_pool) * (1 / N_c + 1 / N_e)),
          sigma_H1 = sqrt(p_c * (1 - p_c) / N_c + p_e * (1 - p_e) / N_e))
+
+x %>% 
+  gt() %>% 
+  fmt_number(6:11, decimals = 4) %>% 
+  gt::tab_footnote(footnote = "sigma_H0 = the H0 sd per stratum per analysis.",
+                   locations = gt::cells_column_labels(columns = sigma_H0)) %>% 
+  gt::tab_footnote(footnote = "sigma_H1 = the H0 sd per stratum per analysis.",
+                   locations = gt::cells_column_labels(columns = sigma_H1))
 ```
 
 Second, we calculate the weight by using inverse variance
@@ -784,14 +816,22 @@ temp <- x %>%
             sum_invar_H1 = sum(1/sigma_H1^2),
             sum_ss = sum((N_c * N_e) / (N_c + N_e)))
 
-temp 
-
 x <- x %>% 
   left_join(temp) %>% 
   mutate(weight_invar_H0 = 1/sigma_H0^2 / sum_invar_H0,
          weight_invar_H1 = 1/sigma_H1^2 / sum_invar_H1,
          weight_ss = (N_c * N_e) / (N_c + N_e) / sum_ss) %>% 
   select(-c(sum_invar_H0, sum_invar_H1, sum_ss))
+
+x %>% 
+  gt() %>% 
+  fmt_number(6:14, decimals = 4) %>% 
+  gt::tab_footnote(footnote = "weight_invar_H0 = the weight per stratum per analysis calculated by INVAR by using variance under H0.",
+                   locations = gt::cells_column_labels(columns = weight_invar_H0)) %>% 
+  gt::tab_footnote(footnote = "weight_invar_H1 = the weight per stratum per analysis calculated by INVAR by using variance under H1.",
+                   locations = gt::cells_column_labels(columns = weight_invar_H1)) %>% 
+  gt::tab_footnote(footnote = "weight_ss = the weight per stratum per analysis calculated by SS.",
+                   locations = gt::cells_column_labels(columns = weight_ss))
 ```
 
 
@@ -841,7 +881,21 @@ x <- x %>%
             info0_invar_H1 = 1 / sum(weight_invar_H1^2*p_pool*(1-p_pool)/N_c + weight_invar_H1^2*p_pool*(1-p_pool)/N_e),
             info0_ss = 1 / sum(weight_ss^2*p_pool*(1-p_pool)/N_c + weight_ss^2*p_pool*(1-p_pool)/N_e)
             ) 
-x %>% gt::gt()
+x %>% 
+  gt::gt() %>% 
+  fmt_number(c(2:4, 6:11), decimals = 4) %>% 
+  gt::tab_footnote(footnote = "info_invar_H0 = the statistical information under H1 per stratum per analysis calculated by INVAR by using variance under H0.",
+                   locations = gt::cells_column_labels(columns = info_invar_H0)) %>% 
+  gt::tab_footnote(footnote = "info_invar_H1 = the statistical information under H1 per stratum per analysis calculated by INVAR by using variance under H0.",
+                   locations = gt::cells_column_labels(columns = info_invar_H1)) %>% 
+  gt::tab_footnote(footnote = "info_ss = the statistical information under H1 per stratum per analysis calculated by SS.",
+                   locations = gt::cells_column_labels(columns = info_ss)) %>% 
+  gt::tab_footnote(footnote = "info0_invar_H0 = the statistical information under H0 per stratum per analysis calculated by INVAR by using variance under H0.",
+                   locations = gt::cells_column_labels(columns = info0_invar_H0)) %>% 
+  gt::tab_footnote(footnote = "info0_invar_H1 = the statistical information under H0 per stratum per analysis calculated by INVAR by using variance under H0.",
+                   locations = gt::cells_column_labels(columns = info0_invar_H1)) %>% 
+  gt::tab_footnote(footnote = "info0_ss = the statistical information under H0 per stratum per analysis calculated by SS.",
+                   locations = gt::cells_column_labels(columns = info0_ss))
 ```
 
 ```{r}
@@ -890,8 +944,9 @@ y_ss <- gs_design_npe(
 tibble::tibble(Method = c("INVAR-H0", "INVAR-H1", "SS"),
                `Sample size` = c(y_invar_H0$info[3] / x$info_invar_H0[3], 
                                  y_invar_H1$info[3] / x$info_invar_H1[3], 
-                                 y_ss$info[3] / x$info_ss[3])) %>% gt::gt()
-
+                                 y_ss$info[3] / x$info_ss[3])) %>% 
+  gt::gt() %>% 
+  gt::tab_header(title = "Sample size calculated by INVAR and SS")
 ```
 
 
