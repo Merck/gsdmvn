@@ -13,6 +13,7 @@ gs_design_rd(
   alpha = 0.025,
   beta = 0.1,
   ratio = 1,
+  ratio_stratum = NULL,
   weight = c("un-stratified", "ss", "invar"),
   upper = gs_b,
   lower = gs_b,
@@ -39,6 +40,10 @@ gs_design_rd(
 \item{beta}{Type II error}
 
 \item{ratio}{Experimental:Control randomization ratio (not yet implemented)}
+
+\item{ratio_stratum}{randomization ratio of different stratum.
+If it is un-stratified design then \code{NULL}.
+Otherwise it is a tibble contraining two columns (Stratum and Ratio).}
 
 \item{weight}{the weighting scheme for stratified population}
 

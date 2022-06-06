@@ -525,18 +525,19 @@ x %>%
 
 By plugging the `theta` and `info` above into `gs_design_npe()`, one can calculate the sample size to achieve the 90\% power.
 ```{r}
-y <- gs_design_npe(theta = abs(p_e - p_c), 
-                   info = x$info, 
-                   info0 = x$info0, 
-                   info_scale = 2,
-                   alpha = .025, 
-                   beta = .1,
-                   upper = gs_b, 
-                   lower = gs_b,
-                   upar = list(par = -qnorm(.025)),
-                   lpar = list(par = -Inf))
+y <- gs_design_npe(
+  theta = .4 - .28, 
+  info = x$info, 
+  info0 = x$info0, 
+  info_scale = 2,
+  alpha = .025, 
+  beta = .1,
+  upper = gs_b, 
+  lower = gs_b,
+  upar = list(par = -qnorm(.025)),
+  lpar = list(par = -Inf))
 
-cat("The sample size calculated by `gsdmvn` is ", y$info[1] / x$info[1] * N) 
+cat("The sample size calculated by `gsdmvn` is ", y$info[1] / x$info[1]) 
 ```
 
 
@@ -581,7 +582,7 @@ knitr::include_graphics("./figures/east_n_fix.png")
 ## Unstratified Group Sequential Design  {.tabset}
 
 The example discussed in this section is an unstratified group sequential design with equal sized groups to detect $p_C = 0.15, p_E = .1$.  
-Under the null hypothesis, we assume $p_C=p_E =0.125$.
+Under the null hypothesis, we assume $p_C = p_E = 0.125$.
 We desire 90\% power for a two-sided test for two proportions at $\alpha = 0.05$.
 And we would like to calculate the sample size to achieve the 90\% power.
 
@@ -589,34 +590,8 @@ And we would like to calculate the sample size to achieve the 90\% power.
 
 To calculate the sample size, one can use `gs_design_rd()`.
 The logic of `gs_design_rd()` is to calculate the sample size of fixed design first.
-```{r, eval=FALSE}
-x_fix <- gs_info_rd(
-  p_c = tibble::tibble(Stratum = "All", Rate = .15),
-  p_e = tibble::tibble(Stratum = "All", Rate = .1),
-  N = tibble::tibble(Stratum = "All", N = 1, Analysis = 1),
-  rd0 = 0, 
-  ratio = 1,
-  weight = "un-stratified"
-)
 
-y_fix <- gs_design_npe(
-    theta = .05, 
-    info = x_fix$info, 
-    info0 = x_fix$info0, 
-    info_scale = 2,
-    alpha = .025, beta = .1, binding = FALSE,
-    upper = gs_b,
-    lower = gs_b,
-    upar = list(par = gsDesign(k = 1, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
-    lpar = list(par = -Inf),
-    test_lower = FALSE)
-
-cat("The sample size of the fixed design is ", y_fix$info/x_fix$info, ".\n")
-```
-
-Then the sample size of the group sequential design is a product of 1834.641 and an inflation factor. 
-
-```{r, eval=FALSE}
+```{r}
 x_gs <- gs_info_rd(
   p_c = tibble::tibble(Stratum = "All", Rate = .15),
   p_e = tibble::tibble(Stratum = "All", Rate = .1),
@@ -626,25 +601,31 @@ x_gs <- gs_info_rd(
   weight = "un-stratified"
 )
 
+x_gs %>% 
+  gt::gt() %>%
+  gt::tab_header(title = "The statistical information of the group sequential design")
+```
+
+```{r}
 y_gs <- gs_design_npe(
-    theta = .05, 
-    info = x_gs$info, 
-    info0 = x_gs$info0, 
-    info_scale = 2,
-    alpha = .025, beta = .1, binding = FALSE,
-    upper = gs_b,
-    lower = gs_b,
-    upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
-    lpar = list(par = rep(-Inf, 3)),
-    test_lower = FALSE)
+  theta = .05, 
+  info = x_gs$info, 
+  info0 = x_gs$info0, 
+  info_scale = 2,
+  alpha = .025, beta = .1, binding = FALSE,
+  upper = gs_b,
+  lower = gs_b,
+  upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  lpar = list(par = rep(-Inf, 3)),
+  test_lower = FALSE)
 
 cat("The sample size of the group sequential design is ", y_gs$info/x_gs$info[3], "\n")
 ```
 
 
 The above logic is implemented in `gs_design_rd()`.
-```{r, eval=FALSE}
-x <- gs_design_rd(
+```{r}
+x_gsdmvn <- gs_design_rd(
   p_c = tibble::tibble(Stratum = "All", Rate = .15),
   p_e = tibble::tibble(Stratum = "All", Rate = .1),
   k = 3,
@@ -662,9 +643,7 @@ x <- gs_design_rd(
   info_scale = 2
 )
 
-x
-
-cat("The sample size calculated by `gsdmvn` is ", x$analysis$N)
+x_gsdmvn %>% summary() %>% as_gt()
 ```
 
 ### `gsDesign`
@@ -686,7 +665,7 @@ n_fix <- nBinomial(
 
 cat("The sample size of fixed-design calculated by `gsDesign` is ", n_fix, ".\n")
 
-x <- gsDesign(
+x_gsDesign <- gsDesign(
   k = 3,
   test.type = 1,
   # 1-sided Type I error
@@ -711,15 +690,24 @@ x <- gsDesign(
   # Fixed design sample size from nBinomial above
   n.fix = n_fix)
 
-cat("The sample size calcuated by `gsDesign` is ", x$n.I, ".\n")
+cat("The sample size calcuated by `gsDesign` is ", x_gsDesign$n.I, ".\n")
 
-gsBoundSummary(x, digits = 4, ddigits = 2, tdigits = 1)
+gsBoundSummary(x_gsDesign, digits = 4, ddigits = 2, tdigits = 1)
 ```
 
 
 ### EAST 
 ```{r label = EastGs, echo = FALSE, fig.cap = "Sample size calculated by EAST", out.width = '90%'}
 knitr::include_graphics("./figures/east_n_gs.png")
+```
+
+### Summary
+
+```{r}
+tibble::tibble(gsdmvn = x_gsdmvn$analysis$N[3],
+               gsDesign = x_gsDesign$n.I,
+               EAST_unpooled = c(NA, NA, 1850),
+               EAST_pooled = c(NA, NA, 1857)) %>% gt::gt()
 ```
 
 
@@ -961,6 +949,7 @@ gs_design_rd(
   alpha = .025,                  
   beta = .1,                    
   ratio = 1,
+  ratio_stratum = tibble::tibble(Stratum = c("S1", "S2", "S3"), Ratio = 1:3),
   weight = "ss",
   upper = gs_b,
   lower = gs_b,

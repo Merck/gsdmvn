@@ -24,6 +24,9 @@ NULL
 #' Group sequential design using average hazard ratio under non-proportional hazards
 #'
 #' @param ratio Experimental:Control randomization ratio (not yet implemented)
+#' @param ratio_stratum randomization ratio of different stratum. 
+#' If it is un-stratified design then \code{NULL}.
+#' Otherwise it is a tibble contraining two columns (Stratum and Ratio).
 #' @param alpha One-sided Type I error
 #' @param beta Type II error
 #' @param binding indicator of whether futility bound is binding; default of FALSE is recommended
@@ -62,6 +65,7 @@ gs_design_rd <- function(
   alpha = .025,                  
   beta = .1,                    
   ratio = 1,
+  ratio_stratum = NULL,
   weight = c("un-stratified", "ss", "invar"),
   upper = gs_b,
   lower = gs_b,
@@ -79,7 +83,7 @@ gs_design_rd <- function(
   # --------------------------------------------- #
   info_scale <- if(methods::missingArg(info_scale)){2}else{match.arg(as.character(info_scale), choices = 0:2)}
   weight <- if(methods::missingArg(weight)){"un-stratified"}else{match.arg(weight)}
-  
+  n_strata <- length(unique(p_c$Stratum))
   # --------------------------------------------- #
   #     calculate the sample size                 #
   #          under fixed design                   #
@@ -87,7 +91,14 @@ gs_design_rd <- function(
   x_fix <- gs_info_rd(
     p_c = p_c, 
     p_e = p_e,
-    N = tibble::tibble(Stratum = p_c$Stratum, N = 1, Analysis = 1),
+    #N = tibble::tibble(Stratum = p_c$Stratum, N = 1, Analysis = 1),
+    N = tibble::tibble(Analysis = 1, 
+                       Stratum = p_c$Stratum, 
+                       N = if(is.null(ratio_stratum)){
+                         1
+                       }else{
+                         (ratio_stratum %>% mutate(x = Ratio / sum(Ratio)))$x
+                       }), 
     rd0 = rd0,
     ratio = ratio,
     weight = weight) 
@@ -99,7 +110,13 @@ gs_design_rd <- function(
   x_gs <- gs_info_rd(
     p_c = p_c, 
     p_e = p_e,
-    N = tibble::tibble(Stratum = p_c$Stratum, N = IF, Analysis = 1:k),
+    N = tibble::tibble(Analysis = rep(1:k, each = n_strata), 
+                       Stratum = rep(p_c$Stratum, each = k), 
+                       N = if(is.null(ratio_stratum)){
+                         IF
+                       }else{
+                         rep((ratio_strata %>% mutate(x = Ratio / sum(Ratio)))$x, each = 3) * IF
+                       }), 
     rd0 = rd0,
     ratio = ratio,
     weight = weight)

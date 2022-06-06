@@ -25,7 +25,6 @@ NULL
 #' @param n sample size 
 #' @param rd0 the risk difference under H0 
 #' @param ratio Experimental:Control randomization ratio
-#'
 #' @export
 #' @examples
 #' # --------------------- #
@@ -169,7 +168,8 @@ gs_info_rd <- function(
       dplyr::rename(p_e = Rate) %>% 
       left_join(if("data.frame" %in% class(rd0)){rd0}else{tibble::tibble(Analysis = 1:K, rd0 = rd0)}) %>% 
       mutate(
-        N_e = N / (1 + ratio), N_c = N * ratio / (1 + ratio),
+        N_e = N / (1 + ratio), 
+        N_c = N * ratio / (1 + ratio),
         d = ifelse(p_c > p_e, 1, -1),
         p_pool_per_k_per_s = (N_c * p_c + N_e * p_e) / N,
         p_e0 = (p_c + ratio * p_e - d * rd0) / (ratio + 1),
