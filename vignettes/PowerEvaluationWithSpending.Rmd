@@ -2,7 +2,9 @@
 title: "Statistical information applications"
 subtitle: "Binomial Trial Example"
 output:
-  html_vignette
+  html_document:
+    toc: true
+    toc_depth: 3
 bibliography: gsDesign.bib
 vignette: >
   %\VignetteIndexEntry{Statistical information in binomial endpoint trials}
@@ -87,6 +89,9 @@ $\theta_{rd}$ or $\theta_{rr}.$
 | Risk ratio      | $\theta=p_2/p_1$       | $X_{rr}=\theta_{rr}\hat p_1 -\hat p_2$ | $\hat V_{rr}=\frac{1+r}{N}\left(\theta_{rr}^2\tilde p_{1,rr}\tilde q_{1,rr}+\tilde p_{2,rr} \tilde q_{2,rr}/r\right)$  |
 +-----------------+-----------------------------------------+-----------------------+--------+
 
+
+FOLLOWING 2 EQUATIONS MAY BE REMOVED; THEY ARE HERE TO ENSURE TABLE EQUATIONS ARE NOT LOST. 
+
 $\hat V_{rd}=\frac{1+r}{N}\left( \tilde p_{1,rd}\tilde q_{1,rd}+\tilde p_{2,rd} \tilde q_{2,rd}/r \right)$
 
 $\hat V_{rr}=\frac{1+r}{N}\left(\theta_{rr}^2\tilde p_{1,rr}\tilde q_{1,rr}+\tilde p_{2,rr} \tilde q_{2,rr}/r\right) /p_1$                                       
@@ -119,7 +124,11 @@ estimating
 $\tilde p_{1,rd}, \tilde p_{2,rd}, \tilde p_{1,rr}, \tilde p_{2,rr}$ as
 previously suggested by @MiettinenNurminen and @Koopman. Rather than
 repeating the estimation formula, we build functions to compute the
-statistical information. We begin with risk difference.
+statistical information. 
+
+### Risk difference information
+
+We begin with risk difference.
 
 ```{r}
 info_rd <- function(N=200, ratio=1, p1 = .2, p2 = .1, theta = 0){
@@ -139,7 +148,9 @@ info_rd <- function(N=200, ratio=1, p1 = .2, p2 = .1, theta = 0){
     p2t[d0] <- p1t[d0]
     sigmat <- sqrt((p1t * (1 - p1t) + p2t * (1 - p2t) / ratio) * (ratio + 1))
     sigma <- sqrt((p1 * (1 - p1) + p2 * (1 - p2) / ratio) * (ratio + 1))
-    return(tibble::tibble(N = N, N1 = N1, N2 = N2, ratio = ratio, p1 = p1, p2 = p2, p1_tilde = p1t, p2_tilde = p2t, theta = theta, infot = N / sigmat, info = N / sigma, Endpoint = "Risk difference"))
+    return(tibble::tibble(N = N, N1 = N1, N2 = N2, ratio = ratio, p1 = p1, p2 = p2, 
+                          p1_tilde = p1t, p2_tilde = p2t, theta = theta, 
+                          infot = N / sigmat, info = N / sigma, Endpoint = "Risk difference"))
   }
 ```
 
@@ -150,17 +161,84 @@ info_rd()
 ```
 
 We next try 3 different $\theta_{rd}$ values. We note that in each case
-we have nearly:
+we have :
 
-$$\frac{N_1 p_1+ N_2 p_2}{N_1+N_2}=\frac{N_1 \tilde p_1+ N_2 \tilde p_2}{N_1+N_2}$$
+$$\frac{N_1 p_1+ N_2 p_2}{N_1+N_2}\approx\frac{N_1 \tilde p_1+ N_2 \tilde p_2}{N_1+N_2}$$
 as well as $\tilde p_1 - \tilde p_2 = \theta$
 
 ```{r echo=TRUE}
 info_rd(theta=c(0,.1,.05)) %>% gt() %>% 
   fmt_number(decimals=0, columns = c("N", "N1", "N2", "ratio")) %>%
-  fmt_number(decimals=3, columns = c("p1", "p2", "p1_tilde", "p2_tilde")) %>%
+  fmt_number(decimals=3, columns = c("p1", "p2", "p1_tilde", "p2_tilde", "theta")) %>%
   fmt_number(decimals=1, columns = c("info", "infot", "info"))
 ```
+
+We check this with `gsDesign::nBinomial()`.
+We note that the second row above, `infot` is replicated by `info` in both rows below.
+
+```{r}
+gsDesign::nBinomial(n=200, p1 = .2, p2 = .1, delta0 = c(0,.05), alpha=.025, beta = .1, 
+                    outtype = 3) %>% 
+     dplyr::transmute(N = n, p1 = p1, p2 = p2, p1t = p10, p2t = p20, theta = delta0, 
+                      infot = N / sigma0, info = N / sigma1)
+```
+
+
+### Risk ratio information
+
+We continue with risk ratio.
+
+```{r}
+info_rr <- function(N=200, ratio=1, p1 = .2, p2 = .1, theta = 0){
+    d0 <- (theta == 0)
+    N1 <- N / (1 +ratio)
+    N2 <- ratio * N / (1 + ratio)
+    RR <- exp(theta) # Assumed risk ratio
+    a <- (1 + ratio)
+    b <- -(RR * (1 + ratio * p2) + ratio + p1)
+    c <- RR * (p1 + ratio * p2)
+    p1t <- (-b - sqrt(b^2 - 4 * a * c)) / 2 / a
+    p2t <- p1t / RR
+    p1t[d0] <- (p1[d0] + ratio[d0] * p2[d0]) / (1 + ratio[d0])
+    p2t[d0] <- p1t[d0]
+    sigmat <- sqrt((ratio + 1) * (p1t * (1 - p1t) + RR^2 *
+      p2t * (1 - p2t) / ratio))
+    sigma <- sqrt((ratio + 1) * (p1 * (1 - p1) + RR^2 *
+      p2 * (1 - p2) / ratio))
+    return(tibble::tibble(N = N, N1 = N1, N2 = N2, ratio = ratio, 
+                          p1 = p1, p2 = p2, p1_tilde = p1t, p2_tilde = p2t, 
+                          theta = theta, "Assumed RR" = RR, 
+                          infot = N / sigmat, info = N / sigma, Endpoint = "Risk ratio"))
+}
+```
+
+Now we test this.
+
+```{r}
+info_rr()
+```
+
+We next try 3 different $\theta_{rr}$ values. Again, we note that in each case
+we have:
+
+$$\frac{N_1 p_1+ N_2 p_2}{N_1+N_2}\approx \frac{N_1 \tilde p_1+ N_2 \tilde p_2}{N_1+N_2}$$
+as well as $\tilde p_1 / \tilde p_2$ is equal to the assumed risk ratio.
+
+```{r echo=TRUE}
+info_rr(theta=log(c(1,.5,.75))) %>% gt() %>% 
+  fmt_number(decimals=0, columns = c("N", "N1", "N2", "ratio")) %>%
+  fmt_number(decimals=3, columns = c("p1", "p2", "p1_tilde", "p2_tilde", "theta")) %>%
+  fmt_number(decimals=1, columns = c("info", "infot", "info"))
+```
+We check this with `gsDesign::nBinomial()`.
+
+```{r}
+gsDesign::nBinomial(n=200, p1 = .2, p2 = .1, delta0 = log(c(1, .5, .75)), alpha=.025, beta = .1, 
+                    scale = "RR", outtype = 3) %>% 
+     dplyr::transmute(N = n, p1 = p1, p2 = p2, p1t = p10, p2t = p20, theta = delta0, 
+                      "Assumed RR" = exp(delta0), infot = N / sigma0, info = N / sigma1)
+```
+
 
 and $\theta_{rd}$ represents the risk difference. We further define the
 risk ratio $\theta_{rr}=p_2/p_1=2/3.$ We denote the alternate hypothesis
