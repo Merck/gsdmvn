@@ -110,12 +110,12 @@ gs_design_rd <- function(
   x_gs <- gs_info_rd(
     p_c = p_c, 
     p_e = p_e,
-    N = tibble::tibble(Analysis = rep(1:k, each = n_strata), 
+    N = tibble::tibble(Analysis = rep(1:k, n_strata), 
                        Stratum = rep(p_c$Stratum, each = k), 
                        N = if(is.null(ratio_stratum)){
                          IF
                        }else{
-                         rep((ratio_strata %>% mutate(x = Ratio / sum(Ratio)))$x, each = 3) * IF
+                         rep((ratio_stratum %>% mutate(x = Ratio / sum(Ratio)))$x, each = 3) * IF
                        }), 
     rd0 = rd0,
     ratio = ratio,
