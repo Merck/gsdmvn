@@ -75,7 +75,8 @@
 
 
 
-<script src="PowerEvaluationWithSpending_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+
+<div class="row">
   <main id="main"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Power Evaluation with Spending bounds</h1>
             <h3 data-toc-skip class="subtitle">Binomial Trial Example</h3>
@@ -95,7 +96,7 @@
 <div class="section level2">
 <h2 id="scenario-for-consideration">Scenario for consideration<a class="anchor" aria-label="anchor" href="#scenario-for-consideration"></a>
 </h2>
-<p>We consider a scenario largely based on the CAPTURE study <span class="citation">Investigators and others (1997)</span> where the primary endpoint was a composite of death, acute myocardial infarction or the need for recurrent percutaneous intervention within 30 days of randomization. That is, we consider a 2-arm trial with an experimental arm and a control arm. The primary endpoint for the trial is a binary indicator for each participant if they have a failed outcome. For this case, we consider the parameter <span class="math inline">\(\theta = p_1 - p _2\)</span> where <span class="math inline">\(p_1\)</span> denotes the probability that a trial participant in the control group experiences a failure and <span class="math inline">\(p_2\)</span> represents the same probability for a trial participant in the experimental group. We will assume <span class="math inline">\(K=3\)</span> analyses after 350, 700, and 1400 patients have been observed with equal randomization between the treatment groups. The study was designed with approximately 80% power (Type II error <span class="math inline">\(\beta = 1 - 0.8 = 0.2\)</span>) and 2.5% one-sided Type I error (<span class="math inline">\(\alpha = 0.025\)</span>) to detect a reduction from a 15% event rate (<span class="math inline">\(p_1 = 0.15\)</span>) in the control group to 10% (<span class="math inline">\(p_2 = 0.1\)</span>) in the experimental group. The parameter of interest is <span class="math inline">\(\theta = p_1 - p_2\)</span>. We denote the alternate hypothesis as <span class="math display">\[H_1: \theta = \theta_1= p_1^1 - p_2^1 = 0.15 - 0.10 = 0.05\]</span> and the null hypothesis <span class="math display">\[H_0: \theta = \theta_0 = 0 = p_1^0 - p_2^0\]</span> where <span class="math inline">\(p^0_1 = p^0_2= (p_1^1+p_2^1)/2 = 0.125\)</span> as laid out in <span class="citation">Lachin (2009)</span>.</p>
+<p>We consider a scenario largely based on the CAPTURE study <span class="citation">Investigators et al. (1997)</span> where the primary endpoint was a composite of death, acute myocardial infarction or the need for recurrent percutaneous intervention within 30 days of randomization. That is, we consider a 2-arm trial with an experimental arm and a control arm. The primary endpoint for the trial is a binary indicator for each participant if they have a failed outcome. For this case, we consider the parameter <span class="math inline">\(\theta = p_1 - p _2\)</span> where <span class="math inline">\(p_1\)</span> denotes the probability that a trial participant in the control group experiences a failure and <span class="math inline">\(p_2\)</span> represents the same probability for a trial participant in the experimental group. We will assume <span class="math inline">\(K=3\)</span> analyses after 350, 700, and 1400 patients have been observed with equal randomization between the treatment groups. The study was designed with approximately 80% power (Type II error <span class="math inline">\(\beta = 1 - 0.8 = 0.2\)</span>) and 2.5% one-sided Type I error (<span class="math inline">\(\alpha = 0.025\)</span>) to detect a reduction from a 15% event rate (<span class="math inline">\(p_1 = 0.15\)</span>) in the control group to 10% (<span class="math inline">\(p_2 = 0.1\)</span>) in the experimental group. The parameter of interest is <span class="math inline">\(\theta = p_1 - p_2\)</span>. We denote the alternate hypothesis as <span class="math display">\[H_1: \theta = \theta_1= p_1^1 - p_2^1 = 0.15 - 0.10 = 0.05\]</span> and the null hypothesis <span class="math display">\[H_0: \theta = \theta_0 = 0 = p_1^0 - p_2^0\]</span> where <span class="math inline">\(p^0_1 = p^0_2= (p_1^1+p_2^1)/2 = 0.125\)</span> as laid out in <span class="citation">Lachin (2009)</span>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://merck.github.io/gsdmvn/">gsdmvn</a></span><span class="op">)</span>
 
@@ -212,23 +213,23 @@
 <span class="co">#&gt; <span style="color: #BCBCBC;">6</span>        3 Lower  1.85     0.594     0.03   0.05 <span style="text-decoration: underline;">3</span>003. <span style="text-decoration: underline;">2</span>997. <span style="text-decoration: underline;">3</span>013.</span></code></pre></div>
 </div>
 <div class="section level2 unnumbered">
-<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+<h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
-<div id="refs" class="references">
-<div id="ref-Chan2002">
-<p>Chan, Ivan SF. 2002. “Power and Sample Size Determination for Noninferiority Trials Using an Exact Method.” <em>Journal of Biopharmaceutical Statistics</em> 12 (4): 457–69.</p>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-Chan2002" class="csl-entry">
+Chan, Ivan SF. 2002. <span>“Power and Sample Size Determination for Noninferiority Trials Using an Exact Method.”</span> <em>Journal of Biopharmaceutical Statistics</em> 12 (4): 457–69.
 </div>
-<div id="ref-FarringtonManning">
-<p>Farrington, Conor P, and Godfrey Manning. 1990. “Test Statistics and Sample Size Formulae for Comparative Binomial Trials with Null Hypothesis of Non-Zero Risk Difference or Non-Unity Relative Risk.” <em>Statistics in Medicine</em> 9 (12): 1447–54.</p>
+<div id="ref-FarringtonManning" class="csl-entry">
+Farrington, Conor P, and Godfrey Manning. 1990. <span>“Test Statistics and Sample Size Formulae for Comparative Binomial Trials with Null Hypothesis of Non-Zero Risk Difference or Non-Unity Relative Risk.”</span> <em>Statistics in Medicine</em> 9 (12): 1447–54.
 </div>
-<div id="ref-CCmyth">
-<p>Gordon, Ian, and Ray Watson. 1996. “The Myth of Continuity-Corrected Sample Size Formulae.” <em>Biometrics</em>, 71–76.</p>
+<div id="ref-CCmyth" class="csl-entry">
+Gordon, Ian, and Ray Watson. 1996. <span>“The Myth of Continuity-Corrected Sample Size Formulae.”</span> <em>Biometrics</em>, 71–76.
 </div>
-<div id="ref-CAPTURE">
-<p>Investigators, Capture, and others. 1997. “Randomised Placebo-Controlled Trial of Abciximab Before and During Coronary Intervention in Refractory Unstable Angina: The Capture Study.” <em>Lancet</em> 349: 1429–35.</p>
+<div id="ref-CAPTURE" class="csl-entry">
+Investigators, Capture et al. 1997. <span>“Randomised Placebo-Controlled Trial of Abciximab Before and During Coronary Intervention in Refractory Unstable Angina: The CAPTURE Study.”</span> <em>Lancet</em> 349: 1429–35.
 </div>
-<div id="ref-LachinBook">
-<p>Lachin, John M. 2009. <em>Biostatistical Methods: The Assessment of Relative Risks</em>. Vol. 509. John Wiley &amp; Sons.</p>
+<div id="ref-LachinBook" class="csl-entry">
+Lachin, John M. 2009. <em>Biostatistical Methods: The Assessment of Relative Risks</em>. Vol. 509. John Wiley &amp; Sons.
 </div>
 </div>
 </div>
