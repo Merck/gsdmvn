@@ -6,8 +6,7 @@
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/Merck/gsdmvn/workflows/R-CMD-check/badge.svg)](https://github.com/Merck/gsdmvn/actions)
-[![Codecov test
-coverage](https://codecov.io/gh/Merck/gsdmvn/branch/main/graph/badge.svg)](https://codecov.io/gh/Merck/gsdmvn?branch=main)
+[![Codecov test coverage](https://codecov.io/gh/Merck/gsdmvn/branch/main/graph/badge.svg)](https://app.codecov.io/gh/Merck/gsdmvn?branch=main)
 <!-- badges: end -->
 
 The goal of **gsdmvn** is to enable fixed or group sequential design

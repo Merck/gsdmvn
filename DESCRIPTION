@@ -30,7 +30,8 @@ Suggests:
     kableExtra,
     gt,
     ggplot2,
-    tidyr
+    tidyr,
+    covr
 Remotes: 
     Merck/simtrial,
     Merck/gsDesign2
