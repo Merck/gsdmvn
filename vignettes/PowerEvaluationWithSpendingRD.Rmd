@@ -1,0 +1,496 @@
+---
+title: "Statistical information applications"
+subtitle: "Binomial Trial Example Using Risk Difference"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+bibliography: gsDesign.bib
+vignette: >
+  %\VignetteIndexEntry{Statistical information in binomial endpoint trials}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(gt)
+```
+
+## Overview
+
+This vignette demonstrates different applications of statistical
+information in clinical trials studying a binary outcome using risk
+difference as a measure of effect size. Potential applications include
+but are not limited to
+
+1)  power calculations,
+2)  $\beta$-spending for futility,
+3)  $\alpha$-spending for efficacy,
+4)  two-sided designs, and
+5)  blinded sample size adaptation.
+
+The main underlying rationale for this to guide appropriate use of
+statistical information under different scenarios; the key citation for
+this is @FarringtonManning. The work demonstrates concepts that will be
+more challenging than for time-to-event uses that are the emphasis of
+much of the **gsdmvn** package.
+
+## Example scenario
+
+We consider a scenario largely based on the @CAPTURE trial where the
+primary endpoint was a composite of death, acute myocardial infarction
+or the need for recurrent percutaneous intervention within 30 days of
+randomization. That is, we consider a 2-arm trial with an experimental
+arm and a control arm. The primary endpoint for the trial is a binary
+indicator for each participant if they have a failed outcome. For this
+case, we consider the parameter $\theta = p_1 - p _2$ where we let
+$p_1, p_2$ denote the probability that a trial participant in the
+control and experimental groups, respectively, experiences a failure. We
+wish to test the null hypothesis $H_0: p_1=p_2$ against the alternative
+$H_1: p_1 > p_2$. More specifically, we wish to compute power for the
+scenario:
+
+$$H_1: p_1 = 0.15, \ p_2 = 0.10, \ \theta = p_1 - p_2 = 0.05.$$
+
+## Testing for risk difference
+
+We assume an overall sample size of $N$ and a sample size ratio for
+experimental (group 2) versus control (group 1) treatment groups of
+$r=N_2/N_1$. For a null hypothesis $H_0: \theta=\theta_0$ with an
+arbitrary real $\theta_0$, the test statistic is:
+
+$$X=\hat p_1-\hat p_2-\theta_0,$$where $\hat p_{i}, i=1,2$ is the number
+of failures divided by the number of observations at the time of
+analysis by treatment group. For testing, we will want to estimate the
+variance of this and for power or sample size computations, we will use
+an asymptotic approximation for the variance; both the estimated and
+asymptotic variances take the same form. When computing power or sample
+size under some hypothesized $p_1, p_2$ and $\theta = p_1 - p_2$ we will
+use the mean for $X$ under an arbitrary pair of values $p_1, p_2$ and
+hypothesized $\theta_0$:
+
+$$\mu(p_1, p_2, \theta_0) = p_1 - p_2 - \theta_0.$$ The asymptotic
+variance used is
+
+$$V(p_1, p_2, \theta_0)=\frac{1+r}{N}\left( \bar p_{1}(1 - \bar p_1)+\bar p_{2} (1- \bar p_{2})/r \right).$$
+The values $\bar p_1, \bar p_2$ actually take the form
+
+$$\begin{bmatrix}\bar p_1 \\ \bar p_2\end{bmatrix} = f(p_1, p_2, \theta_0)$$
+where $f()$ is defined by @FarringtonManning and is implemented below in
+the function `info_rd()`. When testing is actually performed we use
+
+$$V(\hat p_1, \hat p_2, \theta_0)=\frac{1+r}{N}\left(\tilde p_{1}(1 - \tilde p_1)+\tilde p_{2} (1- \tilde p_{2})/r \right)$$where
+for estimated $\hat p_1, \hat p_2$ values (failures divided by sample
+size for each treatment group)
+
+$$\begin{bmatrix}\tilde p_1 \\ \tilde p_2\end{bmatrix} = f(\hat p_1, \hat p_2, \theta_0).$$
+
+We denote the standardized test as
+
+$$Z=\frac{\hat p_1-\hat p_2 - \theta_0}{V(\hat p_1, \hat p_2, N_1, N_2, \theta_0)}.$$For
+a group sequential test with $K$ analyses and estimates
+$\hat p_{1k}, \hat p_{2k}, N_{1k}, N_{2k}$ for $k=1,2,\cdots,K$ we have
+$$Z_k=\frac{\hat p_{1k}-\hat p_{2k} - \theta_0}{V(\hat p_{1k}, \hat p_{2k}, N_{1k}, N_{2k},\theta_0)^{1/2}}.$$
+
+For superiority testing, we have $\theta_0 = 0$, for non-inferiority
+$\theta_0 < 0$ and for super-superiority (e.g., for vaccines),
+$\theta_0 > 0.$
+
+We will also extend the above variance forms to compute the probability
+of crossing a fixed or group sequential bound under any assumed $\theta$
+value for efficacy or (usually different value) for futility. This
+formulation will also be used to compute statistical information for
+$k=1,\cdots,K$ as denoted for asymptotic calculations with
+
+$$\mathcal I_k(p_1, p_2, N_{1k}, N_{2k}, \theta) = 1 / V(p_1, p_2, N_{1k}, N_{2k},\theta)$$
+and for actual testing with the observed information
+
+$$\mathcal I_k(\hat p_{1k}, \hat p_{2k}, N_{1k}, N_{2k}, \theta_0) = 1 / V(\hat p_{1k}, \hat p_{2k}, N_{1k}, N_{2k}, \theta_0).$$
+
+For computing the lower bound for a group sequential design,
+probabilities used to derive the lower bound would be based on some
+value $\theta_1$, e.g., $\theta_1$ representing the alternate
+hypothesis. For this, the standardized $Z$-value would be
+
+$$Z_k(\theta_1)=\frac{\hat p_{1k}-\hat p_{2k} - \theta_1}{V(\hat p_{1k}, \hat p_{2k}, N_{1k}, N_{2k},\theta_1)^{1/2}}$$
+
+## Computing boundary crossing probabilities
+
+For a group sequential design we assume lower boundaries $a_k$ and upper
+boundaries $b_k$, $k=1,\cdots,K$. We will use the shortcut notation
+
+$$V_k(\theta) = V(\hat p_{1k}, \hat p_{2k}, N_{1k}, N_{2k},\theta)$$
+
+and
+
+$$Z_k(\theta)=\frac{\hat p_{1k}-\hat p_{2k} - \theta}{V(\hat p_{1k}, \hat p_{2k}, N_{1k}, N_{2k},\theta)^{1/2}}.$$
+
+Thus, we now have $Z_k=Z_k(\theta_0).$ We assume here that we can ignore
+the difference between the observed and asymptotic variance
+approximations; since $\hat p_1,$ $\hat p_2$ are consistent estimators,
+this will be true asymptotically. Upper boundary crossing probabilities
+are defined for $k=1,\cdots,K$ as
+
+$$\alpha_k(\theta) = P_\theta(\{Z_k(\theta_0)\ge b_k)\}\cap_{i=1}^{k-1}\{a_1\le Z_i(\theta_0)< b_i\})$$
+
+For non-binding lower bounds, we would ignore the lower bounds
+$a_1,\cdots,a_K$ and compute
+
+$$\alpha^+_k(\theta) = P_\theta(\{Z_k(\theta_0\ge b_k)\}\cap_{i=1}^{k-1}\{Z_i(\theta_0)< b_i\}).$$
+
+Lower boundary crossing probabilities are computed for $k=1,\cdots,K$ by
+
+$$
+\beta_k(\theta)=P_\theta(\{Z_k(\theta_0)<a_k\cap_{i=1}^k\{a_i\le Z_i(\theta_0) <b_i\}.
+$$
+
+To clarify boundary crossing probabilities under different values of
+$\theta$, we note the identity for $k=1,\cdots, K$
+
+$$
+\begin{aligned}
+Z_k(\theta_0) & = \frac{\hat p_1 -\hat p_2 -\theta_0}{V_k(\theta_0)^{1/2}}\\
+              & = \frac{\hat p_1 -\hat p_2 - \theta + \theta - \theta_0}{V(\theta_0)^{1/2}}\\
+              & = Z_k(\theta)\left(\frac{V(\theta)}{V(\theta_0)}\right)^{1/2} +
+\frac{\theta - \theta_0}{V(\theta_0)^{1/2}}.
+\end{aligned}
+$$
+
+We can now rewrite $\alpha_k(\theta)$, $\alpha_k^+(\theta)$, and
+$\beta_k(\theta)$ using the above identity as
+
+$$\alpha_k(\theta) = P_\theta(\{Z_k(\theta)\ge b_k(\theta))\}\cap_{i=1}^{k-1}\{a_1(\theta)\le Z_i(\theta)< b_i(\theta)\})$$
+
+For non-binding lower bounds, we would ignore the lower bounds
+$a_1,\cdots,a_K$ and compute
+
+$$\alpha^+_k(\theta) = P_\theta(\{Z_k(\theta\ge b_k(\theta))\}\cap_{i=1}^{k-1}\{Z_i(\theta)< b_i(\theta)\}).$$
+
+Lower boundary crossing probabilities are computed for $k=1,\cdots,K$ by
+
+$$
+\beta_k(\theta)=P_\theta(\{Z_k(\theta)<a_k(\theta)\cap_{i=1}^k\{a_i(\theta)\le Z_i(\theta) <b_i(\theta\}.
+$$
+where
+
+$$ $$
+
+
+### Computing $\tilde p_{1,rd}, \tilde p_{2,rd}, \bar p_{1,rd}, \bar p_{2,rd}$
+
+@FarringtonManning recommended the maximum likelihood approach for
+estimating
+$\tilde p_{1,rd}, \tilde p_{2,rd}, \tilde p_{1,rr}, \tilde p_{2,rr}$ as
+previously suggested by @MiettinenNurminen and @Koopman. Rather than
+repeating the estimation formula, we build functions to compute the
+statistical information.
+
+### Risk difference information
+
+The statistical information computed for both the observed and
+asymptotic approximations can be compute with `info_rd` function defined
+below. The values $\tilde p_1$, $\tilde p_2$ from above are computed
+here.
+
+```{r}
+info_rd <- function(N=200, ratio=1, p1 = .2, p2 = .1, theta = 0){
+    d0 <- (theta == 0)
+    N1 <- N / (1 +ratio)
+    N2 <- ratio * N / (1 + ratio)
+    a <- 1 + ratio
+    b <- -(a + p1 + ratio * p2 + theta * (ratio + 2))
+    c <- theta^2 + theta * (2 * p1 + a) + p1 + ratio * p2
+    d <- -p1 * theta * (1 + theta)
+    v <- (b / (3 * a))^3 - b * c / 6 / a^2 + d / 2 / a
+    u <- (sign(v) + (v == 0)) * sqrt((b / 3 / a)^2 - c / 3 / a)
+    w <- (pi + acos(v / u^3)) / 3
+    p1t <- 2 * u * cos(w) - b / 3 / a
+    p2t <- p1t - theta
+    p1t[d0] <- (p1[d0] + ratio[d0] * p2[d0]) / (1 + ratio[d0])
+    p2t[d0] <- p1t[d0]
+    sigmat <- sqrt((p1t * (1 - p1t) + p2t * (1 - p2t) / ratio) * (ratio + 1))
+    sigma <- sqrt((p1 * (1 - p1) + p2 * (1 - p2) / ratio) * (ratio + 1))
+    return(tibble::tibble(N = N, N1 = N1, N2 = N2, ratio = ratio, p1 = p1, p2 = p2, 
+                          p1_tilde = p1t, p2_tilde = p2t, theta = theta, 
+                          infot = N / sigmat, info = N / sigma, Endpoint = "Risk difference"))
+  }
+```
+
+Now we test this. We note that `infot` is the information for testing
+the hypothesis specified by the input `theta` which may be
+`the observed` $\hat \theta = \hat p_1 - \hat p_2$ or *assumed*
+$\theta = p_1 - p_2$ value.
+
+```{r}
+info_rd() %>% gt()
+```
+
+We next try 3 different $\theta$ values. We note that in each case we
+have :
+
+$$\frac{N_1 p_1+ N_2 p_2}{N_1+N_2}\approx\frac{N_1 \tilde p_1+ N_2 \tilde p_2}{N_1+N_2}$$
+as well as $\tilde p_1 - \tilde p_2 = \theta.$
+
+```{r echo=TRUE}
+info_rd(N = 200, ratio = 1, p1 = .2, p2 = .1, theta=c(0,.1,.05)) %>% gt() %>% 
+  fmt_number(decimals=0, columns = c("N", "N1", "N2", "ratio")) %>%
+  fmt_number(decimals=5, columns = c("p1_tilde", "p2_tilde", "theta")) %>%
+  fmt_number(decimals=5, columns = c("info", "infot"))
+```
+
+We check this with `gsDesign::nBinomial()`. We note that the second row
+above, `infot` is replicated by `info` in both rows below.
+
+```{r}
+gsDesign::nBinomial(n=200, p1 = .2, p2 = .1, delta0 = c(0,.05), alpha=.025, beta = .1, 
+                    outtype = 3) %>% 
+     dplyr::transmute(N = n, p1 = p1, p2 = p2, p1t = p10, p2t = p20, theta = delta0, 
+                      infot = N / sigma0, info = N / sigma1) %>%
+     gt() %>%
+     fmt_number(columns = c("info", "infot"), decimals=5)
+```
+
+## Risk difference power
+
+```{r}
+power_rd <- function(N=200, ratio=1, p1 = .2, p2 = .1, theta = 0,
+                    binding = FALSE,
+                    upper = gs_b,
+                    # Default is Lan-DeMets approximation of
+                    upar = gsDesign(k = length(N), test.type=1,
+                                    n.I=N, maxn.IPlan = max(N),
+                                    sfu=sfLDOF, sfupar = NULL)$upper$bound,
+                    lower = gs_b,
+                    # Futility only at IA1
+                    lpar = c(qnorm(.1), rep(-Inf, length(N) - 1)),                                        test_upper = TRUE,
+                    test_lower = TRUE,
+                    r = 18,
+                    tol = 1e-6
+){
+  x <- info_rd(N=N, ratio=ratio, p1 = p1, p2 = p2, theta = theta)
+  return(gs_power_npe(theta = x$theta, info = x$infot, info0 = x$infot, 
+                      binding = binding,
+                      upper=upper, lower=lower, upar = upar, lpar= lpar,
+                      test_upper = test_upper, test_lower = test_lower,
+                      r = r, tol = tol) %>%
+         right_join(x %>% select(-c(info, info0, theta)), by = "Analysis") %>%
+         select(c(Analysis, Bound, Time, Events, Z, Probability, AHR, theta, info, info0)) %>%
+         arrange(desc(Bound), Analysis)
+  )
+}
+```
+
+Try it.
+
+```{r,eval=FALSE}
+power_rd()
+```
+
+## Applying information to testing
+
+## Applying information to power calculation for fixed designs
+
+Now we look at
+
+```{r echo=TRUE}
+library(dplyr)
+info_rd(N=1500, p1=.15, p2=seq(.05,.15,.025), theta=0) %>% 
+  mutate(Power=pnorm(-(qnorm(.975) - sqrt(infot) * (p1 - p2))*sqrt(info/infot))) %>%
+     gt() %>%  
+  fmt_number(decimals=0, columns = c("N", "N1", "N2", "ratio")) %>%
+  fmt_number(decimals=6, columns = c("p1", "p2", "p1_tilde", "p2_tilde", "theta")) %>%
+  fmt_number(decimals=6, columns = c("info", "infot", "info", "Power")) 
+```
+
+```{r echo=TRUE}
+gsDesign::nBinomial(n=1500, p1=.15, p2=seq(.05,.125,.025), outtype=3) %>% 
+  select(-c(sided, beta)) %>% 
+  dplyr::transmute(N = n, p1 = p1, p2 = p2, p1t = p10, p2t = p20, theta = delta0, 
+                      sigma0 = sigma0, sigma1 = sigma1, infot = n / sigma0, info = n / sigma1, Power = Power, alpha = alpha) %>%
+
+  gt() %>%
+  fmt_number(decimals=6, columns = c("Power", "alpha", "sigma0", "sigma1", "p1t", "p2t"))
+```
+
+## Applying information to sample size for fixed designs
+
+## Applying information to spending bounds and group sequential designs
+
+### Efficacy bounds
+
+### Futility bounds
+
+and $\theta$ represents the risk difference. We further define the risk
+ratio $\theta_{rr}=p_2/p_1=2/3.$ We denote the alternate hypothesis as
+$$, \theta^1=p_1^1-p_2^2=0.05, \theta_{rr}^1=\theta_2/\theta_1=2/3.$$
+
+For the null hypothesis, we let
+
+$$H_0: \theta = \theta^0 = p_1^0 - p_2^0$$
+
+$$H_0: p^0_1=p^0_2=(p_1^1+p_2^2)/2= 0.125, \theta = \theta^0=p_1^0-p_2^0=0 $$
+as laid out in @LachinBook.
+
+```{r}
+library(gsdmvn)
+p0 <- 0.15 # assumed failure rate in control group
+p1 <- 0.10 # assumed failure rate in experimental group
+alpha <- 0.025 # Design Type I error
+beta <- 0.2 # Design Type II error for 80% power
+```
+
+We note that had we considered a success outcome such as objective
+response in an oncology study, we would let $p_1$ denote the
+experimental group and $p_2$ the control group response rate. Thus, we
+always set up the notation so the $p_1>p_2$ represents superiority for
+the experimental group.
+
+## Notation and Statistical Testing
+
+We let $X_{ij}\sim \hbox{Bernoulli}(p_i),$ $j=1,2,\ldots,n_{ik}$ denote
+independent random variables in the control ($i=1$) and experimental
+($i=2$) groups through analysis $k=1,2,\ldots,K$ where
+$n_{i1} < n_{i2}<\ldots<n_K$. We let $Y_{ik}=\sum_{j=1}^{n_k}X_{ij}$. At
+analysis $k=1,2,\ldots$ and for $j=1,2$ we denote the proportion of
+failures in group $i$ at analysis $k$
+
+$$ \hat{p}_{ik}=Y_{ik}/n_{ik}.$$ Estimating under null hypothesis
+$H_0: p_1=p_2\equiv p_0$ we estimate
+
+$$ \hat{p}_{0k}=\frac{Y_{1k}+ Y_{2k}}{n_{1k}+ n_{2k}}=
+\frac{n_{1k}\hat p_{1k} + n_{2k}\hat p_{2k}}{n_{1k} + n_{2k}}. $$ We
+note
+
+$$\hbox{Var}(\hat p_{ik})=\frac{p_{i}(1-p_i)}{n_{ik}},$$ and its
+consistent estimatator
+$$\widehat{\hbox{Var}}(\hat p_{ik})=\frac{\hat p_{ik}(1-\hat p_{ik})}{n_{ik}},$$
+$i=1,2$, $k=1,2,\ldots,K$. Letting
+$\hat\theta_k=\hat p_{1k}-\hat p_{2k},$ we also have
+
+$$\sigma^2_k\equiv \hbox{Var}(\hat\theta_i)=\frac{p_1(1-p_1)}{n_{1k}}+\frac{p_2(1-p_2)}{n_{2k}},$$
+its consistent estimator
+$$\hat\sigma^2_k=\frac{\hat p_{1k}(1-\hat p_{1k})}{n_{1k}}+\frac{\hat p_{2k}(1-\hat p_{2k})}{n_{2k}},$$
+and the corresponding null hypothesis estimator
+$$\hat\sigma^2_{0k}=\hat p_{0k}(1-\hat p_{0k})\left(\frac{1}{n_{1k}}+ \frac{1}{n_{2k}}\right),$$
+$k=1,2,\ldots,K$. Statistical information for each of these quantities
+and their corresponding estimators are denoted by
+
+$$\begin{align}
+\mathcal{I}_k = &1/\sigma^2_k,\\
+\mathcal{\hat I}_k = &1/\hat \sigma^2_k,\\
+\mathcal{I}_{0k} =& 1/ \sigma^2_{0k},\\
+\mathcal{\hat I}_{0k} =& 1/\hat \sigma^2_{0k},
+\end{align}$$ $k=1,2,\ldots,K$. Testing, as recommended by @LachinBook,
+is done with the large sample test with the null hypothesis variance
+estimate and without continuity correction:
+$$Z_k = \hat\theta_k/\hat\sigma_{0k}=\frac{\hat p_{1k} - \hat p_{2k}}{\sqrt{(1/n_{1k}+ 1/n_{2k})\hat p_{0k}(1-\hat p_{0k})} },$$
+which is asymptotically Normal(0,1) if $p_1=p_2$ and Normal(0,
+$\sigma_{0k}^2/\sigma_k^2$) more generally for any $p_1, p_2$,
+$k=1,2,\ldots,K$. We note that $\chi^2=Z^2_k$ is the $\chi^2$ test
+without continuity correction as recommended by @CCmyth. Note finally
+that this extends in a straightforward way the non-inferiority test of
+@FarringtonManning if the null hypothesis is
+$\theta = p_1 - p_2 - \delta = 0$ for some non-inferiority margin
+$\delta > 0$; $\delta < 0$ would correspond to what is referred to as
+super-superiority @Chan2002, requiring that experimental therapy has
+been shown to be superior to control by at least a margin $-\delta>0$.
+
+## Power Calculations
+
+We begin with a fixed design to simplify. We follow the approach of
+@LachinBook to compute power accounting for the different variance
+(statistical information) computations under the null hypothesis noted
+in the previous section. Noting the asymptotic equivalence
+
+$$Z_k\approx \hat\theta_k/\sigma_{0k}=\frac{\hat p_{1k} - \hat p_{2k}}{\sqrt{(1/n_{1k}+ 1/n_{2k})p_{0}(1- p_0)} }.$$
+We denote $n_k=n_{1k}+n_{2k},$ $k=1,2,\ldots, K$ and assume a constant
+proportion $\xi_i$ randomized to each group $i=1,2.$ Thus,
+
+$$Z_k\approx \frac{\sqrt{n_k}(\hat p_{1k} - \hat p_{2k})}{\sqrt{(1/\xi_1+ 1/\xi_2)p_{0}(1- p_0)} }.$$
+
+we have the asymptotic distribution
+
+$$Z_k\sim\hbox{Normal}\left(\sqrt{n_k}\frac{p_1 - p_2}{\sqrt{(1/\xi_1+ 1/\xi_2) p_0(1- p_0)} },\sigma^2_{0k}/\sigma^2_{1k}\right).$$
+We note that
+
+$$ \sigma^2_{0k}/\sigma^2_{1k} = \frac{ p_0(1-p_0)\left(1/\xi_1+ 1/\xi_2\right)}{p_1(1-p_1)/\xi_1+p_2(1-p_2)/\xi_2}.$$
+We also note by definition that
+$\sigma^2_{0k}/\sigma^2_{1k}=\mathcal I_k/\mathcal I_{0k}.$ Based on an
+input $p_1, p_2, \xi_1, \xi_2 = 1-\xi_1, n_k$ we will compute
+$\theta, \mathcal{I}_k, \mathcal{I}_{0k}$, $k=1,2,\ldots,K$.
+
+```{r}
+library(tibble)
+library(dplyr)
+
+gs_info_binomial <- function(p1, p2, xi1, n, delta = NULL){
+  if (is.null(delta)) delta <- p1 - p2
+  # Compute (constant) effect size at each analysis theta
+  theta <- rep(p1 - p2, length(n))
+  # compute null hypothesis rate, p0
+  p0 <- xi1 * p1 + (1 - xi1) * p2
+  # compute information based on p1, p2
+  info <-  n / (p1 * (1 - p1) / xi1 + p2 * (1 - p2) / (1 - xi1))
+  # compute information based on null hypothesis rate of p0
+  info0 <- n / (p0 * (1 - p0)*(1 / xi1 + 1 / (1 - xi1)))
+  # compute information based on H1 rates of p1star, p2star
+  p1star <- p0 + delta * xi1
+  p2star <- p0 - delta * (1 - xi1)
+  info1 <-  n / (p1star * (1 - p1star) / xi1 + p2star * (1 - p2star) / (1 - xi1))
+  return(tibble(Analysis = 1:length(n),
+                n = n,
+                theta = theta,
+                theta1 = rep(delta, length(n)),
+                info = info,
+                info0 = info0,
+                info1 = info1))
+}
+```
+
+For the CAPTURE trial, we have
+
+```{r}
+h1 <- gs_info_binomial(p1 = .15, p2 = .1, xi1 = .5, n = c(350, 700, 1400))
+h1
+```
+
+Now we examine information for a smaller assumed treatment difference
+than the alternative:
+
+```{r}
+h <- gs_info_binomial(p1 = .15, p2 = .12, xi1 = .5, delta = .05, n = c(350, 700, 1400))
+h
+```
+
+We can plug these into `gs_power_npe()` with the intended spending
+functions. We begin with power under the alternate hypothesis
+
+```{r}
+gs_power_npe(theta = h1$theta, theta1 = h1$theta, info = h1$info,
+             info0 = h1$info0, info1 = h1$info1,
+             upper = gs_spending_bound,
+             upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+             lower = gs_spending_bound,
+             lpar = list(sf = gsDesign::sfHSD, param = -2, total_spend = 0.2)
+)
+```
+
+```{r}
+gs_power_npe(theta = h$theta, theta1 = h$theta1, info = h$info,
+             info0 = h$info0, info1 = h$info1,
+             upper = gs_spending_bound,
+             upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+             lower = gs_spending_bound,
+             lpar = list(sf = gsDesign::sfHSD, param = -2, total_spend = 0.2)
+)
+```
+
+## References

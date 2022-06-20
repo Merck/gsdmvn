@@ -4,6 +4,7 @@ subtitle: "Binomial Trial Example"
 output:
   html_document:
     toc: true
+    toc_float: true
     toc_depth: 3
 bibliography: gsDesign.bib
 vignette: >
@@ -72,30 +73,28 @@ $$H_1: p_1^1 = 0.15, p_2^1 = 0.10.$$
 We consider two formulations for testing as in @FarringtonManning.
 
 -   Risk difference: $\theta_{rd} = p_1 - p_2= 0.15 - 0.1 = 0.05.$
--   Risk ratio: $\theta_{rr}=p_2/p1=0.1/0.15 = 2/3.$
+-   Risk ratio: $\theta_{rr}=-\log(p_2/p1)=-\log(0.1/0.15) = -\log(2/3)=0.405.$
 
+We have transformed risk ratio to the log scale with a positive number indicating a result favoring experimental if $\theta_{rr}>0$ and the outcome studied represents treatment failure.
+In either case, $\theta_{rd},\theta_{rr}>0$ indicates a result favoring experimental, $=0$ no difference, and $<0$ favoring control.
 We assume an overall sample size of $N$ and a sample size ratio for
-experimental versus control of $r=N_2/N_1$. We begin by defining test
+experimental versus control of $r=N_2/N_1$. 
+
+
+We begin by defining test
 statistic and estimated variance formulas for a given hypothesized
 $\theta_{rd}$ or $\theta_{rr}.$
+For testing a null hypothesis risk difference of $\theta_{rd}$, the test and estimated variance for the risk difference are:
 
+$X_{rd}=\hat p_1-\hat p_2-\theta_{rd}$
 
+$\hat V_{rd}=\frac{1+r}{N}\left( \tilde p_{1,rd}\tilde q_{1,rd}+\tilde p_{2,rd} \tilde q_{2,rd}/r \right).$
 
-+-----------------+-------------------------+---------------------------------------+---------------------------+
-| Parameter       | Hypothesized $\theta$  | Test                                   | $\widehat{\hbox{Var}}(X)$ |
-+=================+:======================:+:======================================:+:======:+
-| Risk difference | $\theta =p_1 - p_2$    | $X_{rd}=\hat p_1-\hat p_2-\theta$      | $\hat V_{rd}=\frac{1+r}{N}\left(\tilde p_{1,rd}\tilde q_{1,rd}+\tilde p_{2,rd} \tilde q_{2,rd}/r \right)$ |
-+-----------------+:-----------------------------------------+----------------------+--------+
-| Risk ratio      | $\theta=p_2/p_1$       | $X_{rr}=\theta_{rr}\hat p_1 -\hat p_2$ | $\hat V_{rr}=\frac{1+r}{N}\left(\theta_{rr}^2\tilde p_{1,rr}\tilde q_{1,rr}+\tilde p_{2,rr} \tilde q_{2,rr}/r\right)$  |
-+-----------------+-----------------------------------------+-----------------------+--------+
+For testing a null hypothesis risk ratio $\exp(-\theta_{rr})$, the test and the estimated variance for the risk ratio formulation is:
 
+$X_{rr}=\exp(-\theta_{rr})\hat p_1 - \hat p_2$
 
-FOLLOWING 2 EQUATIONS MAY BE REMOVED; THEY ARE HERE TO ENSURE TABLE EQUATIONS ARE NOT LOST. 
-
-$\hat V_{rd}=\frac{1+r}{N}\left( \tilde p_{1,rd}\tilde q_{1,rd}+\tilde p_{2,rd} \tilde q_{2,rd}/r \right)$
-
-$\hat V_{rr}=\frac{1+r}{N}\left(\theta_{rr}^2\tilde p_{1,rr}\tilde q_{1,rr}+\tilde p_{2,rr} \tilde q_{2,rr}/r\right) /p_1$                                       
-
+$\hat V_{rr}=\frac{1+r}{N}\left(\exp(-\theta_{rr})^2\tilde p_{1,rr}\tilde q_{1,rr}+\tilde p_{2,rr} \tilde q_{2,rr}/r\right) /p_1.$  
 
 
 We will provide the estimates
@@ -108,12 +107,16 @@ $\tilde q_{2,rr}=1-\tilde p_{2,rr}.$
 Some applications of the above will be:
 
 -   Testing for superiority: $\theta_{rd}=0$ or $\theta_{rr}=0$
+$$Z=\frac{\hat p_1-\hat p_2}{\hat V(\theta=0)}$$
 -   Testing for non-inferiority: $\theta_{rd}<0$ or $\theta_{rr} < 0$
+$$Z=\frac{\hat p_1-\hat p_2}{\hat V(\theta=\theta_0)}, \hbox{where} \, \theta_0<0$$
 -   Testing for super-superiority (e.g., for a vaccine trial):
     $\theta_{rd}>0$ or $\theta_{rr}> 0$
+    
+$$Z=\frac{\hat p_1-\hat p_2}{\hat V(\theta=\theta_0)}, \hbox{where} \, \theta_0>0$$
 
 We will also extend the above variance forms to compute the probability
-of crossing a fixed or group sequential bound under any assumed
+of crossing a fixed or group sequential bound under any assumed $\theta$ value for efficacy or (usually different value) for futility.
 treatment effect. This formulation will also be used compute statistical
 information and spending bounds.
 
@@ -154,23 +157,23 @@ info_rd <- function(N=200, ratio=1, p1 = .2, p2 = .1, theta = 0){
   }
 ```
 
-Now we test this.
+Now we test this. We note that `infot` is the information for testing the hypothesis in the input `theta` while `the *observed* $\hat \theta = \hat p_1 - \hat p_2$ or *assumed* $\theta = p_1 - p_2$ value.
 
 ```{r}
-info_rd()
+info_rd() %>% gt()
 ```
 
 We next try 3 different $\theta_{rd}$ values. We note that in each case
 we have :
 
 $$\frac{N_1 p_1+ N_2 p_2}{N_1+N_2}\approx\frac{N_1 \tilde p_1+ N_2 \tilde p_2}{N_1+N_2}$$
-as well as $\tilde p_1 - \tilde p_2 = \theta$
+as well as $\tilde p_1 - \tilde p_2 = \theta.$
 
 ```{r echo=TRUE}
-info_rd(theta=c(0,.1,.05)) %>% gt() %>% 
+info_rd(N = 200, ratio = 1, p1 = .2, p2 = .1, theta=c(0,.1,.05)) %>% gt() %>% 
   fmt_number(decimals=0, columns = c("N", "N1", "N2", "ratio")) %>%
-  fmt_number(decimals=3, columns = c("p1", "p2", "p1_tilde", "p2_tilde", "theta")) %>%
-  fmt_number(decimals=1, columns = c("info", "infot", "info"))
+  fmt_number(decimals=5, columns = c("p1", "p2", "p1_tilde", "p2_tilde", "theta")) %>%
+  fmt_number(decimals=5, columns = c("info", "infot"))
 ```
 
 We check this with `gsDesign::nBinomial()`.
@@ -180,20 +183,24 @@ We note that the second row above, `infot` is replicated by `info` in both rows 
 gsDesign::nBinomial(n=200, p1 = .2, p2 = .1, delta0 = c(0,.05), alpha=.025, beta = .1, 
                     outtype = 3) %>% 
      dplyr::transmute(N = n, p1 = p1, p2 = p2, p1t = p10, p2t = p20, theta = delta0, 
-                      infot = N / sigma0, info = N / sigma1)
+                      infot = N / sigma0, info = N / sigma1) %>%
+     gt() %>%
+     fmt_number(columns = c("info", "infot"), decimals=5)
 ```
 
 
 ### Risk ratio information
 
 We continue with risk ratio.
+NOTE: Risk ratio is NOT correct at this time.
+Unless checking to improve, just skip this.
 
 ```{r}
 info_rr <- function(N=200, ratio=1, p1 = .2, p2 = .1, theta = 0){
     d0 <- (theta == 0)
     N1 <- N / (1 +ratio)
     N2 <- ratio * N / (1 + ratio)
-    RR <- exp(theta) # Assumed risk ratio
+    RR <- exp(theta) # Assumed risk ratio (p1/p2)
     a <- (1 + ratio)
     b <- -(RR * (1 + ratio * p2) + ratio + p1)
     c <- RR * (p1 + ratio * p2)
@@ -207,15 +214,15 @@ info_rr <- function(N=200, ratio=1, p1 = .2, p2 = .1, theta = 0){
       p2 * (1 - p2) / ratio))
     return(tibble::tibble(N = N, N1 = N1, N2 = N2, ratio = ratio, 
                           p1 = p1, p2 = p2, p1_tilde = p1t, p2_tilde = p2t, 
-                          theta = theta, "Assumed RR" = RR, 
+                          theta = theta, "Assumed RR" = 1/RR, # Note RR is for p2/p1 here
                           infot = N / sigmat, info = N / sigma, Endpoint = "Risk ratio"))
 }
 ```
 
-Now we test this.
+Now we test this; we note that this yields the same `info` and `infot` as for `info_rd`.
 
 ```{r}
-info_rr()
+info_rr() %>% gt()
 ```
 
 We next try 3 different $\theta_{rr}$ values. Again, we note that in each case
@@ -223,22 +230,97 @@ we have:
 
 $$\frac{N_1 p_1+ N_2 p_2}{N_1+N_2}\approx \frac{N_1 \tilde p_1+ N_2 \tilde p_2}{N_1+N_2}$$
 as well as $\tilde p_1 / \tilde p_2$ is equal to the assumed risk ratio.
+Now our $\tilde p_1, \tilde p_2$ are quite different from `info_rd()`, resulting in very different `infot` except when testing the null hypothesis $\theta=0$. (THIS NEEDS MORE CHECKING)
 
 ```{r echo=TRUE}
-info_rr(theta=log(c(1,.5,.75))) %>% gt() %>% 
+xxx <- info_rr(theta= -log(c(1,.5,.75))) 
+xxx %>% gt() %>%
   fmt_number(decimals=0, columns = c("N", "N1", "N2", "ratio")) %>%
-  fmt_number(decimals=3, columns = c("p1", "p2", "p1_tilde", "p2_tilde", "theta")) %>%
-  fmt_number(decimals=1, columns = c("info", "infot", "info"))
+  fmt_number(decimals=5, columns = c("p1", "p2", "p1_tilde", "p2_tilde", "theta")) %>%
+  fmt_number(decimals=5, columns = c("info", "infot"))
+
 ```
+
 We check this with `gsDesign::nBinomial()`.
 
 ```{r}
-gsDesign::nBinomial(n=200, p1 = .2, p2 = .1, delta0 = log(c(1, .5, .75)), alpha=.025, beta = .1, 
-                    scale = "RR", outtype = 3) %>% 
+gsDesign::nBinomial(n=200, p1 = .2, p2 = .1, delta0 = log(c(1,.75)), alpha=.025, beta = .1, 
+                    outtype = 3, scale="RR") %>%
      dplyr::transmute(N = n, p1 = p1, p2 = p2, p1t = p10, p2t = p20, theta = delta0, 
-                      "Assumed RR" = exp(delta0), infot = N / sigma0, info = N / sigma1)
+                      "Assumed RR" = exp(delta0), infot = N / sigma0, info = N / sigma1) %>%
+  gt()
 ```
 
+## Risk difference power
+
+```{r}
+power_ahr <- function(N=200, ratio=1, p1 = .2, p2 = .1, theta = 0,
+                      binding = FALSE,
+                      upper = gs_b,
+                      # Default is Lan-DeMets approximation of
+                      upar = gsDesign(k = length(N), test.type=1,
+                                     n.I=N, maxn.IPlan = max(N),
+                                     sfu=sfLDOF, sfupar = NULL)$upper$bound,
+                      lower = gs_b,
+                      lpar = c(qnorm(.1), rep(-Inf, length(N) - 1)), # Futility only at IA1
+                      test_upper = TRUE,
+                      test_lower = TRUE,
+                      r = 18,
+                      tol = 1e-6
+){
+  x <- gs_info_rd(N=N, ratio=ratio, p1 = p1, p2 = p2, theta = theta)
+  return(gs_power_npe(theta = x$theta, info = x$info, info0 = x$info0, binding = binding,
+                      upper=upper, lower=lower, upar = upar, lpar= lpar,
+                      test_upper = test_upper, test_lower = test_lower,
+                      r = r, tol = tol) %>%
+         right_join(x %>% select(-c(info, info0, theta)), by = "Analysis") %>%
+         select(c(Analysis, Bound, Time, Events, Z, Probability, AHR, theta, info, info0)) %>%
+         arrange(desc(Bound), Analysis)
+  )
+}
+```
+
+Try it.
+
+```{r}
+
+```
+
+
+## Applying information to testing
+
+
+## Applying information to power calculation for fixed designs
+
+Now we look at 
+
+```{r echo=TRUE}
+library(dplyr)
+info_rd(N=1500, p1=.15, p2=seq(.05,.15,.025), theta=0) %>% 
+  mutate(Power=pnorm(-(qnorm(.975) - sqrt(infot) * (p1 - p2))*sqrt(info/infot))) %>%
+     gt() %>%  
+  fmt_number(decimals=0, columns = c("N", "N1", "N2", "ratio")) %>%
+  fmt_number(decimals=6, columns = c("p1", "p2", "p1_tilde", "p2_tilde", "theta")) %>%
+  fmt_number(decimals=6, columns = c("info", "infot", "info", "Power")) 
+```
+
+```{r echo=TRUE}
+gsDesign::nBinomial(n=1500, p1=.15, p2=seq(.05,.125,.025), outtype=3) %>% 
+  select(-c(sided, beta)) %>% 
+  dplyr::transmute(N = n, p1 = p1, p2 = p2, p1t = p10, p2t = p20, theta = delta0, 
+                      sigma0 = sigma0, sigma1 = sigma1, infot = n / sigma0, info = n / sigma1, Power = Power, alpha = alpha) %>%
+
+  gt() %>%
+  fmt_number(decimals=6, columns = c("Power", "alpha", sigma0", "sigma1", "p1t", "p2t"))
+```
+
+## Applying information to sample size for fixed designs
+
+## Applying information to spending bounds and group sequential designs
+
+### Efficacy bounds
+
+### Futility bounds
 
 and $\theta_{rd}$ represents the risk difference. We further define the
 risk ratio $\theta_{rr}=p_2/p_1=2/3.$ We denote the alternate hypothesis
@@ -342,6 +424,7 @@ $\theta, \mathcal{I}_k, \mathcal{I}_{0k}$, $k=1,2,\ldots,K$.
 
 ```{r}
 library(tibble)
+library(dplyr)
 
 gs_info_binomial <- function(p1, p2, xi1, n, delta = NULL){
   if (is.null(delta)) delta <- p1 - p2
