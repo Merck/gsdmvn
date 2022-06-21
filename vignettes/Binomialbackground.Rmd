@@ -1195,14 +1195,145 @@ tibble::tibble(INVAR = x_invar$analysis$N[1:3],
   gt::tab_header(title = "Sample size calculated by INVAR and SS")
 ```
 
-### simulations
-```{r}
-N_total <- 497
-N_S1 <- N_total * 1 / sum(1:3)
-N_S2 <- N_total * 2 / sum(1:3)
-N_S3 <- N_total * 3 / sum(1:3)
+### Simulations
 
-n_S1 <- rbinom(n = ceiling(N_S1), size = 1,prob = 0.5)
+```{r}
+# set a tibble to store the simulation results
+simu_power <- tibble::tibble(INVAR_H0 = as.numeric(), INVAR_H1 = as.numeric(), SS = as.numeric())
+
+# total sample size
+N <- 497
+
+# sample size per stratum
+N_S1 <- N_total * 1 / sum(1:3) 
+N_S2 <- N_total * 2 / sum(1:3) 
+N_S3 <- N_total * 3 / sum(1:3) 
+
+# set the method 
+weight_method <- "invar_H1"
+
+# begin the simulations
+for (simu in 1:4) {
+  # observations of 3 strata in FA
+  x_e_S1 <- rbinom(n = ceiling(N_S1/2), size = 1, prob = 0.25)
+  x_e_S2 <- rbinom(n = ceiling(N_S2/2), size = 1, prob = 0.3)
+  x_e_S3 <- rbinom(n = ceiling(N_S3/2), size = 1, prob = 0.5)
+  x_c_S1 <- rbinom(n = ceiling(N_S1/2), size = 1, prob = 0.4)
+  x_c_S2 <- rbinom(n = ceiling(N_S2/2), size = 1, prob = 0.5)
+  x_c_S3 <- rbinom(n = ceiling(N_S3/2), size = 1, prob = 0.6)
+
+  # calculate the number of events at FA
+  n_e_S1 <- sum(x_e_S1)
+  n_e_S2 <- sum(x_e_S2)
+  n_e_S3 <- sum(x_e_S3)
+  n_c_S1 <- sum(x_c_S1)
+  n_c_S2 <- sum(x_c_S1)
+  n_c_S3 <- sum(x_c_S1)
+
+  # calculate the events rates
+  p_e_S1 <- n_e_S1 / (N_S1 / 2)
+  p_e_S2 <- n_e_S2 / (N_S2 / 2)
+  p_e_S3 <- n_e_S3 / (N_S3 / 2)
+
+  p_c_S1 <- n_c_S1 / (N_S1 / 2)
+  p_c_S2 <- n_c_S2 / (N_S2 / 2)
+  p_c_S3 <- n_c_S3 / (N_S3 / 2)
+
+  x <- tibble::tibble(
+    statum = c("S1", "S2", "S3"),
+    N_e = c(N_S1/2, N_S2/2, N_S3/2),
+    N_c = N_e,
+    n_e = c(n_e_S1, n_e_S2, n_e_S3),
+    n_c = c(n_c_S1, n_e_S2, n_e_S3),
+    p_e = c(p_e_S1, p_e_S2, p_e_S3),
+    p_c = c(p_c_S1, p_c_S2, p_c_S3)
+  )
+
+  # calculate the statistical information per stratum
+  x <- x %>% 
+    mutate(p_pool = (n_c + n_e) / (N_c + N_e),
+           sigma_H0 = sqrt(p_pool * (1 - p_pool) * (1 / N_c + 1 / N_e)),
+           sigma_H1 = sqrt(p_c * (1 - p_c) / N_c + p_e * (1 - p_e) / N_e),
+           sum_invar_H0 = sum(1/sigma_H0^2),
+           sum_invar_H1 = sum(1/sigma_H1^2),
+           sum_ss = sum((N_c * N_e) / (N_c + N_e))
+           ) %>% 
+    # calculate the weight per stratum
+    mutate(weight_invar_H0 = 1/sigma_H0^2 / sum_invar_H0,
+           weight_invar_H1 = 1/sigma_H1^2 / sum_invar_H1,
+           weight_ss = (N_c * N_e) / (N_c + N_e) / sum_ss) %>% 
+    select(-c(sum_invar_H0, sum_invar_H1, sum_ss)) %>% 
+    summarise(rd_invar_H0 = sum(weight_invar_H0 * abs(p_c - p_e)),
+              rd_invar_H1 = sum(weight_invar_H1 * abs(p_c - p_e)),
+              rd_ss = sum(weight_ss * abs(p_c - p_e)),
+              rd0 = 0,
+              info_invar_H0 = 1 / sum(weight_invar_H0^2*p_c*(1-p_c)/N_c + weight_invar_H0^2*p_e*(1-p_e)/N_e),
+              info_invar_H1 = 1 / sum(weight_invar_H1^2*p_c*(1-p_c)/N_c + weight_invar_H1^2*p_e*(1-p_e)/N_e),
+              info_ss = 1 / sum(weight_invar_H1^2*p_c*(1-p_c)/N_c + weight_invar_H1^2*p_e*(1-p_e)/N_e),
+              info0_invar_H0 = 1 / sum(weight_invar_H0^2*p_pool*(1-p_pool)/N_c + weight_invar_H0^2*p_pool*(1-p_pool)/N_e),
+              info0_invar_H1 = 1 / sum(weight_invar_H1^2*p_pool*(1-p_pool)/N_c + weight_invar_H1^2*p_pool*(1-p_pool)/N_e),
+              info0_ss = 1 / sum(weight_ss^2*p_pool*(1-p_pool)/N_c + weight_ss^2*p_pool*(1-p_pool)/N_e)
+              )
+  
+  # calculate the power
+  ans <- switch (weight_method,
+    "invar_H0" = {
+      gs_power_npe(theta = x$rd_invar_H0, 
+                   info = x$info0_invar_H0, 
+                   info_scale = 2,
+                   binding = FALSE,
+                   upper = gs_b, 
+                   lower = gs_b, 
+                   upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+                   lpar = list(par = c(qnorm(.1), rep(-Inf, 2))),
+                   test_upper = TRUE,
+                   test_lower = TRUE,
+                   r = 18,
+                   tol = 1e-6
+                   )
+    },
+    "invar_H1" = {
+      gs_power_npe(theta = x$rd_invar_H1, 
+                   info = x$info0_invar_H1, 
+                   info_scale = 2,
+                   binding = FALSE,
+                   upper = gs_b, 
+                   lower = gs_b, 
+                   upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+                   lpar = list(par = c(qnorm(.1), rep(-Inf, 2))),
+                   test_upper = TRUE,
+                   test_lower = TRUE,
+                   r = 18,
+                   tol = 1e-6
+                   ) 
+    },
+    "ss" = {
+      gs_power_npe(
+        theta = x$rd_ss, 
+        info = x$info0_ss, 
+        info_scale = 2,
+        binding = FALSE,
+        upper = gs_b, 
+        lower = gs_b, 
+        upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+        lpar = list(par = c(qnorm(.1), rep(-Inf, 2))),
+        test_upper = TRUE,
+        test_lower = TRUE,
+        r = 18,
+        tol = 1e-6
+        ) 
+    }
+  )
+  
+  # summarize this simulation
+  ans_new <- tibble::tibble(
+    simu_ID = simu,
+    method = weight_method,
+    power = ans %>% filter(Bound == "Upper") %>% select(Probability) %>% unlist() %>% as.numeric()
+  )
+  
+  simu_power <- rbind(simu_power, ans_new)
+}
 ```
 
 
