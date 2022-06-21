@@ -131,7 +131,7 @@ $$V_k(\theta) = V(\hat p_{1k}, \hat p_{2k}, N_{1k}, N_{2k},\theta)$$
 
 and
 
-$$Z_k(\theta)=\frac{\hat p_{1k}-\hat p_{2k} - \theta}{V(\hat p_{1k}, \hat p_{2k}, N_{1k}, N_{2k},\theta)^{1/2}}.$$
+$$Z_k(\theta)=\frac{\hat p_{1k}-\hat p_{2k} - \theta}{V_k(\theta)^{1/2}}.$$
 
 Thus, we now have $Z_k=Z_k(\theta_0).$ We assume here that we can ignore
 the difference between the observed and asymptotic variance
@@ -169,22 +169,42 @@ $\beta_k(\theta)$ using the above identity as
 
 $$\alpha_k(\theta) = P_\theta(\{Z_k(\theta)\ge b_k(\theta))\}\cap_{i=1}^{k-1}\{a_1(\theta)\le Z_i(\theta)< b_i(\theta)\})$$
 
-For non-binding lower bounds, we would ignore the lower bounds
-$a_1,\cdots,a_K$ and compute
-
-$$\alpha^+_k(\theta) = P_\theta(\{Z_k(\theta\ge b_k(\theta))\}\cap_{i=1}^{k-1}\{Z_i(\theta)< b_i(\theta)\}).$$
-
-Lower boundary crossing probabilities are computed for $k=1,\cdots,K$ by
-
-$$
-\beta_k(\theta)=P_\theta(\{Z_k(\theta)<a_k(\theta)\cap_{i=1}^k\{a_i(\theta)\le Z_i(\theta) <b_i(\theta\}.
-$$
 where
 
-$$ $$
+$$ a_k(\theta) = a_k\left(\frac{V(\theta_0)}{V(\theta)}\right)^{1/2}-\frac{\theta-\theta_0}{V(\theta_0)^{1/2}}$$
+and
+$$b_k(\theta) =b_k\left(\frac{V(\theta_0)}{V(\theta)}\right)^{1/2}-\frac{\theta-\theta_0}{V(\theta_0)^{1/2}} .$$
+This formulation standardizes the boundary calculation to be computed
+under the so-called *canonical form* of \@\JTBook; we describe a
+generalized version of this in the vignette entitled "Computing Bounds
+Under Non-Constant Treatment Effect."
 
+We can similarly rewrite in canonical form
 
-### Computing $\tilde p_{1,rd}, \tilde p_{2,rd}, \bar p_{1,rd}, \bar p_{2,rd}$
+$$\alpha^+_k(\theta) = P_\theta(\{Z_k(\theta)\ge b_k(\theta)\}\cap_{i=1}^{k-1}\{Z_i(\theta)< b_i(\theta)\})$$
+
+and
+
+$$
+\beta_k(\theta)=P_\theta(\{Z_k(\theta)<a_k(\theta)\}\cap_{i=1}^k\{a_i(\theta)\le Z_i(\theta) <b_i(\theta\}).
+$$
+
+### Other uses for boundary calculation computations
+
+In addition to the above probability calculations under any hypothesized $\theta$ value, the above formulas can be used for:
+
+- Deriving efficacy boundaries satisfying $\alpha_K(\theta_0)=\alpha$ to control Type I error with a spending function bound.
+- Deriving lower bounds under various possible $\theta$ values to satisfy
+  - $\beta_K(\theta_1)=\beta$ where $\beta$ is Type II error under an alternative hypothesis $H_1: \theta=\theta_1$
+  - $\beta_K(\theta_0)=\beta(\theta_0)$ where $\beta(\theta_0)$ is the probability of crossing a lower bound under the null hypothesis $H_0: \theta=\theta_0$ 
+  - $\beta_K(\theta)=\beta(\theta^*)$ where $\beta(\theta^*)$ is the probability of crossing a lower bound under some arbitrary $H: \theta = \theta^*$
+  
+Numerical integration calculations for computing such bounds are, again, laid out in the vignette "Computing Bounds
+Under Non-Constant Treatment Effect."
+These uses point out the potential need for computing $V_k(\theta)$ or, equivalently, $\mathcal{I}_k(\theta)$ for multiple values of $\theta$, $k=1,\cdots,K$.
+  
+  
+### Computing $\tilde p_{1}, \tilde p_2, \bar p_{1}, \bar p_{2}$
 
 @FarringtonManning recommended the maximum likelihood approach for
 estimating
@@ -193,12 +213,10 @@ previously suggested by @MiettinenNurminen and @Koopman. Rather than
 repeating the estimation formula, we build functions to compute the
 statistical information.
 
-### Risk difference information
-
 The statistical information computed for both the observed and
-asymptotic approximations can be compute with `info_rd` function defined
-below. The values $\tilde p_1$, $\tilde p_2$ from above are computed
-here.
+asymptotic approximations can be computed with the function `info_rd()`
+defined below. The values $\tilde p_1$, $\tilde p_2$ from above are
+computed here.
 
 ```{r}
 info_rd <- function(N=200, ratio=1, p1 = .2, p2 = .1, theta = 0){
@@ -258,22 +276,22 @@ gsDesign::nBinomial(n=200, p1 = .2, p2 = .1, delta0 = c(0,.05), alpha=.025, beta
      fmt_number(columns = c("info", "infot"), decimals=5)
 ```
 
-## Risk difference power
+We can now compute power with the function `power_rd()` (NOT CHECKED YET!!!).
 
 ```{r}
 power_rd <- function(N=200, ratio=1, p1 = .2, p2 = .1, theta = 0,
-                    binding = FALSE,
-                    upper = gs_b,
-                    # Default is Lan-DeMets approximation of
-                    upar = gsDesign(k = length(N), test.type=1,
-                                    n.I=N, maxn.IPlan = max(N),
-                                    sfu=sfLDOF, sfupar = NULL)$upper$bound,
-                    lower = gs_b,
-                    # Futility only at IA1
-                    lpar = c(qnorm(.1), rep(-Inf, length(N) - 1)),                                        test_upper = TRUE,
-                    test_lower = TRUE,
-                    r = 18,
-                    tol = 1e-6
+                     binding = FALSE,
+                     upper = gs_b,
+                     # Default is Lan-DeMets approximation of
+                     upar = gsDesign(k = length(N), test.type=1,
+                                     n.I=N, maxn.IPlan = max(N),
+                                     sfu=sfLDOF, sfupar = NULL)$upper$bound,
+                     lower = gs_b,
+                     # Futility only at IA1
+                     lpar = c(qnorm(.1), rep(-Inf, length(N) - 1)),                                                         test_upper = TRUE,
+                     test_lower = TRUE,
+                     r = 18,
+                     tol = 1e-6
 ){
   x <- info_rd(N=N, ratio=ratio, p1 = p1, p2 = p2, theta = theta)
   return(gs_power_npe(theta = x$theta, info = x$infot, info0 = x$infot, 
@@ -290,7 +308,7 @@ power_rd <- function(N=200, ratio=1, p1 = .2, p2 = .1, theta = 0,
 
 Try it.
 
-```{r,eval=FALSE}
+```{r, eval=FALSE}
 power_rd()
 ```
 
