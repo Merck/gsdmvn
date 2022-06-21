@@ -24,9 +24,9 @@ NULL
 #' Group sequential design using average hazard ratio under non-proportional hazards
 #'
 #' @param ratio Experimental:Control randomization ratio (not yet implemented)
-#' @param ratio_stratum randomization ratio of different stratum. 
+#' @param stratum_prev randomization ratio of different stratum. 
 #' If it is un-stratified design then \code{NULL}.
-#' Otherwise it is a tibble contraining two columns (Stratum and Ratio).
+#' Otherwise it is a tibble containing two columns (Stratum and prevalence).
 #' @param alpha One-sided Type I error
 #' @param beta Type II error
 #' @param binding indicator of whether futility bound is binding; default of FALSE is recommended
@@ -65,7 +65,7 @@ gs_design_rd <- function(
   alpha = .025,                  
   beta = .1,                    
   ratio = 1,
-  ratio_stratum = NULL,
+  stratum_prev = NULL,
   weight = c("un-stratified", "ss", "invar"),
   upper = gs_b,
   lower = gs_b,
@@ -84,6 +84,7 @@ gs_design_rd <- function(
   info_scale <- if(methods::missingArg(info_scale)){2}else{match.arg(as.character(info_scale), choices = 0:2)}
   weight <- if(methods::missingArg(weight)){"un-stratified"}else{match.arg(weight)}
   n_strata <- length(unique(p_c$Stratum))
+  
   # --------------------------------------------- #
   #     calculate the sample size                 #
   #          under fixed design                   #
@@ -91,13 +92,12 @@ gs_design_rd <- function(
   x_fix <- gs_info_rd(
     p_c = p_c, 
     p_e = p_e,
-    #N = tibble::tibble(Stratum = p_c$Stratum, N = 1, Analysis = 1),
     N = tibble::tibble(Analysis = 1, 
                        Stratum = p_c$Stratum, 
-                       N = if(is.null(ratio_stratum)){
+                       N = if(is.null(stratum_prev)){
                          1
                        }else{
-                         (ratio_stratum %>% mutate(x = Ratio / sum(Ratio)))$x
+                         (stratum_prev %>% mutate(x = prevalence / sum(prevalence)))$x
                        }), 
     rd0 = rd0,
     ratio = ratio,
@@ -112,21 +112,22 @@ gs_design_rd <- function(
     p_e = p_e,
     N = tibble::tibble(Analysis = rep(1:k, n_strata), 
                        Stratum = rep(p_c$Stratum, each = k), 
-                       N = if(is.null(ratio_stratum)){
+                       N = if(is.null(stratum_prev)){
                          IF
                        }else{
-                         rep((ratio_stratum %>% mutate(x = Ratio / sum(Ratio)))$x, each = 3) * IF
+                         rep((stratum_prev %>% mutate(x = prevalence / sum(prevalence)))$x, each = 3) * IF
                        }), 
     rd0 = rd0,
     ratio = ratio,
     weight = weight)
   
-  #upar_new <- c(upar, list(info = x_gs$info0))
-  #lpar_new <- c(lpar, list(info = x_gs$info))
+  ########### ????
+  #upar_new <- c(upar, info = list(x_gs$info0)) 
+  #lpar_new <- c(lpar, info = list(x_gs$info))
   
   y_gs <- gs_design_npe(
     theta = x_gs$rd, 
-    info = x_gs$info, 
+    info = if(info_scale == 0){x_gs$info0}else{x_gs$info1}, 
     info0 = x_gs$info0, 
     info_scale = info_scale,
     alpha = alpha, beta = beta, binding = binding,
@@ -143,7 +144,7 @@ gs_design_rd <- function(
            "~Risk difference at bound" = Z / sqrt(info) / theta * (rd -rd0)  + rd0, 
            "Nominal p" = pnorm(-Z),
            IF0 = if(sum(!is.na(info0)) == 0){NA}else{info0 / max(info0)},
-           N = y_gs$info[k] / ifelse(info_scale == 0, x_fix$info0[1], x_fix$info[1])  * IF) %>% 
+           N = y_gs$info[k] / ifelse(info_scale == 0, x_fix$info0[1], x_fix$info1[1])  * IF) %>% 
     select(c(Analysis, Bound,  N, rd, rd0, Z, Probability, Probability0, info, info0, IF, IF0, `~Risk difference at bound`, `Nominal p`)) %>% 
     arrange(desc(Bound), Analysis) 
   
@@ -152,6 +153,7 @@ gs_design_rd <- function(
   # --------------------------------------------- #
   bounds <- allout %>%  
     select(Analysis, Bound, Probability, Probability0, Z, `~Risk difference at bound`, `Nominal p`)
+  
   # --------------------------------------------- #
   #     get analysis summary to output            #
   # --------------------------------------------- #

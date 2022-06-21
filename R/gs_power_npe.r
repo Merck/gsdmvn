@@ -165,9 +165,14 @@ gs_power_npe <- function(
   info = 1, 
   info_scale = c(0, 1, 2),
   binding = FALSE,
-  upper = gs_b, upar = list(par = qnorm(.975)), test_upper = TRUE,
-  lower = gs_b, lpar = list(par = -Inf), test_lower = TRUE,
-  r = 18, tol = 1e-6){
+  upper = gs_b, 
+  lower = gs_b, 
+  upar = list(par = qnorm(.975)), 
+  lpar = list(par = -Inf), 
+  test_upper = TRUE,
+  test_lower = TRUE,
+  r = 18, 
+  tol = 1e-6){
   
   # --------------------------------------------- #
   #     check & set up parameters                 #
@@ -177,21 +182,50 @@ gs_power_npe <- function(
   if (length(test_upper) == 1 && K > 1) test_upper <- rep(test_upper, K)
   if (length(test_lower) == 1 && K > 1) test_lower <- rep(test_lower, K)
   
+  flag_info_in_upar <- "info" %in% names(upar)
+  flag_info_in_lpar <- "info" %in% names(lpar)
+  flag_upper_spending <- identical(upper, gs_spending_bound)
+  flag_lower_spending <- identical(lower, gs_spending_bound)
+  flag_upper_fix <- identical(upper, gs_b)
+  flag_lower_fix <- identical(lower, gs_b)
+  
   # --------------------------------------------- #
-  #     set up info & info_scale                  #
+  #     set up info                               #
   # --------------------------------------------- #
-  ## if `gs_spending_bound` is used for upper bound
-  if(identical(upper, gs_spending_bound) & ("info" %in% names(upar))){
-    info0 <- upar$info
-  }else{
-    info0 <- info
+  # upper boundary
+  if(flag_upper_fix){
+    info0 <- if(flag_info_in_upar){upar$info}else{info}
+  }else if(flag_upper_spending){
+    info0 <- if(flag_info_in_upar){upar$info}else{info}
   }
-  ## if `gs_spending_bound` is used for lower bound
-  if(identical(lower, gs_spending_bound) & ("info" %in% names(lpar))){
-    info1 <- lpar$info
-  }else{
-    info1 <- info
+  # lower boundary
+  if(flag_lower_fix){
+    info1 <- if(flag_info_in_lpar){lpar$info}else{info}
+  }else if(flag_lower_spending){
+    info1 <- if(flag_info_in_lpar){lpar$info}else{info}
   }
+  # # if `upper` is fixed bound
+  # if(flag_upper_fix & flag_info_in_upar){
+  #   info0 <- upar$info
+  # }else{
+  #   info0 <- info
+  # }
+  # # if `upper` is spending bound
+  # if(flag_upper_spending & flag_info_in_upar){
+  #   info0 <- upar$info
+  # }else{
+  #   info0 <- info
+  # }
+  # ## if `gs_spending_bound` is used for lower bound
+  # if(flag_lower_spending & flag_info_in_lpar){
+  #   info1 <- lpar$info
+  # }else{
+  #   info1 <- info
+  # }
+  
+  # --------------------------------------------- #
+  #     set up info_scale                         #
+  # --------------------------------------------- #
   # set up info_scale
   info_scale <- if(methods::missingArg(info_scale)){2}else{match.arg(as.character(info_scale), choices = 0:2)}
   if(info_scale == 0){
@@ -218,7 +252,7 @@ gs_power_npe <- function(
   # --------------------------------------------- #
   for(k in 1:K){
     # compute/update lower bound
-    a[k] <- lower(k = k, par = lpar$par, hgm1 = hgm1, info = info, 
+    a[k] <- lower(k = k, par = lpar$par, hgm1 = hgm1, info = info1, #info = info, 
                   r = r, tol = tol, test_bound = test_lower,
                   theta = theta, efficacy = FALSE)
     # compute/update upper bound

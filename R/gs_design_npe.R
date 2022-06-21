@@ -227,26 +227,50 @@ gs_design_npe <- function(
   r = 18, 
   tol = 1e-6){
   
+  # --------------------------------------------- #
+  #     check & set up parameters                 #
+  # --------------------------------------------- #
   K <- length(info)
   info_scale <- if(methods::missingArg(info_scale)){2}else{match.arg(as.character(info_scale), choices = 0:2)}
+  
+  flag_info_in_upar <- "info" %in% names(upar)
+  flag_info_in_lpar <- "info" %in% names(lpar)
+  flag_upper_spending <- identical(upper, gs_spending_bound)
+  flag_lower_spending <- identical(lower, gs_spending_bound)
+  flag_upper_fix <- identical(upper, gs_b)
+  flag_lower_fix <- identical(lower, gs_b)
   
   # --------------------------------------------- #
   #     set up info, info0                        #
   # --------------------------------------------- #
-  if(identical(upper, gs_spending_bound) & ("info" %in% names(upar))){
-    if(is.null(info0)){
-      info0 <- upar$info
-      warning(paste0("gs_design_npe: we use the statistical information in upar and ignore the argumet info0 = ", info0))
-    }
+  # upper boundary
+  if(flag_info_in_upar){
+    warning(paste0("gs_design_npe: we use the statistical information in upar and ignore the argumet info0 = ", info0))
+    info0 <- upar$info
   }else{
     info0 <- if(is.null(info0)){info}else{info0}
   }
-  ## if `gs_spending_bound` is used for lower bound
-  if(identical(lower, gs_spending_bound) & ("info" %in% names(lpar))){
+  # if(flag_upper_spending & flag_info_in_upar){
+  #   if(is.null(info0)){
+  #     warning(paste0("gs_design_npe: we use the statistical information in upar and ignore the argumet info0 = ", info0))
+  #     info0 <- upar$info
+  #   }
+  # }else{
+  #   info0 <- if(is.null(info0)){info}else{info0}
+  # }
+  
+  # lower boundary
+  if(flag_info_in_lpar){
     info1 <- lpar$info
   }else{
     info1 <- info
   }
+  # ## if `gs_spending_bound` is used for lower bound
+  # if(identical(lower, gs_spending_bound) & ("info" %in% names(lpar))){
+  #   info1 <- lpar$info
+  # }else{
+  #   info1 <- info
+  # }
   
   # --------------------------------------------- #
   #     set info_scale                            #
@@ -329,7 +353,7 @@ gs_design_npe <- function(
   } 
   
   # find an interval for information inflation to give correct power
-  if(!"info" %in% names(upar)){
+  if(!flag_info_in_upar){
     upar_new <- c(upar, info = list(info0 * minx))
   }else{
     upar_new <- upar
@@ -363,7 +387,7 @@ gs_design_npe <- function(
     maxx <- 1.05 * minx
     err <- 1
     upar_new$info <- info * maxx
-    for(i in 1:10){
+    for(i in 1:100){
       maxpwr <- gs_power_npe(
         theta = theta, 
         info = info * maxx, 
@@ -457,13 +481,13 @@ gs_design_npe <- function(
     r = r, tol = tol)
   # get the bounds from out_H1
   suppressMessages(
-  bound_H1 <- out_H1 %>% 
-    select(Analysis, Bound, Z) %>%
-    dplyr::rename(Z1 = Z) %>% 
-    right_join(tibble::tibble(Analysis = rep(1:K, 2), Bound = rep(c("Upper", "Lower"), each = K), Z2 = rep(c(Inf, -Inf), each = K))) %>% 
-    mutate(Z = dplyr::coalesce(Z1, Z2)) %>% 
-    select(Analysis, Bound, Z) %>% 
-    arrange(desc(Bound), Analysis)
+    bound_H1 <- out_H1 %>% 
+      select(Analysis, Bound, Z) %>%
+      dplyr::rename(Z1 = Z) %>% 
+      right_join(tibble::tibble(Analysis = rep(1:K, 2), Bound = rep(c("Upper", "Lower"), each = K), Z2 = rep(c(Inf, -Inf), each = K))) %>% 
+      mutate(Z = dplyr::coalesce(Z1, Z2)) %>% 
+      select(Analysis, Bound, Z) %>% 
+      arrange(desc(Bound), Analysis)
   )
   # calculate the probability under H0
   out_H0 <- gs_power_npe(

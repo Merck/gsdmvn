@@ -226,12 +226,12 @@ gs_info_rd <- function(
                   weight_per_k_per_s^2 * p_c0 * (1 - p_c0) / N_c +  weight_per_k_per_s^2 * p_e0 * (1 - p_e0) / N_e
                 }),
               sigma2_H1 = sum(weight_per_k_per_s^2 * p_c * (1 - p_c) / N_c + weight_per_k_per_s^2 * p_e * (1 - p_e) / N_e)) %>% 
-    mutate(theta = rd / sqrt(sigma2_H1),
+    mutate(theta1 = rd / sqrt(sigma2_H1),
            theta0 = rd0 / sqrt(sigma2_H0),
-           info = 1 / sigma2_H1,
+           info1 = 1 / sigma2_H1,
            info0 = 1 / sigma2_H0) %>%
     ungroup() %>% 
-    select(Analysis, N, rd, rd0, theta, theta0, info, info0)
+    select(Analysis, N, rd, rd0, theta1, theta0, info1, info0)
 
   return(output)
 }

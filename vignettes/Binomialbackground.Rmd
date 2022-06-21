@@ -172,7 +172,8 @@ $\widehat\sigma^2_{k,s}$ in the following 3 subsections.
 
 A superiority design ($\delta_{s}^{null} = 0$) is to show that
 experimental group is superior to the control group above some
-thresholds. Its hypothesis is $$
+thresholds. Its hypothesis is 
+$$
   H_0: \delta_{s} = 0 \text{ vs. } H_1: \delta_{s} > 0, \; \forall k = 1, \ldots, K, s = 1, \ldots, S
 $$
 
@@ -293,18 +294,22 @@ $$
   H_0: \delta_{k,s} = \delta_{k,s}^{null} 
   \;\; vs. \;\; 
   H_1: \delta > \delta_{k,s}^{null} \text{ with } \delta_{k,s}^{null} > 0.
-$$ Here $\theta_{k,s_1}^{null} = \theta_{k,s_2}^{null}$ or
+$$ 
+Here $\theta_{k,s_1}^{null} = \theta_{k,s_2}^{null}$ or
 $\theta_{k,s_1}^{null} \neq \theta_{k,s_2}^{null}$ for $s_1 \neq s_2$.
 
 Under the null hypothesis $\theta_{0,k,s} \neq 0$, the estimation of
-rates $\widehat p_{C0,k,s}, \widehat p_{E0,k,s}$ satisfy $$
+rates $\widehat p_{C0,k,s}, \widehat p_{E0,k,s}$ satisfy 
+$$
   \left\{
   \begin{array}{l}
     \widehat p_{C0,k,s} = \widehat p_{E0,k,s} + d_{k,s} \times \delta_{k,s}^{null} \\
     \widehat p_{C0,k,s} + r\widehat p_{E0,k,s} = \widehat p_{C,k,s} + r\widehat p_{E,k,s} .
   \end{array}
   \right.
-$$ Solving these 2 equations with 2 unknowns yields $$
+$$ 
+Solving these 2 equations with 2 unknowns yields 
+$$
   \left\{
   \begin{array}{l}
   \widehat p_{E0,k,s} & = (\widehat p_{C,k,s} + r \widehat p_{E,k,s} - d_{k,s} \delta_{k,s}^{null}) / (r + 1)\\
@@ -396,15 +401,18 @@ As previously noted, we will consider weighting based on either
 inverse-variance weights (@MantelHaenszel) or strata sample size weights
 (@mehrotra2000minimum).
 
--   **Inverse-variance weights (INVAR):** $$
+-   **Inverse-variance weights (INVAR):** 
+$$
     w_{s,k} = \frac{1/\sigma^2_{s,k}}{\sum_{s=1}^S 1/\sigma^2_{s,k}}. \\
     \widehat w_{s,k} = \frac{1/\widehat\sigma^2_{s,k}}{\sum_{s=1}^S 1/\widehat\sigma^2_{s,k}}.
-    $$ where
+$$ 
+where
     $\widehat\sigma_{s,k}^2 \in \{\widehat\sigma_{H_0, k,s}^2, \widehat\sigma_{H_1, k,s}^2 \}$
     depending on the infomation scale `info_scale = ...` in
     `gs_info_rd()`, `gs_power_rd()` and `gs_design_rd()`.
 
--   **Sample-Size Weights (SS):** $$
+-   **Sample-Size Weights (SS):** 
+$$
     w_{s,k} 
     =
     \frac{
@@ -419,12 +427,8 @@ inverse-variance weights (@MantelHaenszel) or strata sample size weights
     }{
       \sum_{s=1}^S (\widehat N_{C, s, k} \; \widehat N_{E, s, k}) / (\widehat N_{C, s, k} + \widehat N_{E, s, k})
     },
-    $$ where $N_{C,s,k}, N_{E,s,k}$ are the planned sample size of the
-    $s$-th strata and $k$-th analysis of the control group and
-    experimental group, respectively. And
-    $\widehat N_{C,s,k}, \widehat N_{E,s,k}$ are the observed sample
-    size of the $s$-th strata and $k$-th analysis of the control group
-    and experimental group, respectively.
+$$ 
+where $N_{C,s,k}, N_{E,s,k}$ are the planned sample size of the $s$-th strata and $k$-th analysis of the control group and experimental group, respectively. And $\widehat N_{C,s,k}, \widehat N_{E,s,k}$ are the observed sample size of the $s$-th strata and $k$-th analysis of the control group and experimental group, respectively.
 
 # Simulations
 
@@ -495,7 +499,8 @@ N_e <- N_c * ratio
 ```
 
 Then we calculate the variance under $H_0$ and $H_1$. Their mathmatical
-formulation are shown as follows. $$
+formulation are shown as follows. 
+$$
   \begin{array}{ll}
   \sigma^2_{H_0} 
   =
@@ -517,7 +522,8 @@ formulation are shown as follows. $$
     p_E \left(1 - p_E \right)
   \right] \frac{2}{N}
   \end{array}
-$$ And their calculation results are
+$$ 
+And their calculation results are
 
 ```{r}
 sigma_H0 <-  sqrt(p_pool*(1 - p_pool) * 4 / N)
@@ -528,12 +534,15 @@ info_H1 <- 1/(sigma_H1^2)
 ```
 
 Next, we calculate the standarized treatment effect under $H_0$ and
-$H_1$, whose mathmatical formulation are $$
+$H_1$, whose mathmatical formulation are 
+$$
   \begin{array}{ll}
   \theta_{H_0} = 0; \\
   \theta_{H_1} = \frac{|p_c - p_e|}{\sigma_{H_1}}
   \end{array}.
-$$ And their calculation results are
+$$ 
+
+And their calculation results are
 
 ```{r}
 theta_H0 <- 0
@@ -565,9 +574,36 @@ By plugging the `theta` and `info` above into `gs_design_npe()`, one can
 calculate the sample size to achieve the 90% power.
 
 ```{r}
-y <- gs_design_npe(
+# under info_scale = 0
+y_0 <- gs_design_npe(
   theta = .4 - .28, 
-  info = x$info, 
+  info = x$info0, 
+  info0 = x$info0, 
+  info_scale = 0,
+  alpha = .025, 
+  beta = .1,
+  upper = gs_b, 
+  lower = gs_b,
+  upar = list(par = -qnorm(.025)),
+  lpar = list(par = -Inf))
+
+# under info_scale = 1
+y_1 <- gs_design_npe(
+  theta = .4 - .28, 
+  info = x$info1, 
+  info0 = x$info0, 
+  info_scale = 1,
+  alpha = .025, 
+  beta = .1,
+  upper = gs_b, 
+  lower = gs_b,
+  upar = list(par = -qnorm(.025)),
+  lpar = list(par = -Inf))
+
+# under info_scale = 2
+y_2 <- gs_design_npe(
+  theta = .4 - .28, 
+  info = x$info1, 
   info0 = x$info0, 
   info_scale = 2,
   alpha = .025, 
@@ -577,14 +613,18 @@ y <- gs_design_npe(
   upar = list(par = -qnorm(.025)),
   lpar = list(par = -Inf))
 
-cat("The sample size calculated by `gsdmvn` is ", y$info[1] / x$info[1]) 
+tibble(`info_scale = 0` = y_0$info0[1] / x$info0[1],
+       `info_scale = 1` = y_1$info1[1] / x$info1[1],
+       `info_scale = 2` = y_2$info[1] / x$info1[1]) %>% 
+  gt::gt() %>% 
+  gt::tab_header(title = "The sample size calculated by `gsdmvn` under 3 info_scale")
 ```
 
 The above logic is implement in `gs_design_rd()` to calculate the sample
 size given fixed power in one-step.
 
 ```{r}
-z <- gs_design_rd(
+z_info_scale_0 <- gs_design_rd(
   p_c = tibble::tibble(Stratum = "All", Rate = .28),
   p_e = tibble::tibble(Stratum = "All", Rate = .4),
   k = 1,
@@ -596,25 +636,70 @@ z <- gs_design_rd(
   upper = gs_b,
   lower = gs_b,
   upar = list(par = -qnorm(.025)),
-  lpar = list(par = -Inf))  
+  lpar = list(par = -Inf),
+  info_scale = 0)  
 
-cat("The sample size calculated by `gs_design_rd()` is ", z$analysis$N, "\n")
+z_info_scale_1 <- gs_design_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .28),
+  p_e = tibble::tibble(Stratum = "All", Rate = .4),
+  k = 1,
+  rd0 = 0, 
+  alpha = 0.025,   
+  beta = 0.1,   
+  ratio = 1,
+  weight = "un-stratified",
+  upper = gs_b,
+  lower = gs_b,
+  upar = list(par = -qnorm(.025)),
+  lpar = list(par = -Inf),
+  info_scale = 1)
 
-z %>% summary() %>%  as_gt()
+z_info_scale_2 <- gs_design_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .28),
+  p_e = tibble::tibble(Stratum = "All", Rate = .4),
+  k = 1,
+  rd0 = 0, 
+  alpha = 0.025,   
+  beta = 0.1,   
+  ratio = 1,
+  weight = "un-stratified",
+  upper = gs_b,
+  lower = gs_b,
+  upar = list(par = -qnorm(.025)),
+  lpar = list(par = -Inf),
+  info_scale = 2)
 ```
 
 ### `gsDesign`
 
 ```{r, echo=FALSE}
-x <- nBinomial(p1 = .28, p2 = .4, delta0 = 0, alpha = .025, sided = 1, beta = .1, outtype = 3)
-x
-cat("The sample size calculated by `gsDesign` is ", x$n, "\n")
+x_gsDesign <- nBinomial(p1 = .28, p2 = .4, delta0 = 0, alpha = .025, sided = 1, beta = .1, outtype = 3)
 ```
 
 ### EAST
 
 ```{r label = EastFix, echo = FALSE, fig.cap = "Sample size calculated by EAST", out.width = '90%'}
 knitr::include_graphics("./figures/east_n_fix.png")
+```
+
+### Summary
+```{r}
+tibble::tibble(gsdmvn_info_scale_0 = z_info_scale_0$analysis$N,
+               gsdmvn_info_scale_1 = z_info_scale_1$analysis$N,
+               gsdmvn_info_scale_2 = z_info_scale_2$analysis$N,
+               gsDesign = x_gsDesign$n, 
+               EAST_unpool = 645, 
+               EAST_pool = 651) %>% 
+  gt::gt() %>% 
+  gt::tab_spanner(label = "gsdmvn",
+                  columns = c(gsdmvn_info_scale_0, gsdmvn_info_scale_1, gsdmvn_info_scale_2)) %>% 
+  gt::tab_spanner(label = "EAST",
+                  columns = c(EAST_unpool, EAST_pool)) %>% 
+  cols_label(gsdmvn_info_scale_0 = "info_scale = 0",
+             gsdmvn_info_scale_1 = "info_scale = 1",
+             gsdmvn_info_scale_2 = "info_scale = 2",
+             EAST_unpool = "un-pooled",
+             EAST_pool = "pooled")
 ```
 
 ## Unstratified Group Sequential Design {.tabset}
@@ -647,9 +732,36 @@ x_gs %>%
 ```
 
 ```{r}
-y_gs <- gs_design_npe(
+# info_scale = 0
+y_gs0 <- gs_design_npe(
   theta = .05, 
-  info = x_gs$info, 
+  info = x_gs$info0, 
+  info0 = x_gs$info0, 
+  info_scale = 0,
+  alpha = .025, beta = .1, binding = FALSE,
+  upper = gs_b,
+  lower = gs_b,
+  upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  lpar = list(par = rep(-Inf, 3)),
+  test_lower = FALSE)
+
+# info_scale = 1
+y_gs1 <- gs_design_npe(
+  theta = .05, 
+  info = x_gs$info1, 
+  info0 = x_gs$info1, 
+  info_scale = 2,
+  alpha = .025, beta = .1, binding = FALSE,
+  upper = gs_b,
+  lower = gs_b,
+  upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  lpar = list(par = rep(-Inf, 3)),
+  test_lower = FALSE)
+
+# info_scale = 2
+y_gs2 <- gs_design_npe(
+  theta = .05, 
+  info = x_gs$info1, 
   info0 = x_gs$info0, 
   info_scale = 2,
   alpha = .025, beta = .1, binding = FALSE,
@@ -659,13 +771,54 @@ y_gs <- gs_design_npe(
   lpar = list(par = rep(-Inf, 3)),
   test_lower = FALSE)
 
-cat("The sample size of the group sequential design is ", y_gs$info/x_gs$info[3], "\n")
+tibble(`info_scale = 0` = y_gs0$info0 / x_gs$info0[3],
+       `info_scale = 1` = y_gs1$info1 / x_gs$info1[3],
+       `info_scale = 2` = y_gs2$info / x_gs$info1[3]) %>% 
+  gt::gt() %>% 
+  gt::tab_header(title = "The sample size calculated by `gsdmvn` under 3 info_scale", subtitle = "under group sequential design")
+#cat("The sample size of the group sequential design is ", y_gs$info/x_gs$info[3], "\n")
 ```
 
 The above logic is implemented in `gs_design_rd()`.
 
 ```{r}
-x_gsdmvn <- gs_design_rd(
+x_gsdmvn_info_scale_0 <- gs_design_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .15),
+  p_e = tibble::tibble(Stratum = "All", Rate = .1),
+  k = 3,
+  IF = 1:3/3,
+  rd0 = 0, 
+  alpha = .025,                  
+  beta = .1,                
+  ratio = 1,
+  weight = "un-stratified",
+  upper = gs_b,
+  lower = gs_b,
+  upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  lpar = list(par = rep(-Inf, 3)),
+  test_lower = FALSE,
+  info_scale = 0
+)
+
+x_gsdmvn_info_scale_1 <- gs_design_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .15),
+  p_e = tibble::tibble(Stratum = "All", Rate = .1),
+  k = 3,
+  IF = 1:3/3,
+  rd0 = 0, 
+  alpha = .025,                  
+  beta = .1,                
+  ratio = 1,
+  weight = "un-stratified",
+  upper = gs_b,
+  lower = gs_b,
+  upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  lpar = list(par = rep(-Inf, 3)),
+  test_lower = FALSE,
+  info_scale = 1
+)
+
+x_gsdmvn_info_scale_2 <- gs_design_rd(
   p_c = tibble::tibble(Stratum = "All", Rate = .15),
   p_e = tibble::tibble(Stratum = "All", Rate = .1),
   k = 3,
@@ -683,7 +836,7 @@ x_gsdmvn <- gs_design_rd(
   info_scale = 2
 )
 
-x_gsdmvn %>% summary() %>% as_gt()
+# x_gsdmvn_info_scale_1 %>% summary() %>% as_gt()
 ```
 
 ### `gsDesign`
@@ -741,13 +894,34 @@ gsBoundSummary(x_gsDesign, digits = 4, ddigits = 2, tdigits = 1)
 knitr::include_graphics("./figures/east_n_gs.png")
 ```
 
+```{r label = EastGs, echo = FALSE, fig.cap = "Sample size calculated by EAST", out.width = '90%'}
+knitr::include_graphics("./figures/east_n_gs_unpool.png")
+```
+
+```{r label = EastGs, echo = FALSE, fig.cap = "Sample size calculated by EAST", out.width = '90%'}
+knitr::include_graphics("./figures/east_n_gs_pool.png")
+```
+
+
 ### Summary
 
 ```{r}
-tibble::tibble(gsdmvn = x_gsdmvn$analysis$N[3],
+tibble::tibble(gsdmvn_info_scale_0 = x_gsdmvn_info_scale_0$analysis$N,
+               gsdmvn_info_scale_1 = x_gsdmvn_info_scale_1$analysis$N,
+               gsdmvn_info_scale_2 = x_gsdmvn_info_scale_2$analysis$N,
                gsDesign = x_gsDesign$n.I,
-               EAST_unpooled = c(NA, NA, 1850),
-               EAST_pooled = c(NA, NA, 1857)) %>% gt::gt()
+               EAST_unpool = c(617, 1233, 1850),
+               EAST_pool = c(619, 1238, 1857)) %>% 
+  gt::gt() %>% 
+  gt::tab_spanner(label = "gsdmvn",
+                  columns = c(gsdmvn_info_scale_0, gsdmvn_info_scale_1, gsdmvn_info_scale_2)) %>% 
+  gt::tab_spanner(label = "EAST",
+                  columns = c(EAST_unpool, EAST_pool)) %>% 
+  cols_label(gsdmvn_info_scale_0 = "info_scale = 0",
+             gsdmvn_info_scale_1 = "info_scale = 1",
+             gsdmvn_info_scale_2 = "info_scale = 2",
+             EAST_unpool = "un-pooled",
+             EAST_pool = "pooled")
 ```
 
 ## Stratified Group Sequential Design {.tabset}
@@ -755,6 +929,7 @@ tibble::tibble(gsdmvn = x_gsdmvn$analysis$N[3],
 In this example, we consider 3 strata in a group sequential design with
 3 analyses.
 
+### `gsdmvn`
 ```{r, message=FALSE}
 p_c <- tibble::tibble(Stratum = c("S1", "S2", "S3"), Rate = c(.4, .5, .6))
 p_e <- tibble::tibble(Stratum = c("S1", "S2", "S3"), Rate = c(.25, .3, .5))
@@ -791,7 +966,8 @@ x %>%
   gt::tab_header(title = "Stratified Example")
 ```
 
-First, we calculate the variance $$
+First, we calculate the variance 
+$$
   \left\{
   \begin{array}{ll}
   \sigma^2_{H_0,k,s} 
@@ -862,7 +1038,8 @@ x %>%
 ```
 
 Third, we calculate the weighted risk difference and weighted
-statistical information. $$
+statistical information. 
+$$
   \left\{
   \begin{array}{ll}
     \delta_{H_0,k} 
@@ -985,7 +1162,7 @@ x_ss <- gs_design_rd(
   alpha = .025,                  
   beta = .1,                    
   ratio = 1,
-  ratio_stratum = tibble::tibble(Stratum = c("S1", "S2", "S3"), Ratio = 1:3),
+  stratum_prev = tibble::tibble(Stratum = c("S1", "S2", "S3"), prevalence = 1:3),
   weight = "ss",
   upper = gs_b,
   lower = gs_b,
@@ -1003,7 +1180,7 @@ x_invar <- gs_design_rd(
   alpha = .025,                  
   beta = .1,                    
   ratio = 1,
-  ratio_stratum = tibble::tibble(Stratum = c("S1", "S2", "S3"), Ratio = 1:3),
+  stratum_prev = tibble::tibble(Stratum = c("S1", "S2", "S3"), prevalence = 1:3),
   weight = "invar",
   upper = gs_b,
   lower = gs_b,
@@ -1017,6 +1194,18 @@ tibble::tibble(INVAR = x_invar$analysis$N[1:3],
   gt::gt() %>% 
   gt::tab_header(title = "Sample size calculated by INVAR and SS")
 ```
+
+### simulations
+```{r}
+N_total <- 497
+N_S1 <- N_total * 1 / sum(1:3)
+N_S2 <- N_total * 2 / sum(1:3)
+N_S3 <- N_total * 3 / sum(1:3)
+
+n_S1 <- rbinom(n = ceiling(N_S1), size = 1,prob = 0.5)
+```
+
+
 
 # Summary
 
