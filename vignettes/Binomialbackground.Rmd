@@ -1214,6 +1214,10 @@ weight_method <- "invar_H1"
 
 # begin the simulations
 for (simu in 1:4) {
+  
+  # set the random seed
+  set.seed(simu + 2022)
+  
   # observations of 3 strata in FA
   x_e_S1 <- rbinom(n = ceiling(N_S1/2), size = 1, prob = 0.25)
   x_e_S2 <- rbinom(n = ceiling(N_S2/2), size = 1, prob = 0.3)
