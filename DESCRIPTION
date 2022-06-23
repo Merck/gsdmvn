@@ -19,7 +19,8 @@ Imports:
     npsurvSS,
     corpcor,
     utils,
-    mvtnorm
+    mvtnorm,
+    Rcpp
 Suggests:
     testthat,
     knitr,
@@ -37,3 +38,5 @@ Remotes:
     Merck/gsDesign2
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
+LinkingTo: 
+    Rcpp

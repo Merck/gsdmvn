@@ -1,0 +1,85 @@
+---
+title: "`gridpts`, `h1` and `hupdate` in Rcpp"
+author: "Jianxiao Yang"
+output:
+  html_document:
+    code_folding: hide
+    toc: TRUE
+    toc_float: TRUE
+    number_sections: true
+---
+
+```{r}
+sessionInfo()
+```
+
+```{r setup, include=FALSE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(gsdmvn)
+library(knitr)
+library(tibble)
+library(dplyr)
+library(gt)
+library(ggplot2)
+library(profvis)
+library(bench)
+library(microbenchmark)
+devtools::load_all()
+```
+
+
+# `gridpts`
+```{r}
+r = 18
+mu = 0
+a = -Inf
+b = Inf
+
+# The same function as gridpts, but return a list instead of a tibble
+gridptsls <- function(r = 18, mu = 0, a = -Inf, b = Inf){
+  # Define odd numbered grid points for real line
+  x <- c(mu - 3 - 4 * log(r / (1:(r - 1))),
+         mu - 3 + 3 * (0:(4 * r)) / 2 / r,
+         mu + 3 + 4 * log(r / (r - 1):1)
+         )
+  # Trim points outside of [a, b] and include those points
+  if (min(x) < a) x <- c(a, x[x > a])
+  if (max(x) > b) x <- c(x[x < b], b)
+  # If extreme, include only 1 point where density will be essentially 0
+  m <- length(x)
+  if (m == 1) return(tibble::tibble(z=x, w=1))
+
+  # Define even numbered grid points between the odd ones
+  y <- (x[2:m] + x[1:(m-1)]) / 2
+
+  # Compute weights for odd numbered grid points
+  i <- 2:(m-1)
+  wodd <- c(x[2] - x[1],
+            (x[i + 1] - x[i - 1]),
+            x[m] - x[m - 1]) / 6
+
+  weven <- 4 * (x[2:m] - x[1:(m-1)]) / 6
+
+  # Now combine odd- and even-numbered grid points with their
+  # corresponding weights
+  z <- rep(0, 2*m - 1)
+  z[2 * (1:m) - 1] <- x
+  z[2 * (1:(m-1))] <- y
+  w <- z
+  w[2 * (1:m) - 1] <- wodd
+  w[2 * (1:(m-1))] <- weven
+
+  return(list("z"=z, "w"=w))
+}
+
+mbm_gridpts <- microbenchmark(
+  t0 = gridpts(r = r, mu = mu, a = a, b = b),
+  t1 = gridptsls(r = r, mu = mu, a = a, b = b),
+  t2 = gridptsRcpp(r = r, mu = mu, a = a, b = b),
+  times = 1000
+)
+levels(mbm_gridpts$expr) <- c("gridpts", "gridptsls", "gridptsRcpp")
+mbm_gridpts
+```
+
+
