@@ -66,3 +66,77 @@ List gridptsRcpp(int r, double mu, double a, double b)
   return List::create(Named("z") = z,
                       Named("w") = w);
 }
+
+//' Initialize numerical integration for group sequential design in C++
+//' 
+//' Compute grid points for first interim analysis in a group sequential design
+//' 
+//' @param r Integer, at least 2; default of 18 recommended by Jennison and Turnbull
+//' @param theta Drift parameter for first analysis
+//' @param I Information at first analysis
+//' @param a lower limit of integration (scalar)
+//' @param b upper limit of integration (scalar \code{> a})
+//' @return A \code{tibble} with grid points in \code{z}, numerical integration weights in \code{w},
+//' and a normal density with mean \code{mu = theta * sqrt{I}} and variance 1 times the weight in \code{w}.
+//' @export
+// [[Rcpp::export]]
+
+List h1Rcpp(int r, double theta, double I, double a, double b)
+{
+  // compute drift at analysis 1
+  double mu = theta * sqrt(I);
+  List g = gridptsRcpp(r, mu, a, b);
+  SEXP zz = g[0]; NumericVector z(zz);
+  SEXP ww = g[1]; NumericVector w(ww);
+  // compute deviation from drift
+  NumericVector h = w * dnorm(z - mu);
+  // compute standard normal density, multiply by grid weight and return
+  // values needed for numerical integration
+  
+  return List::create(Named("z") = z,
+                      Named("w") = w,
+                      Named("h") = h);
+}
+
+//' Update numerical integration for group sequential design in C++
+//'
+//' Update grid points for numerical integration from one analysis to the next
+//'
+//' @param r Integer, at least 2; default of 18 recommended by Jennison and Turnbull
+//' @param theta Drift parameter for current analysis
+//' @param I Information at current analysis
+//' @param a lower limit of integration (scalar)
+//' @param b upper limit of integration (scalar \code{> a})
+//' @param thetam1  Drift parameter for previous analysis
+//' @param Im1 Information at previous analysis
+//' @param gm1 numerical integration grid from \code{h1()} or previous run of \code{hupdate()}
+//' @return A \code{tibble} with grid points in \code{z}, numerical integration weights in \code{w},
+//' and a normal density with mean \code{mu = theta * sqrt{I}} and variance 1 times the weight in \code{w}.
+//' @export
+// [[Rcpp::export]]
+
+List hupdateRcpp(int r, double theta, double I, double a, double b,
+                 double thetam1, double Im1, List gm1){
+  // sqrt of change in information
+  double rtdelta = sqrt(I - Im1);
+  double rtI = sqrt(I);
+  double rtIm1 = sqrt(Im1);
+  List g = gridptsRcpp(r, theta * rtI, a, b);
+  SEXP zz = g[0]; NumericVector z(zz);
+  SEXP ww = g[1]; NumericVector w(ww);
+  SEXP zzm1 = gm1[0]; NumericVector zm1(zzm1);
+  SEXP hhm1 = gm1[2]; NumericVector hm1(hhm1);
+  // update integration
+  double mu = theta * I - thetam1 * Im1;
+  NumericVector h(z.size());
+  for(int i = 0; i < z.size(); i++){
+    NumericVector x = (z[i] * rtI - zm1 * rtIm1 - mu) / rtdelta;
+    h[i] = sum(hm1 * dnorm(x));
+  }
+  h = h * w * rtI / rtdelta;
+  
+  return List::create(Named("z") = z,
+                      Named("w") = w,
+                      Named("h") = h);
+}
+

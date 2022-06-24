@@ -391,8 +391,6 @@ mbm_gridpts
 ```
 
 
-
-
 ```{r gridpts_bm2}
 mbm_gridpts2 <- bench::mark(
   gridptsls(r = r, mu = mu, a = a, b = b),
@@ -405,4 +403,103 @@ mbm_gridpts2
 plot(mbm_gridpts2)
 ```
 
+
+# `h1`
+```{r h1_bm1}
+r = 18
+theta = 2
+I = 1
+a = -Inf
+b= -.5
+
+# The same function as h1, but return a list instead of a tibble
+h1ls <- function(r = 18, theta = 0, I = 1, a = -Inf, b = Inf){
+  # fix for binding message
+  z <- w <- h <- NULL
+  # compute drift at analysis 1
+  mu <- theta * sqrt(I);
+  g <- gridpts(r, mu, a, b)
+  # compute deviation from drift
+  x <- g$z - mu
+  # compute standard normal density, multiply by grid weight and return
+  # values needed for numerical integration
+  return(list("z" = g$z, "w" = g$w, "h" = g$w * dnorm(x)))
+}
+
+mbm_h1 <- microbenchmark(
+  t0 = h1(r = r, theta = theta, I = I, a = a, b = b),
+  t1 = h1ls(r = r, theta = theta, I = I, a = a, b = b),
+  t2 = h1Rcpp(r = r, theta = theta, I = I, a = a, b = b),
+  times = 1000
+)
+levels(mbm_h1$expr) <- c("h1", "h1ls", "h1Rcpp")
+mbm_h1
+```
+
+
+```{r h1_bm2}
+mbm_h12 <- bench::mark(
+  h1ls(r = r, theta = theta, I = I, a = a, b = b),
+  h1Rcpp(r = r, theta = theta, I = I, a = a, b = b),
+  iterations = 1000
+)
+mbm_h12$expression[[1]] <- c("h1ls")
+mbm_h12$expression[[2]] <- c("h1Rcpp")
+mbm_h12
+plot(mbm_h12)
+```
+
+# `hupdate`
+
+```{r hupdate_bm1}
+r = 18
+theta = 2
+I = 2
+a = -Inf
+b = 0
+thetam1 = 2
+Im1 = 1
+gm1ls = h1Rcpp(r = 18, theta = 2, I = 1, a = -.5, b = 3)
+gm1 = h1(r = 18, theta = 2, I = 1, a = -.5, b = 3)
+
+# The same function as h1, but return a list instead of a tibble
+hupdatels <- function(r = 18, theta = 0, I = 2, a = -Inf, b = Inf, thetam1 = 0, Im1 = 1, gm1 = h1()){
+  # sqrt of change in information
+  rtdelta <- sqrt(I - Im1)
+  rtI <- sqrt(I)
+  rtIm1 <- sqrt(Im1)
+  g <- gridpts(r = r, mu = theta * rtI, a= a, b = b)
+  # update integration
+  mu <- theta * I - thetam1 * Im1
+  h <- rep(0, length(g$z))
+  for(i in seq_along(g$z)){
+    x <- (g$z[i] * rtI - gm1$z * rtIm1 - mu ) / rtdelta
+    h[i] <- sum(gm1$h * dnorm(x))
+  }
+  h <- h * g$w * rtI / rtdelta
+  return(list("z" = g$z, "w" = g$w, "h" = h))
+}
+
+mbm_hupdate <- microbenchmark(
+  hupdate(r = r, theta = theta, I = I, a = a, b = b, thetam1 = thetam1, Im1 = Im1, gm1 = gm1),
+  hupdatels(r = r, theta = theta, I = I, a = a, b = b, thetam1 = thetam1, Im1 = Im1, gm1 = gm1ls),
+  hupdateRcpp(r = r, theta = theta, I = I, a = a, b = b, thetam1 = thetam1, Im1 = Im1, gm1 = gm1ls),
+  times = 1000
+)
+levels(mbm_hupdate$expr) <- c("hupdate", "hupdatels", "hupdateRcpp")
+mbm_hupdate
+```
+
+
+```{r hupdate_bm2}
+mbm_hupdate2 <- bench::mark(
+  hupdatels(r = r, theta = theta, I = I, a = a, b = b, thetam1 = thetam1, Im1 = Im1, gm1 = gm1ls),
+  hupdateRcpp(r = r, theta = theta, I = I, a = a, b = b, thetam1 = thetam1, Im1 = Im1, gm1 = gm1ls),
+  iterations = 1000
+)
+mbm_hupdate2$expression[[1]] <- c("hupdatels")
+mbm_hupdate2$expression[[2]] <- c("hupdateRcpp")
+mbm_hupdate2
+plot(mbm_hupdate2)
+```
 

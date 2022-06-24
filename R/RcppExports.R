@@ -13,3 +13,38 @@ gridptsRcpp <- function(r, mu, a, b) {
     .Call(`_gsdmvn_gridptsRcpp`, r, mu, a, b)
 }
 
+#' Initialize numerical integration for group sequential design in C++
+#' 
+#' Compute grid points for first interim analysis in a group sequential design
+#' 
+#' @param r Integer, at least 2; default of 18 recommended by Jennison and Turnbull
+#' @param theta Drift parameter for first analysis
+#' @param I Information at first analysis
+#' @param a lower limit of integration (scalar)
+#' @param b upper limit of integration (scalar \code{> a})
+#' @return A \code{tibble} with grid points in \code{z}, numerical integration weights in \code{w},
+#' and a normal density with mean \code{mu = theta * sqrt{I}} and variance 1 times the weight in \code{w}.
+#' @export
+h1Rcpp <- function(r, theta, I, a, b) {
+    .Call(`_gsdmvn_h1Rcpp`, r, theta, I, a, b)
+}
+
+#' Update numerical integration for group sequential design in C++
+#'
+#' Update grid points for numerical integration from one analysis to the next
+#'
+#' @param r Integer, at least 2; default of 18 recommended by Jennison and Turnbull
+#' @param theta Drift parameter for current analysis
+#' @param I Information at current analysis
+#' @param a lower limit of integration (scalar)
+#' @param b upper limit of integration (scalar \code{> a})
+#' @param thetam1  Drift parameter for previous analysis
+#' @param Im1 Information at previous analysis
+#' @param gm1 numerical integration grid from \code{h1()} or previous run of \code{hupdate()}
+#' @return A \code{tibble} with grid points in \code{z}, numerical integration weights in \code{w},
+#' and a normal density with mean \code{mu = theta * sqrt{I}} and variance 1 times the weight in \code{w}.
+#' @export
+hupdateRcpp <- function(r, theta, I, a, b, thetam1, Im1, gm1) {
+    .Call(`_gsdmvn_hupdateRcpp`, r, theta, I, a, b, thetam1, Im1, gm1)
+}
+
