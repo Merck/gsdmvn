@@ -43,21 +43,24 @@ List gridptsRcpp(int r, double mu, double a, double b)
   NumericVector z(2*m-1);
   NumericVector w(2*m-1);
   
-  for (int i = 0; i <= 2*m-4; i+=2) {
-    // Compute odd numbered grid points between the odd ones
-    z[i] = x[i/2];
-    // Compute even numbered grid points with their corresponding weights
-    z[i+1] = (x[i/2] + x[i/2+1]) / (double)2;
-    w[i+1] = 4 * (x[i/2+1] - x[i/2]);
-  }
-  z[2*m-2] = x[m-1]; // last odd numbered point
-
-  // Compute weights for odd numbered grid points
-  w[0] = x[1] - x[0]; // first point
+  // First two points with corresponding weights
+  z[0] = x[0];
+  z[1] = (x[0] + x[1]) / (double)2;
+  w[0] = x[1] - x[0];
+  w[1] = 4 * (x[1] - x[0]);
+  
   for (int i = 2; i <= 2*m-4; i+=2) {
-    w[i] = x[i/2+1] - x[i/2-1];
+    z[i] = x[i/2];                            // odd grid points
+    z[i+1] = (x[i/2] + x[i/2+1]) / (double)2; // even grid points
+    w[i] = x[i/2+1] - x[i/2-1];               // odd weights
+    w[i+1] = 4 * (x[i/2+1] - x[i/2]);         // even weights
   }
-  w[2*m-2] = x[m-1] - x[m-2]; // last point
+  
+  // Last odd point with corresponding weight
+  z[2*m-2] = x[m-1];
+  w[2*m-2] = x[m-1] - x[m-2];
+  
+  // Divide weights by 6
   w = w / (double)6;
 
   return List::create(Named("z") = z,
