@@ -1,4 +1,5 @@
 #include <Rcpp.h>
+#include <algorithm>
 using namespace Rcpp;
 
 //' Grid points for group sequential design numerical integration in C++
@@ -130,8 +131,9 @@ List hupdateRcpp(int r, double theta, double I, double a, double b,
   double mu = theta * I - thetam1 * Im1;
   NumericVector h(z.size());
   for(int i = 0; i < z.size(); i++){
-    NumericVector x = (z[i] * rtI - zm1 * rtIm1 - mu) / rtdelta;
+    NumericVector x = dnorm((z[i] * rtI - zm1 * rtIm1 - mu) / rtdelta);
     h[i] = sum(hm1 * dnorm(x));
+    h[i] = std::inner_product(hm1.begin(), hm1.end(), x.begin(), 0.0);
   }
   h = h * w * rtI / rtdelta;
   
