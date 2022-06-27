@@ -31,6 +31,7 @@ devtools::load_all()
 ```{r functions}
 n_iter <- 100
 prof_gs_power_npe <- function(times = rep(0, 6), n_iter = 100, runNew = FALSE,
+                              upper_new=gs_b, lower_new=gs_b, 
     theta = .1, theta1 = NULL, info = 1, info1 = NULL, info0 = NULL,
                          binding = FALSE,
                          upper=gs_b, lower=gs_b, upar = qnorm(.975), lpar= -Inf,
@@ -71,15 +72,27 @@ for (itr in 1:n_iter) {
   # COMPUTE BOUNDS
   for(k in 1:K){
     #############Timer2############
-    start2 <- Sys.time()
-    
-    # Lower bound update
-    a[k] <- lower(k = k, par = lpar, hgm1 = hgm1_1, theta = theta1, info = info1, r = r, tol = tol, test_bound = test_lower,
-                  efficacy = FALSE)
-    # Upper bound update
-    b[k] <- upper(k = k, par = upar, hgm1 = hgm1_0, info = info0, r = r, tol = tol, test_bound = test_upper)
-    
-    times[2] <- times[2] + difftime(Sys.time(), start2, units = "sec")[[1]]
+    if (runNew) {
+      start2 <- Sys.time()
+      
+      # Lower bound update
+      a[k] <- lower_new(k = k, par = lpar, hgm1 = hgm1_1, theta = theta1, info = info1, r = r, tol = tol, test_bound = test_lower,
+                    efficacy = FALSE)
+      # Upper bound update
+      b[k] <- upper_new(k = k, par = upar, hgm1 = hgm1_0, info = info0, r = r, tol = tol, test_bound = test_upper)
+      
+      times[2] <- times[2] + difftime(Sys.time(), start2, units = "sec")[[1]]
+    } else {
+      start2 <- Sys.time()
+      
+      # Lower bound update
+      a[k] <- lower(k = k, par = lpar, hgm1 = hgm1_1, theta = theta1, info = info1, r = r, tol = tol, test_bound = test_lower,
+                    efficacy = FALSE)
+      # Upper bound update
+      b[k] <- upper(k = k, par = upar, hgm1 = hgm1_0, info = info0, r = r, tol = tol, test_bound = test_upper)
+      
+      times[2] <- times[2] + difftime(Sys.time(), start2, units = "sec")[[1]]
+    }
     ##############################
     if(k==1){
       #############Timer3############
@@ -302,9 +315,9 @@ mbm_ex3 <- bench::mark(
   gs_power_npe_new(
     theta = c(.1, .2, .3), 
     info = (1:3) * 40,
-    upper = gs_spending_bound,
+    upper = gs_spending_bound_new,
     upar = upar,
-    lower = gs_spending_bound,
+    lower = gs_spending_bound_new,
     lpar = lpar
   ),
   iterations = 100
@@ -328,9 +341,18 @@ prof3 <- prof_gs_power_npe(
   upar = upar,
   lower = gs_spending_bound,
   lpar = lpar)
+
+prof3_new <- prof_gs_power_npe(
+  runNew = TRUE,
+  theta = c(.1, .2, .3), 
+  info = (1:3) * 40,
+  upper_new = gs_spending_bound_new,
+  upar = upar,
+  lower_new = gs_spending_bound_new,
+  lpar = lpar)
 rm(list = c("upar", "lpar"))
 
-prof3 %>% gt()
+cbind(prof3, prof3_new[,2:3]) %>% gt()
 ```
 
 ### Same bounds, but power under different theta
@@ -354,9 +376,9 @@ mbm_ex3.1 <- bench::mark(
     theta = c(.15, .25, .35), 
     theta1 = c(.1, .2, .3), 
     info = (1:3) * 40,
-    upper = gs_spending_bound,
+    upper = gs_spending_bound_new,
     upar = upar,
-    lower = gs_spending_bound,
+    lower = gs_spending_bound_new,
     lpar = lpar
   ),
   iterations = 100
@@ -381,9 +403,19 @@ prof3.1 <- prof_gs_power_npe(
   upar = upar,
   lower = gs_spending_bound,
   lpar = lpar)
+
+prof3.1_new <- prof_gs_power_npe(
+  runNew = TRUE,
+  theta = c(.15, .25, .35), 
+  theta1 = c(.1, .2, .3), 
+  info = (1:3) * 40,
+  upper_new = gs_spending_bound_new,
+  upar = upar,
+  lower_new = gs_spending_bound_new,
+  lpar = lpar)
 rm(list = c("upar", "lpar"))
 
-prof3.1 %>% gt()
+cbind(prof3.1, prof3.1_new[,2:3]) %>% gt()
 ```
 
 
@@ -409,10 +441,10 @@ mbm_ex4 <- bench::mark(
     theta = rep(0, 3), 
     theta1 = rep(0, 3), 
     info = (1:3) * 40,
-    upper = gs_spending_bound,
+    upper = gs_spending_bound_new,
     binding = TRUE,
     upar = upar,
-    lower = gs_spending_bound,
+    lower = gs_spending_bound_new,
     lpar = lpar
   ),
   iterations = 100
@@ -438,9 +470,21 @@ prof4 <- prof_gs_power_npe(
   upar = upar,
   lower = gs_spending_bound,
   lpar = lpar)
+
+prof4_new <- prof_gs_power_npe(
+  runNew = TRUE,
+  theta = rep(0, 3), 
+  theta1 = rep(0, 3), 
+  info = (1:3) * 40,
+  upper_new = gs_spending_bound_new,
+  binding = TRUE,
+  upar = upar,
+  lower_new = gs_spending_bound_new,
+  lpar = lpar)
+
 rm(list = c("upar", "lpar"))
 
-prof4 %>% gt()
+cbind(prof4, prof4_new[,2:3]) %>% gt()
 ```
 
 
