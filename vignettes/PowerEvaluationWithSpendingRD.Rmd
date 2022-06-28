@@ -196,12 +196,14 @@ In addition to the above probability calculations under any hypothesized $\theta
 - Deriving efficacy boundaries satisfying $\alpha_K(\theta_0)=\alpha$ to control Type I error with a spending function bound.
 - Deriving lower bounds under various possible $\theta$ values to satisfy
   - $\beta_K(\theta_1)=\beta$ where $\beta$ is Type II error under an alternative hypothesis $H_1: \theta=\theta_1$
-  - $\beta_K(\theta_0)=\beta(\theta_0)$ where $\beta(\theta_0)$ is the probability of crossing a lower bound under the null hypothesis $H_0: \theta=\theta_0$ 
-  - $\beta_K(\theta)=\beta(\theta^*)$ where $\beta(\theta^*)$ is the probability of crossing a lower bound under some arbitrary $H: \theta = \theta^*$
+  - $\beta_K(\theta_0)=\beta(\theta_0)$ where $\beta(\theta_0)$ is the probability of crossing a lower bound under the null hypothesis $H_0: \theta=\theta_0$; typical past uses would normally be for symmetric designs with $\beta_(\theta_0)=\alpha(\theta_0).$ However, asymmetric bounds with arbitrary $\beta_(\theta_0)$ are also supported. 
+  - $\beta_K(\theta_f)=\beta(\theta_f)$ where $\beta(\theta_f)$ is the probability of crossing a lower bound under some arbitrary $H: \theta = \theta_f$
   
 Numerical integration calculations for computing such bounds are, again, laid out in the vignette "Computing Bounds
 Under Non-Constant Treatment Effect."
 These uses point out the potential need for computing $V_k(\theta)$ or, equivalently, $\mathcal{I}_k(\theta)$ for multiple values of $\theta$, $k=1,\cdots,K$.
+That is, power is to be computed under $\theta$, null hypothesis bounds under $\theta_0$ and lower bounds under $\theta_f$.
+Thus, for general use the power function `power_rd()` defined below we will compute information for three values of $\theta$.
   
   
 ### Computing $\tilde p_{1}, \tilde p_2, \bar p_{1}, \bar p_{2}$
@@ -277,23 +279,28 @@ gsDesign::nBinomial(n=200, p1 = .2, p2 = .1, delta0 = c(0,.05), alpha=.025, beta
 ```
 
 We can now compute power with the function `power_rd()` (NOT CHECKED YET!!!).
+This will use the default that information for the lower bound is under the alternate hypothesis; i.e., $\theta_f= \theta_1 = p_1 - p_2$.
+However, $\theta_f$ and $\theta_1$ can be specified. Probabilities for boundary crossing returned are always under $\theta=p_1-p_2$ and $\theta=\theta_0$.
 
 ```{r}
-power_rd <- function(N=200, ratio=1, p1 = .2, p2 = .1, theta = 0,
+power_rd <- function(N=200, ratio=1, p1 = .2, p2 = .1, theta0 = 0, theta1 = NULL, thetaf = NULL,
                      binding = FALSE,
-                     upper = gs_b,
+                     upper = gs_spending_bound,
                      # Default is Lan-DeMets approximation of
                      upar = gsDesign(k = length(N), test.type=1,
                                      n.I=N, maxn.IPlan = max(N),
                                      sfu=sfLDOF, sfupar = NULL)$upper$bound,
                      lower = gs_b,
-                     # Futility only at IA1
-                     lpar = c(qnorm(.1), rep(-Inf, length(N) - 1)),                                                         test_upper = TRUE,
+                     # Futility only at IA1 using nominal p-value bound
+                     lpar = c(qnorm(.1), rep(-Inf, length(N) - 1)),
+                     test_upper = TRUE,
                      test_lower = TRUE,
                      r = 18,
                      tol = 1e-6
 ){
-  x <- info_rd(N=N, ratio=ratio, p1 = p1, p2 = p2, theta = theta)
+  x0 <- info_rd(N=N, ratio=ratio, p1 = p1, p2 = p2, theta = theta0)
+  xf <- info_rd(N=N, ratio=ratio, p1 = p1, p2 = p2, theta = thetaf)
+  x1 <- info_rd(N=N, ratio=ratio, p1 = p1, p2 = p2, theta = theta1)
   return(gs_power_npe(theta = x$theta, info = x$infot, info0 = x$infot, 
                       binding = binding,
                       upper=upper, lower=lower, upar = upar, lpar= lpar,
@@ -337,6 +344,60 @@ gsDesign::nBinomial(n=1500, p1=.15, p2=seq(.05,.125,.025), outtype=3) %>%
   gt() %>%
   fmt_number(decimals=6, columns = c("Power", "alpha", "sigma0", "sigma1", "p1t", "p2t"))
 ```
+
+## Treatment effect and information notation
+
++----------+------------+-----------+-----------------+-------------+------------------------------+
+|Use       | Treatment  | Treatment | Information     | Information | Comments                     |
+|          | effect     | effect    |                 | code        |                              |
+|          |            | code      |                 |             |                              |
++==========+:==========:+===========+:===============:+=============+:=============================+
+| Type I   | $\theta_0$ | `theta0`  | $\mathcal{I}_0$ | `info0`     | Type I error under $H_0$     |
+| error    |            |           |                 |             |                              |
++----------+------------+-----------+-----------------+-------------+------------------------------+
+| Efficacy | $\theta_0$ | `theta0`  | $\mathcal{I}_0$ | `info0`     | Efficacy bound probabilities |
+| bound    |            |           |                 |             | computed under $H_0$         |
++----------+------------+-----------+-----------------+-------------+------------------------------+
+| Lower    | $\theta_f$ | `thetaf`  | $\mathcal{I}_f$ | `infof`     | Lower bound probabilities    |
+| bound    |            |           |                 |             | computed under $H_f$         |
++----------+------------+-----------+-----------------+-------------+------------------------------+
+| Power    | $\theta$   | `theta`   | $\mathcal{I}$   | `info`      | Power computed for arbitrary |
+|          |            |           |                 |             | treatment effect             |
++----------+------------+-----------+-----------------+-------------+------------------------------+
+| Design   | $\theta_1$ | `theta1`  | $\mathcal{I}_1$ | `info1`     | Power and Type II error for  |
+|          |            |           |                 |             | under $H_1$ treatment effect |
++----------+------------+-----------+-----------------+-------------+------------------------------+
+
+
+## Some alternatives for lower bound spending
+
++------------------+------------------------------------------+--------------------------------+
+|Lower bound type  | Substitute for $\theta_f, \mathcal{I}_f$ | Parameter calls                |
++==================+:=========================================+:===============================+
+| $\beta$-spending | $\theta_f=\theta_1$ <br />               | `thetaf = theta1` <br />       |
+|                  | $\mathcal{I}_f=\mathcal{I}_1$            | `infof = info1`                |
++--------------------+------------+-----------+-----------------+-------------+----------------+
+| $H_0$-spending   | $\theta_f=\theta_0$ <br />               | `thetaf = theta0` <br />       |
+|                  | $\mathcal{I}_f=\mathcal{I}_0$            | `infof = info0`                |
++--------------------+------------+-----------+-----------------+-------------+----------------+
+| Other spending   | $\theta_f=\theta_f$ <br />               | `thetaf = thetaf` <br />       |
+|                  | $\mathcal{I}_f=\mathcal{I}_f$            | `infof = infof`                |
++--------------------+------------+-----------+-----------------+-------------+----------------+
+
+- $H_0$ lower spending can be
+  - Symmetric with efficacy bound (i.e., 2-sided symmetric design)
+  - Arbitrary lower bound total probability
+- Other spending can assume arbitrary $\theta$-value
+
+## Single information options
+
+- EAST$^{TM}$ only uses single information methods
+  - $H_0$ information
+  - $H_1$ information
+- **gsdmvn** allows one- and two-information approaches
+- How much difference does this make?
+
+
 
 ## Applying information to sample size for fixed designs
 
