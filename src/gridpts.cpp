@@ -129,14 +129,15 @@ List hupdateRcpp(int r, double theta, double I, double a, double b,
   SEXP hhm1 = gm1[2]; NumericVector hm1(hhm1);
   // update integration
   double mu = theta * I - thetam1 * Im1;
+  double d = rtI / rtdelta;
+  NumericVector t = (zm1 * rtIm1 + mu) / rtdelta;
   NumericVector h(z.size());
   NumericVector x(zm1.size());
   for(int i = 0; i < z.size(); i++){
-    x = dnorm((z[i] * rtI - zm1 * rtIm1 - mu) / rtdelta);
-    // h[i] = sum(hm1 * dnorm(x));
+    x = dnorm(z[i] * d - t);
     h[i] = std::inner_product(hm1.begin(), hm1.end(), x.begin(), 0.0);
   }
-  h = h * w * rtI / rtdelta;
+  h = h * w * d;
   
   return List::create(Named("z") = z,
                       Named("w") = w,
