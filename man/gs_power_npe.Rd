@@ -10,10 +10,10 @@ gs_power_npe(
   info_scale = c(0, 1, 2),
   binding = FALSE,
   upper = gs_b,
-  upar = list(par = qnorm(0.975)),
-  test_upper = TRUE,
   lower = gs_b,
+  upar = list(par = qnorm(0.975)),
   lpar = list(par = -Inf),
+  test_upper = TRUE,
   test_lower = TRUE,
   r = 18,
   tol = 1e-06
@@ -31,15 +31,15 @@ expected incremental drift at all analyses; used for power calculation}
 
 \item{upper}{function to compute upper bound}
 
+\item{lower}{function to compare lower bound}
+
 \item{upar}{parameter to pass to upper}
+
+\item{lpar}{parameter to pass to lower}
 
 \item{test_upper}{indicator of which analyses should include an upper (efficacy) bound;
 single value of TRUE (default)  indicates all analyses; otherwise,
 a logical vector of the same length as \code{info} should indicate which analyses will have an efficacy bound}
-
-\item{lower}{function to compare lower bound}
-
-\item{lpar}{parameter to pass to lower}
 
 \item{test_lower}{indicator of which analyses should include a lower bound;
 single value of TRUE (default) indicates all analyses;

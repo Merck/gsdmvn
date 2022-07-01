@@ -894,11 +894,11 @@ gsBoundSummary(x_gsDesign, digits = 4, ddigits = 2, tdigits = 1)
 knitr::include_graphics("./figures/east_n_gs.png")
 ```
 
-```{r label = EastGs, echo = FALSE, fig.cap = "Sample size calculated by EAST", out.width = '90%'}
+```{r label = EastGsUnpool, echo = FALSE, fig.cap = "Sample size calculated by EAST", out.width = '90%'}
 knitr::include_graphics("./figures/east_n_gs_unpool.png")
 ```
 
-```{r label = EastGs, echo = FALSE, fig.cap = "Sample size calculated by EAST", out.width = '90%'}
+```{r label = EastGsPool, echo = FALSE, fig.cap = "Sample size calculated by EAST", out.width = '90%'}
 knitr::include_graphics("./figures/east_n_gs_pool.png")
 ```
 
@@ -932,10 +932,10 @@ In this example, we consider 3 strata in a group sequential design with
 ### `gsdmvn`
 
 ```{r, message=FALSE}
-p_c <- tibble::tibble(Stratum = c("S1", "S2", "S3"), Rate = c(.4, .5, .6))
+p_c <- tibble::tibble(Stratum = c("S1", "S2", "S3"), Rate = c(.3, .37, .6))
 p_e <- tibble::tibble(Stratum = c("S1", "S2", "S3"), Rate = c(.25, .3, .5))
 ratio <- 1
-ratio_strata_c <- tibble::tibble(Stratum = c("S1", "S2", "S3"), ratio = c(1, 2, 3))
+ratio_strata_c <- tibble::tibble(Stratum = c("S1", "S2", "S3"), ratio = c(4, 5, 6))
 ratio_strata_e <- ratio_strata_c
 N <- 1
 IF <- 1:3/3
@@ -1083,9 +1083,13 @@ x <- x %>%
             info0_invar_H1 = 1 / sum(weight_invar_H1^2*p_pool*(1-p_pool)/N_c + weight_invar_H1^2*p_pool*(1-p_pool)/N_e),
             info0_ss = 1 / sum(weight_ss^2*p_pool*(1-p_pool)/N_c + weight_ss^2*p_pool*(1-p_pool)/N_e)
             ) 
+```
+
+
+```{r}
 x %>% 
   gt::gt() %>% 
-  fmt_number(c(2:4, 6:11), decimals = 4) %>% 
+  fmt_number(c(2:4, 6:11), decimals = 6) %>% 
   gt::tab_footnote(footnote = "info_invar_H0 = the statistical information under H1 per stratum per analysis calculated by INVAR by using variance under H0.",
                    locations = gt::cells_column_labels(columns = info_invar_H0)) %>% 
   gt::tab_footnote(footnote = "info_invar_H1 = the statistical information under H1 per stratum per analysis calculated by INVAR by using variance under H0.",
@@ -1107,7 +1111,7 @@ y_invar_H0 <- gs_design_npe(
   info0 = x$info0_invar_H0, 
   info_scale = 2,
   alpha = 0.025,                  
-  beta = 0.1,                
+  beta = 0.2,                
   upper = gs_b,
   lower = gs_b,
   upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
@@ -1121,7 +1125,7 @@ y_invar_H1 <- gs_design_npe(
   info0 = x$info0_invar_H1, 
   info_scale = 2,
   alpha = 0.025,                  
-  beta = 0.1,                
+  beta = 0.2,                
   upper = gs_b,
   lower = gs_b,
   upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
@@ -1135,7 +1139,7 @@ y_ss <- gs_design_npe(
   info0 = x$info0_ss, 
   info_scale = 2,
   alpha = 0.025,                  
-  beta = 0.1,                
+  beta = 0.2,                
   upper = gs_b,
   lower = gs_b,
   upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
@@ -1161,7 +1165,7 @@ x_ss <- gs_design_rd(
   IF = 1:3/3,
   rd0 = 0, 
   alpha = .025,                  
-  beta = .1,                    
+  beta = .2,                    
   ratio = 1,
   stratum_prev = tibble::tibble(Stratum = c("S1", "S2", "S3"), prevalence = 1:3),
   weight = "ss",
@@ -1179,7 +1183,7 @@ x_invar <- gs_design_rd(
   IF = 1:3/3,
   rd0 = 0, 
   alpha = .025,                  
-  beta = .1,                    
+  beta = .2,                    
   ratio = 1,
   stratum_prev = tibble::tibble(Stratum = c("S1", "S2", "S3"), prevalence = 1:3),
   weight = "invar",
@@ -1199,153 +1203,177 @@ tibble::tibble(INVAR = x_invar$analysis$N[1:3],
 ### Simulations
 
 ```{r}
-# set a tibble to store the simulation results
-simu_power <- tibble::tibble(INVAR_H0 = as.numeric(), INVAR_H1 = as.numeric(), SS = as.numeric())
-
-# set the method 
-weight_method <- "invar_H0"
-
-# total sample size
-#N <- 498 # SS
-N <- 492 # INVAR-H0
-#N <- 487 # INVAR-H1
-
-# sample size per stratum
-N_S1 <- N * 1 / sum(1:3) 
-N_S2 <- N * 2 / sum(1:3) 
-N_S3 <- N * 3 / sum(1:3) 
-
-
-# begin the simulations
-for (simu in 1:2000) {
+run_simulation <- function(N, weight_method){
   
-  # set the random seed
-  set.seed(simu + 2022)
+  ans <- NULL
   
-  # observations of 3 strata in FA
-  x_e_S1 <- rbinom(n = ceiling(N_S1/2), size = 1, prob = 0.25)
-  x_e_S2 <- rbinom(n = ceiling(N_S2/2), size = 1, prob = 0.3)
-  x_e_S3 <- rbinom(n = ceiling(N_S3/2), size = 1, prob = 0.5)
-  x_c_S1 <- rbinom(n = ceiling(N_S1/2), size = 1, prob = 0.4)
-  x_c_S2 <- rbinom(n = ceiling(N_S2/2), size = 1, prob = 0.5)
-  x_c_S3 <- rbinom(n = ceiling(N_S3/2), size = 1, prob = 0.6)
+  N_S1 <- ceiling(N * 4 / sum(4:6)) * (1:3) / 3
+  N_S2 <- ceiling(N * 5 / sum(4:6)) * (1:3) / 3
+  N_S3 <- ceiling(N * 6 / sum(4:6)) * (1:3) / 3
+  
+  # begin the simulations
+  for (simu in 1:1e3) {
+    
+    # set the random seed
+    set.seed(simu)
+  
+    # observations of 3 strata in FA
+    x_e_S1 <- lapply(diff(c(0, N_S1/2)), function(x){rbinom(n = x, size = 1, prob = p_e$Rate[1])})
+    x_e_S2 <- lapply(diff(c(0, N_S2/2)), function(x){rbinom(n = x, size = 1, prob = p_e$Rate[2])})
+    x_e_S3 <- lapply(diff(c(0, N_S3/2)), function(x){rbinom(n = x, size = 1, prob = p_e$Rate[3])})
+    x_c_S1 <- lapply(diff(c(0, N_S1/2)), function(x){rbinom(n = x, size = 1, prob = p_c$Rate[1])})
+    x_c_S2 <- lapply(diff(c(0, N_S2/2)), function(x){rbinom(n = x, size = 1, prob = p_c$Rate[2])})
+    x_c_S3 <- lapply(diff(c(0, N_S3/2)), function(x){rbinom(n = x, size = 1, prob = p_c$Rate[3])})
 
-  # calculate the number of events at FA
-  n_e_S1 <- sum(x_e_S1)
-  n_e_S2 <- sum(x_e_S2)
-  n_e_S3 <- sum(x_e_S3)
-  n_c_S1 <- sum(x_c_S1)
-  n_c_S2 <- sum(x_c_S2)
-  n_c_S3 <- sum(x_c_S3)
+    # calculate the number of events at FA
+    n_e_S1 <- cumsum(do.call(c, lapply(x_e_S1, sum)))
+    n_e_S2 <- cumsum(do.call(c, lapply(x_e_S2, sum)))
+    n_e_S3 <- cumsum(do.call(c, lapply(x_e_S3, sum)))
+    n_c_S1 <- cumsum(do.call(c, lapply(x_c_S1, sum)))
+    n_c_S2 <- cumsum(do.call(c, lapply(x_c_S2, sum)))
+    n_c_S3 <- cumsum(do.call(c, lapply(x_c_S3, sum)))
 
-  # calculate the events rates
-  p_e_S1 <- n_e_S1 / (N_S1/2)
-  p_e_S2 <- n_e_S2 / (N_S2/2)
-  p_e_S3 <- n_e_S3 / (N_S3/2)
-  p_c_S1 <- n_c_S1 / (N_S1/2)
-  p_c_S2 <- n_c_S2 / (N_S2/2)
-  p_c_S3 <- n_c_S3 / (N_S3/2)
-
-  x <- tibble::tibble(
-    statum = c("S1", "S2", "S3"),
-    N_e = c(N_S1/2, N_S2/2, N_S3/2),
-    N_c = N_e,
-    n_e = c(n_e_S1, n_e_S2, n_e_S3),
-    n_c = c(n_c_S1, n_c_S2, n_c_S3),
-    p_e = c(p_e_S1, p_e_S2, p_e_S3),
-    p_c = c(p_c_S1, p_c_S2, p_c_S3)
-    )%>% 
-    # calculate the statistical information per stratum
-    mutate(p_pool = (n_c + n_e) / (N_c + N_e),
-           sigma_H0 = sqrt(p_pool * (1 - p_pool) * (1 / N_c + 1 / N_e)),
-           sigma_H1 = sqrt(p_c * (1 - p_c) / N_c + p_e * (1 - p_e) / N_e),
-           sum_invar_H0 = sum(1/sigma_H0^2),
-           sum_invar_H1 = sum(1/sigma_H1^2),
-           sum_ss = sum((N_c * N_e) / (N_c + N_e))
-           ) %>% 
+    # calculate the events rates
+    p_e_S1 <- n_e_S1 / (N_S1/2)
+    p_e_S2 <- n_e_S2 / (N_S2/2)
+    p_e_S3 <- n_e_S3 / (N_S3/2)
+    p_c_S1 <- n_c_S1 / (N_S1/2)
+    p_c_S2 <- n_c_S2 / (N_S2/2)
+    p_c_S3 <- n_c_S3 / (N_S3/2)
+  
+    # calculate the variance per stratum per analysis
+    x <- tibble::tibble(analysis = rep(1:3, 3),
+                        statum = rep(c("S1", "S2", "S3"), each = 3),
+                        IF = rep(IF, 3),
+                        N_e = c(N_S1/2, N_S2/2, N_S3/2),
+                        N_c = N_e,
+                        n_e = c(n_e_S1, n_e_S2, n_e_S3),
+                        n_c = c(n_c_S1, n_c_S2, n_c_S3),
+                        p_e = c(p_e_S1, p_e_S2, p_e_S3),
+                        p_c = c(p_c_S1, p_c_S2, p_c_S3)
+                        )%>% 
+      mutate(p_pool = (n_c + n_e) / (N_c + N_e),
+             sigma_H0 = sqrt(p_pool * (1 - p_pool) * (1 / N_c + 1 / N_e)),
+             sigma_H1 = sqrt(p_c * (1 - p_c) / N_c + p_e * (1 - p_e) / N_e))
+    # calculate the sum of weights
+    sum_weight <- x %>% 
+      group_by(analysis) %>% 
+      summarize(sum_invar_H0 = sum(1/sigma_H0^2),
+                sum_invar_H1 = sum(1/sigma_H1^2),
+                sum_ss = sum((N_c * N_e) / (N_c + N_e))) %>% 
+      ungroup()
     # calculate the weight per stratum
-    mutate(weight_invar_H0 = 1/sigma_H0^2 / sum_invar_H0,
-           weight_invar_H1 = 1/sigma_H1^2 / sum_invar_H1,
-           weight_ss = (N_c * N_e) / (N_c + N_e) / sum_ss) %>% 
-    select(-c(sum_invar_H0, sum_invar_H1, sum_ss)) %>% 
-    # calculated the weighted rd and info
-    summarise(# weighted risk difference
-              rd_invar_H0 = sum(weight_invar_H0 * abs(p_c - p_e)),
-              rd_invar_H1 = sum(weight_invar_H1 * abs(p_c - p_e)),
-              rd_ss = sum(weight_ss * abs(p_c - p_e)),
-              rd0 = 0,
-              # weighted statistical information under H1
-              info_invar_H0 = 1 / sum(weight_invar_H0^2*p_c*(1-p_c)/N_c + weight_invar_H0^2*p_e*(1-p_e)/N_e),
-              info_invar_H1 = 1 / sum(weight_invar_H1^2*p_c*(1-p_c)/N_c + weight_invar_H1^2*p_e*(1-p_e)/N_e),
-              info_ss = 1 / sum(weight_ss^2*p_c*(1-p_c)/N_c + weight_ss^2*p_e*(1-p_e)/N_e),
-              # weighted statistical information under H0
-              info0_invar_H0 = 1 / sum(weight_invar_H0^2*p_pool*(1-p_pool)/N_c + weight_invar_H0^2*p_pool*(1-p_pool)/N_e),
-              info0_invar_H1 = 1 / sum(weight_invar_H1^2*p_pool*(1-p_pool)/N_c + weight_invar_H1^2*p_pool*(1-p_pool)/N_e),
-              info0_ss = 1 / sum(weight_ss^2*p_pool*(1-p_pool)/N_c + weight_ss^2*p_pool*(1-p_pool)/N_e)
-              )
-  
-  # calculate the power
-  ans <- switch (weight_method,
-    "invar_H0" = {
-      gs_power_npe(theta = x$rd_invar_H0, 
-                   info = x$info_invar_H0, 
-                   info_scale = 2,
-                   binding = FALSE,
-                   upper = gs_b, 
-                   lower = gs_b, 
-                   upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound[3]),
-                   lpar = list(par = -Inf),
-                   test_upper = TRUE,
-                   test_lower = TRUE,
-                   r = 18,
-                   tol = 1e-6
-                   )
-    },
-    "invar_H1" = {
-      gs_power_npe(theta = x$rd_invar_H1, 
-                   info = x$info_invar_H1, 
-                   info_scale = 2,
-                   binding = FALSE,
-                   upper = gs_b, 
-                   lower = gs_b, 
-                   upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound[3]),
-                   lpar = list(par = -Inf),
-                   test_upper = TRUE,
-                   test_lower = TRUE,
-                   r = 18,
-                   tol = 1e-6
+    suppressMessages(
+    x <- x %>% 
+      left_join(sum_weight) %>% 
+      mutate(weight_invar_H0 = 1/sigma_H0^2 / sum_invar_H0,
+            weight_invar_H1 = 1/sigma_H1^2 / sum_invar_H1,
+            weight_ss = (N_c * N_e) / (N_c + N_e) / sum_ss) %>% 
+      select(-c(sum_invar_H0, sum_invar_H1, sum_ss)) %>% 
+      # calculated the weighted rd and info
+      group_by(analysis) %>% 
+      summarise(# weighted risk difference
+                rd_invar_H0 = sum(weight_invar_H0 * abs(p_c - p_e)),
+                rd_invar_H1 = sum(weight_invar_H1 * abs(p_c - p_e)),
+                rd_ss = sum(weight_ss * abs(p_c - p_e)),
+                rd0 = 0,
+                # weighted statistical information under H1
+                info_invar_H0 = 1 / sum(weight_invar_H0^2*p_c*(1-p_c)/N_c + weight_invar_H0^2*p_e*(1-p_e)/N_e),
+                info_invar_H1 = 1 / sum(weight_invar_H1^2*p_c*(1-p_c)/N_c + weight_invar_H1^2*p_e*(1-p_e)/N_e),
+                info_ss       = 1 / sum(weight_ss^2      *p_c*(1-p_c)/N_c + weight_ss^2      *p_e*(1-p_e)/N_e),
+                # weighted statistical information under H0
+                info0_invar_H0 = 1 / sum(weight_invar_H0^2*p_pool*(1-p_pool) * (1/N_c + 1/N_e)),
+                info0_invar_H1 = 1 / sum(weight_invar_H1^2*p_pool*(1-p_pool) * (1/N_c + 1/N_e)),
+                info0_ss       = 1 / sum(weight_ss^2      *p_pool*(1-p_pool) * (1/N_c + 1/N_e))) %>% 
+      ungroup()
+    )
+    # calculate the power
+    res <- switch (weight_method,
+      "invar_H0" = {
+        gs_power_npe(theta = mean(x$rd_invar_H0), 
+                     info = x$info_invar_H0, 
+                     info_scale = 2,
+                     binding = FALSE,
+                     upper = gs_b, 
+                     lower = gs_b, 
+                     upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+                     lpar = list(par = c(qnorm(.1), rep(-Inf, 2))),
+                     test_upper = TRUE,
+                     test_lower = TRUE,
+                     r = 18,
+                     tol = 1e-6
+                    )
+      },
+      "invar_H1" = {
+        gs_power_npe(theta = mean(x$rd_invar_H1), 
+                     info = x$info_invar_H1, 
+                     info_scale = 2,
+                     binding = FALSE,
+                     upper = gs_b, 
+                     lower = gs_b, 
+                     upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+                     lpar = list(par = c(qnorm(.1), rep(-Inf, 2))),
+                     test_upper = TRUE,
+                     test_lower = TRUE,
+                     r = 18,
+                     tol = 1e-6
                    ) 
-    },
-    "ss" = {
-      gs_power_npe(theta = x$rd_ss, 
-                   info = x$info_ss, 
-                   info_scale = 2,
-                   binding = FALSE,
-                   upper = gs_b, 
-                   lower = gs_b, 
-                   upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound[3]),
-                   lpar = list(par = -Inf),
-                   test_upper = TRUE,
-                   test_lower = TRUE,
-                   r = 18,
-                   tol = 1e-6
-                   )
-    }
-  )
+      },
+      "ss" = {
+        gs_power_npe(theta = mean(x$rd_ss), 
+                     info = x$info_ss, 
+                     info_scale = 2,
+                     binding = FALSE,
+                     upper = gs_b, 
+                     lower = gs_b, 
+                     upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+                     lpar = list(par = c(qnorm(.1), rep(-Inf, 2))),
+                     test_upper = TRUE,
+                     test_lower = TRUE,
+                     r = 18,
+                     tol = 1e-6
+                     )
+      }
+    )
   
-  # summarize this simulation
-  ans_new <- tibble::tibble(
-    simu_ID = simu,
-    method = weight_method,
-    power = ans %>% filter(Bound == "Upper") %>% select(Probability) %>% unlist() %>% as.numeric()
-  )
+    # summarize this simulation
+    ans_new <- tibble::tibble(simu_ID = simu,
+                              method = weight_method,
+                              power = res %>% filter(Bound == "Upper", Analysis == 3) %>% select(Probability) %>% unlist() %>% as.numeric()
+                              )
+    
+    ans <- rbind(ans, ans_new)
+    #print(simu)
+  }
   
-  simu_power <- rbind(simu_power, ans_new)
+  return(ans)
 }
-
-simu_power %>% gt::gt()
 ```
 
+
+```{r, message=FALSE, eval=FALSE}
+# run simulations
+ans <- do.call(cbind, 
+               lapply(list(list("ss", 1095), list("invar_H0", 1131), list("invar_H1", 1130)), 
+                      function(x){return(run_simulation(N = x[[2]], weight_method = x[[1]]))})
+               ) 
+
+ans <- tibble::tibble(simu_ID = ans$simu_ID,
+                      ss = ans[, 3],
+                      invar_H0 = ans[, 6],
+                      invar_H1 = ans[, 9])
+
+save(ans, file = "./vignettes/fixture/rd_simu_power_3_weight.Rdata")
+```
+
+
+```{r}
+load("./fixture/rd_simu_power_3_weight.Rdata")
+ans %>% 
+  summarise(ss = mean(ss), invar_H0 = mean(invar_H0), invar_H1 = mean(invar_H1)) %>% 
+  gt::gt() %>% 
+  gt::tab_header(title = "Simulated power under different weightin methods")
+```
 
 
 # Summary
