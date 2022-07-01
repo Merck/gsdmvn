@@ -96,9 +96,7 @@ summary.fixed_design <- function(x, ...){
                      "RD" = {"RD"},
                      "FH" = {paste0("FH with rho = ", x$design_par$rho, 
                                     ", gamma = ", gamma = x$design_par$gamma)},
-                     "MB" = {paste0("MB with rho = ", x$design_par$rho, 
-                                    ", gamma = ",  x$design_par$gamma, 
-                                    ", tau =  ", x$design_par$tau)},  
+                     "MB" = {paste0("MB with tau = ", x$design_par$tau)},  
                      "MaxCombo" = {paste0("MaxCombo with (rho, gamma, tau) = (",
                                           paste(apply(do.call(rbind, x$design_par), 2 , paste , collapse = "," ), collapse = ") and ("),
                                           ")")}

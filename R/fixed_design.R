@@ -33,12 +33,7 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
    # --------------------------------------------- #
    #     check inputs                              #
    # --------------------------------------------- #
-   if(!methods::hasArg(enrollRates)){
-      stop("fixed_design: please input enrollRates!")
-   }
-   if(!methods::hasArg(failRates)){
-      stop("fixed_design: please input failRates!")
-   }
+   
    
    x <- match.arg(x)
    args <- list(...)
@@ -47,6 +42,21 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
    has_rho <- "rho" %in% names(args)
    has_gamma <- "gamma" %in% names(args)
    has_tau <- "tau" %in% names(args)
+   has_enrollRates <- "enrollRates" %in% names(args)
+   has_failRates <- "failRates" %in% names(args)
+   
+   
+   if(!has_enrollRates){
+      stop("fixed_design: please input enrollRates!")
+   }else{
+      enrollRates <- args$enrollRates
+   }
+   
+   if(!has_failRates){
+      stop("fixed_design: please input failRates!")
+   }else{
+      failRates <- args$failRates
+   }
    
    if(has_rho & length(args$rho) > 1 & x %in% c("FH", "MB")){
       stop("fixed_design: multiple rho can not be used in Fleming-Harrington or Magirr-Burman method!")
@@ -87,7 +97,7 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                                         Events = d$analysis$Events,
                                         Time = d$analysis$Time,
                                         Bound = (d$bounds %>% filter(Bound == "Upper"))$Z,
-                                        alpha = (d$bounds %>% filter(Bound == "Upper"))$Probability,
+                                        alpha = alpha,
                                         Power = (d$bounds %>% filter(Bound == "Upper"))$Probability)
                   
                   list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "AHR")
@@ -125,7 +135,7 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                                         Events = d$analysis$Events,
                                         Time = d$analysis$Time,
                                         Bound = (d$bounds %>% filter(Bound == "Upper"))$Z,
-                                        alpha = (d$bounds %>% filter(Bound == "Upper"))$Probability,
+                                        alpha = alpha,
                                         Power = (d$bounds %>% filter(Bound == "Upper"))$Probability)
                   
                   list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, 
@@ -172,7 +182,7 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                                         Events = d$analysis$Events,
                                         Time = d$analysis$Time,
                                         Bound = (d$bounds %>% filter(Bound == "Upper"))$Z,
-                                        alpha = (d$bounds %>% filter(Bound == "Upper"))$Probability,
+                                        alpha = alpha,
                                         Power = (d$bounds %>% filter(Bound == "Upper"))$Probability)
                   
                   list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, 
@@ -246,7 +256,7 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                                         Events = d$analysis$Events,
                                         Time = d$analysis$Time,
                                         Bound = (d$bounds %>% filter(Bound == "Upper"))$Z,
-                                        alpha = (d$bounds %>% filter(Bound == "Upper"))$Probability,
+                                        alpha = alpha,
                                         Power = (d$bounds %>% filter(Bound == "Upper"))$Probability)
                   
                   list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, 
@@ -260,8 +270,8 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                 )},
                  
                
-               list(sum_= tibble::tibble(Option = 99, Design = "Not implemented"),
-                                           x = "Enter implemented design type in x"))
+               )
+   
    class(y) <- c("fixed_design", class(y))
    return(y)    
 }
