@@ -222,7 +222,11 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                                         Bound = qnorm(1 - alpha),
                                         alpha = d$alpha,
                                         Power = d$power)
-                  list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "LF")
+                  
+                  list(enrollRates = enrollRates %>% mutate(rate = rate * d$n/sum(enrollRates$duration * enrollRates$rate)), 
+                       failRates = failRates, 
+                       analysis = ans, 
+                       design = "LF")
                   },
                
                
