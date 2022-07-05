@@ -99,7 +99,7 @@ summary.fixed_design <- function(x, ...){
                        if(x$design_par$rho == 0 & x$design_par$gamma == 0){
                          paste0("Fleming-Harrington FH(0, 0) (logrank)")
                        }else{
-                         paste0("Fleming-Harrington FH(", x$design_par$rho, " ", x$design_par$gamma, ")")
+                         paste0("Fleming-Harrington FH(", x$design_par$rho, ", ", x$design_par$gamma, ")")
                        }
                       },
                      "MaxCombo" = {
