@@ -104,7 +104,7 @@ summary.fixed_design <- function(x, ...){
                       },
                      "MaxCombo" = {
                        temp <- paste0("MaxCombo: FH(",
-                                      paste(apply(do.call(rbind, x$design_par[c(1:2)]), 2 , paste , collapse = ", " ), collapse = ") and FH("),
+                                      paste(apply(do.call(rbind, x$design_par[c(1:2)]), 2 , paste , collapse = ", " ), collapse = "), FH("),
                                       ")")
                        gsub(pattern = "FH\\(0, 0\\)", replacement = "logrank", x = temp)
                      }
