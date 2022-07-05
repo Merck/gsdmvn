@@ -91,15 +91,24 @@ summary <- function(x, ...) {
 #'   
 summary.fixed_design <- function(x, ...){
   x_design <- switch(x$design,
-                     "AHR" = {"AHR"},
-                     "LF" = {"LF"},
-                     "RD" = {"RD"},
-                     "FH" = {paste0("FH with rho = ", x$design_par$rho, 
-                                    ", gamma = ", gamma = x$design_par$gamma)},
-                     "MB" = {paste0("MB with tau = ", x$design_par$tau)},  
-                     "MaxCombo" = {paste0("MaxCombo with (rho, gamma, tau) = (",
-                                          paste(apply(do.call(rbind, x$design_par), 2 , paste , collapse = "," ), collapse = ") and ("),
-                                          ")")}
+                     "AHR" = {"Average hazard ratio"},
+                     "LF" = {"Lachin and Foulkes"},
+                     "RD" = {"Risk difference"},
+                     "MB" = {paste0("Modestly weighted LR: tau = ", x$design_par$tau)}, 
+                     "FH" = {
+                       if(x$design_par$rho == 0 & x$design_par$gamma == 0){
+                         paste0("Fleming-Harrington FH(0, 0) (logrank)")
+                       }else{
+                         paste0("Fleming-Harrington FH(", x$design_par$rho, " ", x$design_par$gamma, ")")
+                       }
+                      },
+                     "MaxCombo" = {
+                       temp <- paste0("MaxCombo: FH(",
+                                      paste(apply(do.call(rbind, x$design_par[c(1:2)]), 2 , paste , collapse = ", " ), collapse = ") and FH("),
+                                      ")")
+                       gsub(pattern = "FH\\(0, 0\\)", replacement = "logrank", x = temp)
+                     }
+                     
                      )
  
   ans <- x$analysis %>% mutate(Design = x_design)

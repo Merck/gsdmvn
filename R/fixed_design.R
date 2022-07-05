@@ -154,7 +154,7 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                                         failRates = failRates,
                                         ratio = 1, 
                                         weight = function(x, arm0, arm1){
-                                           gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0,
+                                           gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = -1, gamma = 0,
                                                                   tau = ifelse(has_tau, args$tau, 6))},
                                         upper = gs_b,
                                         upar = list(par = qnorm(1 - alpha)),
@@ -234,7 +234,7 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                   # organize the tests in max combo
                   max_combo_test <- data.frame(rho = if(has_rho){args$rho}else{c(0, 0)},
                                                gamma = if(has_gamma){args$gamma}else{c(0, 0.5)},
-                                               tau = if(has_tau){args$tau}else{c(-1, -1)}) %>% 
+                                               tau = if(has_tau){args$tau}else{-1}) %>% 
                      mutate(test = seq(1, length(rho)), Analysis = 1, analysisTimes = studyDuration)
                   
                   # check if power is NULL or not
