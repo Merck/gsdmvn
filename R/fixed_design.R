@@ -166,7 +166,7 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                                        failRates = failRates,
                                        ratio = 1, 
                                        weight = function(x, arm0, arm1){
-                                          gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = 0, gamma = 0,
+                                          gsdmvn:::wlr_weight_fh(x, arm0, arm1, rho = -1, gamma = 0,
                                                                  tau = ifelse(has_tau, args$tau, 6))},
                                        upper = gs_b,
                                        upar = list(par = qnorm(1 - alpha)),
