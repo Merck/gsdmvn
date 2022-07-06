@@ -2,16 +2,7 @@
 #include <algorithm>
 using namespace Rcpp;
 
-//' Grid points for group sequential design numerical integration in C++
-//' 
-//' @param r Integer, at least 2; default of 18 recommended by Jennison and Turnbull
-//' @param mu Mean of normal distribution (scalar) under consideration
-//' @param a lower limit of integration (scalar)
-//' @param b upper limit of integration (scalar \code{> a})
-//' @return A \code{list} with grid points in \code{z} and numerical integration weights in \code{w}
-//' @export
-// [[Rcpp::export]]
-
+// [[Rcpp::export(".gridptsRcpp")]]
 List gridptsRcpp(int r, double mu, double a, double b)
 {
 
@@ -68,20 +59,7 @@ List gridptsRcpp(int r, double mu, double a, double b)
                       Named("w") = w);
 }
 
-//' Initialize numerical integration for group sequential design in C++
-//' 
-//' Compute grid points for first interim analysis in a group sequential design
-//' 
-//' @param r Integer, at least 2; default of 18 recommended by Jennison and Turnbull
-//' @param theta Drift parameter for first analysis
-//' @param I Information at first analysis
-//' @param a lower limit of integration (scalar)
-//' @param b upper limit of integration (scalar \code{> a})
-//' @return A \code{list} with grid points in \code{z}, numerical integration weights in \code{w},
-//' and a normal density with mean \code{mu = theta * sqrt{I}} and variance 1 times the weight in \code{w}.
-//' @export
-// [[Rcpp::export]]
-
+// [[Rcpp::export(".h1Rcpp")]]
 List h1Rcpp(int r, double theta, double I, double a, double b)
 {
   // compute drift at analysis 1
@@ -99,23 +77,7 @@ List h1Rcpp(int r, double theta, double I, double a, double b)
                       Named("h") = h);
 }
 
-//' Update numerical integration for group sequential design in C++
-//'
-//' Update grid points for numerical integration from one analysis to the next
-//'
-//' @param r Integer, at least 2; default of 18 recommended by Jennison and Turnbull
-//' @param theta Drift parameter for current analysis
-//' @param I Information at current analysis
-//' @param a lower limit of integration (scalar)
-//' @param b upper limit of integration (scalar \code{> a})
-//' @param thetam1  Drift parameter for previous analysis
-//' @param Im1 Information at previous analysis
-//' @param gm1 numerical integration grid from \code{h1()} or previous run of \code{hupdate()}
-//' @return A \code{list} with grid points in \code{z}, numerical integration weights in \code{w},
-//' and a normal density with mean \code{mu = theta * sqrt{I}} and variance 1 times the weight in \code{w}.
-//' @export
-// [[Rcpp::export]]
-
+// [[Rcpp::export(".hupdateRcpp")]]
 List hupdateRcpp(int r, double theta, double I, double a, double b,
                  double thetam1, double Im1, List gm1){
   // sqrt of change in information
