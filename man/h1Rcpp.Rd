@@ -18,7 +18,7 @@ h1Rcpp(r, theta, I, a, b)
 \item{b}{upper limit of integration (scalar \code{> a})}
 }
 \value{
-A \code{tibble} with grid points in \code{z}, numerical integration weights in \code{w},
+A \code{list} with grid points in \code{z}, numerical integration weights in \code{w},
 and a normal density with mean \code{mu = theta * sqrt{I}} and variance 1 times the weight in \code{w}.
 }
 \description{

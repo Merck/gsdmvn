@@ -77,7 +77,7 @@ List gridptsRcpp(int r, double mu, double a, double b)
 //' @param I Information at first analysis
 //' @param a lower limit of integration (scalar)
 //' @param b upper limit of integration (scalar \code{> a})
-//' @return A \code{tibble} with grid points in \code{z}, numerical integration weights in \code{w},
+//' @return A \code{list} with grid points in \code{z}, numerical integration weights in \code{w},
 //' and a normal density with mean \code{mu = theta * sqrt{I}} and variance 1 times the weight in \code{w}.
 //' @export
 // [[Rcpp::export]]
@@ -111,7 +111,7 @@ List h1Rcpp(int r, double theta, double I, double a, double b)
 //' @param thetam1  Drift parameter for previous analysis
 //' @param Im1 Information at previous analysis
 //' @param gm1 numerical integration grid from \code{h1()} or previous run of \code{hupdate()}
-//' @return A \code{tibble} with grid points in \code{z}, numerical integration weights in \code{w},
+//' @return A \code{list} with grid points in \code{z}, numerical integration weights in \code{w},
 //' and a normal density with mean \code{mu = theta * sqrt{I}} and variance 1 times the weight in \code{w}.
 //' @export
 // [[Rcpp::export]]

@@ -24,7 +24,7 @@ hupdateRcpp(r, theta, I, a, b, thetam1, Im1, gm1)
 \item{gm1}{numerical integration grid from \code{h1()} or previous run of \code{hupdate()}}
 }
 \value{
-A \code{tibble} with grid points in \code{z}, numerical integration weights in \code{w},
+A \code{list} with grid points in \code{z}, numerical integration weights in \code{w},
 and a normal density with mean \code{mu = theta * sqrt{I}} and variance 1 times the weight in \code{w}.
 }
 \description{
