@@ -56,7 +56,7 @@ h1 <- function(r = 18, theta = 0, I = 1, a = -Inf, b = Inf){
   z <- w <- h <- NULL
   # compute drift at analysis 1
   mu <- theta * sqrt(I);
-  g <- gridpts(r, mu, a, b)
+  g <- gridpts_(r, mu, a, b)
   # compute deviation from drift
   x <- g$z - mu
   # compute standard normal density, multiply by grid weight and return

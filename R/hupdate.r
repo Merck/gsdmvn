@@ -54,7 +54,7 @@ hupdate <- function(r = 18, theta = 0, I = 2, a = -Inf, b = Inf, thetam1 = 0, Im
   rtdelta <- sqrt(I - Im1)
   rtI <- sqrt(I)
   rtIm1 <- sqrt(Im1)
-  g <- gridpts(r = r, mu = theta * rtI, a= a, b = b)
+  g <- gridpts_(r = r, mu = theta * rtI, a= a, b = b)
   # update integration
   mu <- theta * I - thetam1 * Im1
   h <- rep(0, length(g$z))
