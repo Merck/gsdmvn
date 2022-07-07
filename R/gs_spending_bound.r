@@ -126,7 +126,7 @@ gs_spending_bound <- function(k = 1,
       hg <- hupdate(theta = theta[k], I =  info[k], a = -Inf, b = a, thetam1 = theta[k-1], Im1 = info[k-1], gm1 = hgm1, r = r)
       i <- length(hg$h)
       pik <- sum(hg$h) # pik is for lower bound crossing
-      
+
       # FOLLOWING UPDATE ALGORITHM FROM GSDESIGN::GSBOUND.C
       ##################################################################
       # use 1st order Taylor's series to update boundaries
