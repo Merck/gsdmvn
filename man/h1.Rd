@@ -40,3 +40,14 @@ Mean for standard normal distribution under consideration is \code{mu = theta * 
 \if{html}{The contents of this section are shown in PDF user manual only.}
 }
 
+\examples{
+
+# Replicate variance of 1, mean of 35
+g <- h1(theta = 5, I = 49)
+mu <- sum(g$z * g$h)
+var <- sum((g$z - mu)^2 * g$h)
+
+# Replicate p-value of .0001 by numerical integration of tail
+g <- h1(a = qnorm(.9999))
+sum(g$h)
+}

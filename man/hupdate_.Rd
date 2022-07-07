@@ -12,7 +12,7 @@ hupdate_(
   b = Inf,
   thetam1 = 0,
   Im1 = 1,
-  gm1 = h1()
+  gm1 = h1_()
 )
 }
 \arguments{

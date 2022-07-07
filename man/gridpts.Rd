@@ -47,3 +47,13 @@ The numerical integration grid spreads out at the tail to enable accurate tail p
 \if{html}{The contents of this section are shown in PDF user manual only.}
 }
 
+\examples{
+
+# approximate variance of standard normal (i.e., 1)
+g <- gridpts()
+sum((g$z)^2 * g$w * dnorm(g$z))
+
+# approximate probability above .95 quantile (i.e., .05)
+g <- gridpts(a = qnorm(.95), b = Inf)
+sum(g$w * dnorm(g$z))
+}

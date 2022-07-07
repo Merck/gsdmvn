@@ -52,3 +52,10 @@ Update grid points for numerical integration from one analysis to the next
 \if{html}{The contents of this section are shown in PDF user manual only.}
 }
 
+\examples{
+
+# 2nd analysis with no interim bound and drift 0 should have mean 0, variance 1
+g <- hupdate()
+mu <- sum(g$z * g$h)
+var <- sum((g$z - mu)^2 * g$h)
+}
