@@ -50,7 +50,7 @@
 #'
 #' @return A \code{list} with grid points in \code{z} and numerical integration weights in \code{w}
 #' @export
-gridptsRcpp <- function(r = 18, mu = 0, a = -Inf, b = Inf) {
+gridpts <- function(r = 18, mu = 0, a = -Inf, b = Inf) {
   .gridptsRcpp(r = r, mu = mu, a = a, b = b)
 }
 

@@ -1,14 +1,14 @@
 tolerance = 1e-20
 
-test_that("Testing gridptsRcpp() vs gridpts_(); easy case",{
-  new <- gridptsRcpp(r = 18, mu = 0, a = -Inf, b = Inf)
+test_that("Testing gridpts() vs gridpts_(); easy case",{
+  new <- gridpts(r = 18, mu = 0, a = -Inf, b = Inf)
   ref <- gridpts_(r = 18, mu = 0, a = -Inf, b = Inf)
   expect_equal(new$w,ref$w, tolerance = tolerance)
   expect_equal(new$z,ref$z, tolerance = tolerance)
 })
 
-test_that("Testing gridptsRcpp() vs gridpts_(); extreme case 1",{
-  new <- gridptsRcpp(r = 18, mu = 6, a = -2, b = 0)
+test_that("Testing gridpts() vs gridpts_(); extreme case 1",{
+  new <- gridpts(r = 18, mu = 6, a = -2, b = 0)
   ref <- gridpts_(r = 18, mu = 6, a = -2, b = 0)
   expect_equal(new$w, ref$w, tolerance = tolerance)
   expect_equal(new$z, ref$z, tolerance = tolerance)

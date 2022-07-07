@@ -75,7 +75,7 @@ gridptsls <- function(r = 18, mu = 0, a = -Inf, b = Inf){
 mbm_gridpts <- microbenchmark(
   t0 = gridpts_(r = r, mu = mu, a = a, b = b),
   t1 = gridptsls(r = r, mu = mu, a = a, b = b),
-  t2 = gridptsRcpp(r = r, mu = mu, a = a, b = b),
+  t2 = gridpts(r = r, mu = mu, a = a, b = b),
   times = 1000
 )
 levels(mbm_gridpts$expr) <- c("gridpts_", "gridptsls", "gridptsRcpp")
@@ -86,7 +86,7 @@ mbm_gridpts
 ```{r gridpts_bm2}
 mbm_gridpts2 <- bench::mark(
   gridptsls(r = r, mu = mu, a = a, b = b),
-  gridptsRcpp(r = r, mu = mu, a = a, b = b),
+  gridpts(r = r, mu = mu, a = a, b = b),
   iterations = 1000
 )
 mbm_gridpts2$expression[[1]] <- c("gridptsls")
