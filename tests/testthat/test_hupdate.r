@@ -1,32 +1,32 @@
 library(gsdmvn)
 context("Updated grid and weights for numerical integration")
 
-test_that("Testing hupdate() vs known results from gsProbability", {
+test_that("Testing hupdate_() vs known results from gsProbability", {
   x <- gsDesign::gsProbability(k=2, n.I=1:2, theta = 2, a= c(-.5,0), b=c(3,2))
   expect_lt(abs(x$lower$prob[2] -
-    hupdate(theta = 2, I = 2, b = 0, thetam1 = 2, Im1 = 1, gm1 = h1(theta = 2, I = 1, a = -.5, b = 3)) %>%
+    hupdate_(theta = 2, I = 2, b = 0, thetam1 = 2, Im1 = 1, gm1 = h1(theta = 2, I = 1, a = -.5, b = 3)) %>%
       summarize(plower2 = sum(h)) %>% as.numeric()),
     1e-6
   )
   expect_lt(abs(x$upper$prob[2] -
                  # Compare second upper crossing
-                 hupdate(theta = 2, I = 2, a = 2, thetam1 = 2, Im1 = 1, gm1 = h1(theta = 2, I = 1, a = -.5, b = 3)) %>%
+                 hupdate_(theta = 2, I = 2, a = 2, thetam1 = 2, Im1 = 1, gm1 = h1(theta = 2, I = 1, a = -.5, b = 3)) %>%
                  summarize(plower2 = sum(h)) %>% as.numeric()),
             1e-6
   )
 })
 test_that("Testing hupdate for very extreme tail cases",{
-  expect_lt(hupdate(theta = 2, I = 2, b = 0, thetam1 = 2, Im1 = 1, gm1 = h1(theta = -30, I = 1, a = -.5, b = 3)) %>%
+  expect_lt(hupdate_(theta = 2, I = 2, b = 0, thetam1 = 2, Im1 = 1, gm1 = h1(theta = -30, I = 1, a = -.5, b = 3)) %>%
                     summarize(plower2 = sum(h)) %>% as.numeric(),
             1e-100)
-  expect_lt(hupdate(theta = 30, I = 2, b = 0, thetam1 = 2, Im1 = 1, gm1 = h1(theta = 2, I = 1, a = -.5, b = 3)) %>%
+  expect_lt(hupdate_(theta = 30, I = 2, b = 0, thetam1 = 2, Im1 = 1, gm1 = h1(theta = 2, I = 1, a = -.5, b = 3)) %>%
               summarize(plower2 = sum(h)) %>% as.numeric(),
             1e-100)
 })
 test_that("Testing somewhat extreme case with non-zero probability",{
   # Test case that should have essentially 0 chance of stopping at IA1
   # and mean -sqrt(2) * 3, variance 1 at analysis 2; computing upper tail for z=1
-  expect_equal(hupdate(theta = -3, I = 2, a = 0, b = Inf,
+  expect_equal(hupdate_(theta = -3, I = 2, a = 0, b = Inf,
                        thetam1 = -3, Im1 = 1,
                        gm1 = h1(theta = -3, I = 1, a = -Inf, b = Inf)) %>%
                   summarize(plower2 = sum(h)) %>% as.numeric(),
@@ -34,7 +34,7 @@ test_that("Testing somewhat extreme case with non-zero probability",{
                tolerance=1e-7)
   # Slightly less extreme upper tail for z = -1
   # result = .000592; this is where we want to be accurate!
-  expect_equal(hupdate(theta = -3, I = 2, a = -1, b = Inf,
+  expect_equal(hupdate_(theta = -3, I = 2, a = -1, b = Inf,
                        thetam1 = -3, Im1 = 1,
                        gm1 = h1(theta = -3, I = 1, a = -Inf, b = Inf)) %>%
                  summarize(plower2 = sum(h)) %>% as.numeric(),

@@ -66,7 +66,7 @@ NULL
 #' @references Jennison C and Turnbull BW (2000), \emph{Group Sequential
 #' Methods with Applications to Clinical Trials}. Boca Raton: Chapman and Hall.
 #' @export
-gs_spending_bound <- function(k = 1,
+gs_spending_bound_ <- function(k = 1,
                               par = list(sf = gsDesign::sfLDOF,
                                               total_spend = 0.025,
                                               param = NULL,
@@ -120,7 +120,7 @@ gs_spending_bound <- function(k = 1,
     j <- 0
     while(abs(adelta) > tol)
     {  # Get grid for rejection region
-      hg <- hupdate(theta = theta[k], I =  info[k], a = -Inf, b = a, thetam1 = theta[k-1], Im1 = info[k-1], gm1 = hgm1, r = r)
+      hg <- hupdate_(theta = theta[k], I =  info[k], a = -Inf, b = a, thetam1 = theta[k-1], Im1 = info[k-1], gm1 = hgm1, r = r)
       i <- nrow(hg)
       pik <- hg %>% summarise(sum(h)) %>% as.numeric() # pik is for lower bound crossing
 
@@ -151,7 +151,7 @@ gs_spending_bound <- function(k = 1,
     if(k == 1) return(b) # No iteration needed for first bound
     for(iter in 0:20){
       # subdensity for final analysis in rejection region
-      hg <- hupdate(theta = 0, I =  info[k], a = b, b = Inf, thetam1 = 0, Im1 = info[k-1], gm1 = hgm1)
+      hg <- hupdate_(theta = 0, I =  info[k], a = b, b = Inf, thetam1 = 0, Im1 = info[k-1], gm1 = hgm1)
       pik <- as.numeric(hg %>% summarise(sum(h))) # Probability of crossing bound
       dpikdb <- hg$h[1] / hg$w[1] # Derivative of bound crossing at b[k]
       b_old <- b

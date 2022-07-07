@@ -71,8 +71,8 @@ NULL
 #'    \item Define upperProb and lowerProb to be vectors of NA with length of the number of interim analysis.
 #'    \item Update lower and upper bounds using \code{gs_b()}.
 #'    \item If there are no interim analysis, compute proabilities of crossing upper and lower bounds
-#'    using \code{h1()}.
-#'    \item Compute cross upper and lower bound probabilities using \code{hupdate()} and \code{h1()}.
+#'    using \code{h1_()}.
+#'    \item Compute cross upper and lower bound probabilities using \code{hupdate_()} and \code{h1_()}.
 #'    \item Return a tibble of analysis number, Bounds, Z-values, Probability of crossing bounds,
 #'    theta, theta1, info, info0, and info1
 #'   }
@@ -171,7 +171,7 @@ NULL
 #'              upar = upar,
 #'              lpar = -upar)
 #'
-gs_power_npe <- function(theta = .1, theta1 = NULL, info = 1, info1 = NULL, info0 = NULL,
+gs_power_npe_ <- function(theta = .1, theta1 = NULL, info = 1, info1 = NULL, info0 = NULL,
                          binding = FALSE,
                          upper=gs_b, lower=gs_b, upar = qnorm(.975), lpar= -Inf,
                          test_upper = TRUE, test_lower = TRUE,
@@ -211,28 +211,28 @@ gs_power_npe <- function(theta = .1, theta1 = NULL, info = 1, info1 = NULL, info
     if(k==1){
       upperProb[1] <- if(b[1] < Inf) {pnorm(b[1], mean = sqrt(info[1]) * theta[1], lower.tail = FALSE)}else{0}
       lowerProb[1] <- if(a[1] > -Inf){pnorm(a[1], mean = sqrt(info[1]) * theta[1])}else{0}
-      hgm1_0 <- h1(r = r, theta = 0,         I = info0[1], a = if(binding){a[1]}else{-Inf}, b = b[1])
-      hgm1_1 <- h1(r = r, theta = theta1[1], I = info1[1], a = a[1], b = b[1])
-      hgm1   <- h1(r = r, theta = theta[1],  I = info[1],  a = a[1], b = b[1])
+      hgm1_0 <- h1_(r = r, theta = 0,         I = info0[1], a = if(binding){a[1]}else{-Inf}, b = b[1])
+      hgm1_1 <- h1_(r = r, theta = theta1[1], I = info1[1], a = a[1], b = b[1])
+      hgm1   <- h1_(r = r, theta = theta[1],  I = info[1],  a = a[1], b = b[1])
     }else{
       # Cross upper bound
       upperProb[k] <- if(b[k]< Inf){
-        hupdate(r = r, theta = theta[k], I = info[k], a = b[k], b = Inf,
+        hupdate_(r = r, theta = theta[k], I = info[k], a = b[k], b = Inf,
                 thetam1 = theta[k - 1], Im1 = info[k - 1], gm1 = hgm1) %>%
           summarise(sum(h)) %>% as.numeric()
       }else{0}
       # Cross lower bound
       lowerProb[k] <- if(a[k] > -Inf){
-        hupdate(r = r, theta = theta[k], I = info[k], a = -Inf, b = a[k],
+        hupdate_(r = r, theta = theta[k], I = info[k], a = -Inf, b = a[k],
                 thetam1 = theta[k - 1], Im1 = info[k - 1], gm1 = hgm1) %>%
           summarise(sum(h)) %>% as.numeric()
       }else{0}
       if(k < K){
-        hgm1_0 <- hupdate(r = r, theta = 0,         I = info0[k], a = if(binding){a[k]}else{-Inf}, b = b[k],
+        hgm1_0 <- hupdate_(r = r, theta = 0,         I = info0[k], a = if(binding){a[k]}else{-Inf}, b = b[k],
                           thetam1 = 0,           Im1 = info0[k-1], gm1 = hgm1_0)
-        hgm1_1 <- hupdate(r = r, theta = theta1[k], I = info1[k], a = a[k], b = b[k],
+        hgm1_1 <- hupdate_(r = r, theta = theta1[k], I = info1[k], a = a[k], b = b[k],
                           thetam1 = theta1[k-1], Im1 = info1[k-1], gm1 = hgm1_1)
-        hgm1   <- hupdate(r = r, theta = theta[k],  I = info[k],  a = a[k], b = b[k],
+        hgm1   <- hupdate_(r = r, theta = theta[k],  I = info[k],  a = a[k], b = b[k],
                           thetam1 = theta[k-1],  Im1 = info[k-1],  gm1 = hgm1)
       }
     }

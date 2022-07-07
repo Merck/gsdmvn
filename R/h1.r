@@ -47,11 +47,11 @@ NULL
 #' @examples
 #' library(dplyr)
 #' # Replicate variance of 1, mean of 35
-#' h1(theta = 5, I = 49) %>% summarise(mu = sum(z * h), var = sum((z - mu)^2 * h))
+#' h1_(theta = 5, I = 49) %>% summarise(mu = sum(z * h), var = sum((z - mu)^2 * h))
 #'
 #' # Replicate p-value of .0001 by numerical integration of tail
-#' h1(a = qnorm(.9999)) %>% summarise(p = sum(h))
-h1 <- function(r = 18, theta = 0, I = 1, a = -Inf, b = Inf){
+#' h1_(a = qnorm(.9999)) %>% summarise(p = sum(h))
+h1_ <- function(r = 18, theta = 0, I = 1, a = -Inf, b = Inf){
   # fix for binding message
   z <- w <- h <- NULL
   # compute drift at analysis 1

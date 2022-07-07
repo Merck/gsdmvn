@@ -1,22 +1,22 @@
-test_that("h1() returns results as expected ",{
+test_that("h1_() returns results as expected ",{
   #the design
   gstry <- gsDesign::gsDesign(k = 3,
                               sfl = gsDesign::sfLDOF,
                               delta = 0)
-  #probabilities calculated based on function h1()
-  upper.null <- h1(theta = gstry$theta[1],
+  #probabilities calculated based on function h1_()
+  upper.null <- h1_(theta = gstry$theta[1],
                    I = gstry$n.I[1],
                    a = gstry$upper$bound[1],
                    b = Inf) %>% summarise(p = sum(h))
-  upper.alt <- h1(theta = gstry$theta[2],
+  upper.alt <- h1_(theta = gstry$theta[2],
                   I = gstry$n.I[1],
                   a = gstry$upper$bound[1],
                   b = Inf) %>% summarise(p = sum(h))
-  lower.null <- h1(theta = gstry$theta[1],
+  lower.null <- h1_(theta = gstry$theta[1],
                    I = gstry$n.I[1],
                    a = -Inf,
                    b = gstry$lower$bound[1]) %>% summarise(p = sum(h))
-  lower.alt <- h1(theta = gstry$theta[2],
+  lower.alt <- h1_(theta = gstry$theta[2],
                   I = gstry$n.I[1],
                   a = -Inf,
                   b = gstry$lower$bound[1]) %>% summarise(p = sum(h))
@@ -31,8 +31,8 @@ test_that("h1() returns results as expected ",{
   expect_equal(object = as.numeric(c(lower.null, lower.alt)), expected = x$lower$prob[1,], tolerance = 0.0001)
   })
 
-test_that("h1() returns probability almost zero for extreme case",{
-  exmtest1 <- h1(theta = 9, I = 0.5, a = -Inf, b=0) %>% summarise(p = sum(h))
-  exmtest2 <- h1(theta = 1, I = 0.5, a = 9, b = Inf) %>% summarise(p = sum(h))
+test_that("h1_() returns probability almost zero for extreme case",{
+  exmtest1 <- h1_(theta = 9, I = 0.5, a = -Inf, b=0) %>% summarise(p = sum(h))
+  exmtest2 <- h1_(theta = 1, I = 0.5, a = 9, b = Inf) %>% summarise(p = sum(h))
   expect_equal(object = as.numeric(c(exmtest1, exmtest2)), expected = c(0,0), tolerance = 0.0001)
   })

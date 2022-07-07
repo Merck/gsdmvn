@@ -118,9 +118,9 @@ h1ls <- function(r = 18, theta = 0, I = 1, a = -Inf, b = Inf){
 }
 
 mbm_h1 <- microbenchmark(
-  t0 = h1(r = r, theta = theta, I = I, a = a, b = b),
+  t0 = h1_(r = r, theta = theta, I = I, a = a, b = b),
   t1 = h1ls(r = r, theta = theta, I = I, a = a, b = b),
-  t2 = h1Rcpp(r = r, theta = theta, I = I, a = a, b = b),
+  t2 = h1(r = r, theta = theta, I = I, a = a, b = b),
   times = 1000
 )
 levels(mbm_h1$expr) <- c("h1", "h1ls", "h1Rcpp")
@@ -131,7 +131,7 @@ mbm_h1
 ```{r h1_bm2}
 mbm_h12 <- bench::mark(
   h1ls(r = r, theta = theta, I = I, a = a, b = b),
-  h1Rcpp(r = r, theta = theta, I = I, a = a, b = b),
+  h1(r = r, theta = theta, I = I, a = a, b = b),
   iterations = 1000
 )
 mbm_h12$expression[[1]] <- c("h1ls")
@@ -149,8 +149,8 @@ a = -Inf
 b = 0
 thetam1 = 2
 Im1 = 1
-gm1ls = h1Rcpp(r = 18, theta = 2, I = 1, a = -.5, b = 3)
-gm1 = h1(r = 18, theta = 2, I = 1, a = -.5, b = 3)
+gm1ls = h1(r = 18, theta = 2, I = 1, a = -.5, b = 3)
+gm1 = h1_(r = 18, theta = 2, I = 1, a = -.5, b = 3)
 
 # The same function as h1, but return a list instead of a tibble
 hupdatels <- function(r = 18, theta = 0, I = 2, a = -Inf, b = Inf, thetam1 = 0, Im1 = 1, gm1 = h1()){
@@ -171,9 +171,9 @@ hupdatels <- function(r = 18, theta = 0, I = 2, a = -Inf, b = Inf, thetam1 = 0, 
 }
 
 mbm_hupdate <- microbenchmark(
-  hupdate(r = r, theta = theta, I = I, a = a, b = b, thetam1 = thetam1, Im1 = Im1, gm1 = gm1),
+  hupdate_(r = r, theta = theta, I = I, a = a, b = b, thetam1 = thetam1, Im1 = Im1, gm1 = gm1),
   hupdatels(r = r, theta = theta, I = I, a = a, b = b, thetam1 = thetam1, Im1 = Im1, gm1 = gm1ls),
-  hupdateRcpp(r = r, theta = theta, I = I, a = a, b = b, thetam1 = thetam1, Im1 = Im1, gm1 = gm1ls),
+  hupdate(r = r, theta = theta, I = I, a = a, b = b, thetam1 = thetam1, Im1 = Im1, gm1 = gm1ls),
   times = 1000
 )
 levels(mbm_hupdate$expr) <- c("hupdate", "hupdatels", "hupdateRcpp")
@@ -184,7 +184,7 @@ mbm_hupdate
 ```{r hupdate_bm2}
 mbm_hupdate2 <- bench::mark(
   hupdatels(r = r, theta = theta, I = I, a = a, b = b, thetam1 = thetam1, Im1 = Im1, gm1 = gm1ls),
-  hupdateRcpp(r = r, theta = theta, I = I, a = a, b = b, thetam1 = thetam1, Im1 = Im1, gm1 = gm1ls),
+  hupdate(r = r, theta = theta, I = I, a = a, b = b, thetam1 = thetam1, Im1 = Im1, gm1 = gm1ls),
   iterations = 1000
 )
 mbm_hupdate2$expression[[1]] <- c("hupdatels")
@@ -274,17 +274,17 @@ for (itr in 1:n_iter) {
       if (runNew) {
       start4 <- Sys.time()
 
-      hgm1_0 <- h1Rcpp(r = r, theta = 0,         I = info0[1], a = if(binding){a[1]}else{-Inf}, b = b[1])
-      hgm1_1 <- h1Rcpp(r = r, theta = theta1[1], I = info1[1], a = a[1], b = b[1])
-      hgm1   <- h1Rcpp(r = r, theta = theta[1],  I = info[1],  a = a[1], b = b[1])
+      hgm1_0 <- h1(r = r, theta = 0,         I = info0[1], a = if(binding){a[1]}else{-Inf}, b = b[1])
+      hgm1_1 <- h1(r = r, theta = theta1[1], I = info1[1], a = a[1], b = b[1])
+      hgm1   <- h1(r = r, theta = theta[1],  I = info[1],  a = a[1], b = b[1])
       
       times[4] <- times[4] + difftime(Sys.time(), start4, units = "sec")[[1]]
       } else {
       start4 <- Sys.time()
 
-      hgm1_0 <- h1(r = r, theta = 0,         I = info0[1], a = if(binding){a[1]}else{-Inf}, b = b[1])
-      hgm1_1 <- h1(r = r, theta = theta1[1], I = info1[1], a = a[1], b = b[1])
-      hgm1   <- h1(r = r, theta = theta[1],  I = info[1],  a = a[1], b = b[1])
+      hgm1_0 <- h1_(r = r, theta = 0,         I = info0[1], a = if(binding){a[1]}else{-Inf}, b = b[1])
+      hgm1_1 <- h1_(r = r, theta = theta1[1], I = info1[1], a = a[1], b = b[1])
+      hgm1   <- h1_(r = r, theta = theta[1],  I = info[1],  a = a[1], b = b[1])
       
       times[4] <- times[4] + difftime(Sys.time(), start4, units = "sec")[[1]]
       }
@@ -299,7 +299,7 @@ for (itr in 1:n_iter) {
           # hupdate(r = r, theta = theta[k], I = info[k], a = b[k], b = Inf,
           #         thetam1 = theta[k - 1], Im1 = info[k - 1], gm1 = hgm1) %>%
           #   summarise(sum(h)) %>% as.numeric()
-          sum(hupdateRcpp(r = r, theta = theta[k], I = info[k], a = b[k], b = Inf,
+          sum(hupdate(r = r, theta = theta[k], I = info[k], a = b[k], b = Inf,
                   thetam1 = theta[k - 1], Im1 = info[k - 1], gm1 = hgm1)$h)
         }else{0}
         # Cross lower bound
@@ -307,21 +307,21 @@ for (itr in 1:n_iter) {
           # hupdate(r = r, theta = theta[k], I = info[k], a = -Inf, b = a[k],
           #         thetam1 = theta[k - 1], Im1 = info[k - 1], gm1 = hgm1) %>%
           #   summarise(sum(h)) %>% as.numeric()
-          sum(hupdateRcpp(r = r, theta = theta[k], I = info[k], a = -Inf, b = a[k],
+          sum(hupdate(r = r, theta = theta[k], I = info[k], a = -Inf, b = a[k],
                       thetam1 = theta[k - 1], Im1 = info[k - 1], gm1 = hgm1)$h)
         }else{0}
         if(k < K){
           # hgm1_0 <- hupdate(r = r, theta = 0,         I = info0[k], a = if(binding){a[k]}else{-Inf}, b = b[k],
           #                   thetam1 = 0,           Im1 = info0[k-1], gm1 = hgm1_0)
-          hgm1_0 <- hupdateRcpp(r = r, theta = 0,         I = info0[k], a = if(binding){a[k]}else{-Inf}, b = b[k],
+          hgm1_0 <- hupdate(r = r, theta = 0,         I = info0[k], a = if(binding){a[k]}else{-Inf}, b = b[k],
                             thetam1 = 0,           Im1 = info0[k-1], gm1 = hgm1_0)
           # hgm1_1 <- hupdate(r = r, theta = theta1[k], I = info1[k], a = a[k], b = b[k],
           #                   thetam1 = theta1[k-1], Im1 = info1[k-1], gm1 = hgm1_1)
-          hgm1_1 <- hupdateRcpp(r = r, theta = theta1[k], I = info1[k], a = a[k], b = b[k],
+          hgm1_1 <- hupdate(r = r, theta = theta1[k], I = info1[k], a = a[k], b = b[k],
                             thetam1 = theta1[k-1], Im1 = info1[k-1], gm1 = hgm1_1)
           # hgm1   <- hupdate(r = r, theta = theta[k],  I = info[k],  a = a[k], b = b[k],
           #                   thetam1 = theta[k-1],  Im1 = info[k-1],  gm1 = hgm1)
-          hgm1   <- hupdateRcpp(r = r, theta = theta[k],  I = info[k],  a = a[k], b = b[k],
+          hgm1   <- hupdate(r = r, theta = theta[k],  I = info[k],  a = a[k], b = b[k],
                             thetam1 = theta[k-1],  Im1 = info[k-1],  gm1 = hgm1)
         }
         times[5] <- times[5] + difftime(Sys.time(), start5, units = "sec")[[1]]
@@ -330,22 +330,22 @@ for (itr in 1:n_iter) {
 
       # Cross upper bound
       upperProb[k] <- if(b[k]< Inf){
-        hupdate(r = r, theta = theta[k], I = info[k], a = b[k], b = Inf,
+        hupdate_(r = r, theta = theta[k], I = info[k], a = b[k], b = Inf,
                 thetam1 = theta[k - 1], Im1 = info[k - 1], gm1 = hgm1) %>%
           summarise(sum(h)) %>% as.numeric()
       }else{0}
       # Cross lower bound
       lowerProb[k] <- if(a[k] > -Inf){
-        hupdate(r = r, theta = theta[k], I = info[k], a = -Inf, b = a[k],
+        hupdate_(r = r, theta = theta[k], I = info[k], a = -Inf, b = a[k],
                 thetam1 = theta[k - 1], Im1 = info[k - 1], gm1 = hgm1) %>%
           summarise(sum(h)) %>% as.numeric()
       }else{0}
       if(k < K){
-        hgm1_0 <- hupdate(r = r, theta = 0,         I = info0[k], a = if(binding){a[k]}else{-Inf}, b = b[k],
+        hgm1_0 <- hupdate_(r = r, theta = 0,         I = info0[k], a = if(binding){a[k]}else{-Inf}, b = b[k],
                           thetam1 = 0,           Im1 = info0[k-1], gm1 = hgm1_0)
-        hgm1_1 <- hupdate(r = r, theta = theta1[k], I = info1[k], a = a[k], b = b[k],
+        hgm1_1 <- hupdate_(r = r, theta = theta1[k], I = info1[k], a = a[k], b = b[k],
                           thetam1 = theta1[k-1], Im1 = info1[k-1], gm1 = hgm1_1)
-        hgm1   <- hupdate(r = r, theta = theta[k],  I = info[k],  a = a[k], b = b[k],
+        hgm1   <- hupdate_(r = r, theta = theta[k],  I = info[k],  a = a[k], b = b[k],
                           thetam1 = theta[k-1],  Im1 = info[k-1],  gm1 = hgm1)
       }
       times[5] <- times[5] + difftime(Sys.time(), start5, units = "sec")[[1]]
@@ -395,8 +395,8 @@ for (itr in 1:n_iter) {
 ### Runtime
 ```{r ex1_runtime}
 mbm_ex1 <- bench::mark(
+  gs_power_npe_(theta = 0),
   gs_power_npe(theta = 0),
-  gs_power_npe_new(theta = 0),
   iterations = 100
 )
 mbm_ex1$expression[[1]] <- c("gs_power_npe")
@@ -418,13 +418,13 @@ cbind(prof1, prof1_new[,2:3]) %>% gt()
 ```{r ex2_runtime}
 upar <- gsDesign::gsDesign(k = 3,sfu = gsDesign::sfLDOF)$upper$bound
 mbm_ex2 <- bench::mark(
-  gs_power_npe(theta = c(.1, .2, .3),
+  gs_power_npe_(theta = c(.1, .2, .3),
     info = (1:3) * 40,
     upper = gs_b,
     upar = upar,
     lower = gs_b,
     lpar = c(-1, 0, 0)),
-  gs_power_npe_new(theta = c(.1, .2, .3),
+  gs_power_npe(theta = c(.1, .2, .3),
     info = (1:3) * 40,
     upper = gs_b,
     upar = upar,
@@ -472,20 +472,20 @@ upar <- list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = 
 lpar <- list(sf = gsDesign::sfHSD, total_spend = 0.1, param = -1, timing = NULL)
 
 mbm_ex3 <- bench::mark(
+  gs_power_npe_(
+    theta = c(.1, .2, .3), 
+    info = (1:3) * 40,
+    upper = gs_spending_bound_,
+    upar = upar,
+    lower = gs_spending_bound_,
+    lpar = lpar
+  ),
   gs_power_npe(
     theta = c(.1, .2, .3), 
     info = (1:3) * 40,
     upper = gs_spending_bound,
     upar = upar,
     lower = gs_spending_bound,
-    lpar = lpar
-  ),
-  gs_power_npe_new(
-    theta = c(.1, .2, .3), 
-    info = (1:3) * 40,
-    upper = gs_spending_bound_new,
-    upar = upar,
-    lower = gs_spending_bound_new,
     lpar = lpar
   ),
   iterations = 100
@@ -505,18 +505,18 @@ lpar <- list(sf = gsDesign::sfHSD, total_spend = 0.1, param = -1, timing = NULL)
 prof3 <- prof_gs_power_npe(
   theta = c(.1, .2, .3), 
   info = (1:3) * 40,
-  upper = gs_spending_bound,
+  upper = gs_spending_bound_,
   upar = upar,
-  lower = gs_spending_bound,
+  lower = gs_spending_bound_,
   lpar = lpar)
 
 prof3_new <- prof_gs_power_npe(
   runNew = TRUE,
   theta = c(.1, .2, .3), 
   info = (1:3) * 40,
-  upper_new = gs_spending_bound_new,
+  upper_new = gs_spending_bound,
   upar = upar,
-  lower_new = gs_spending_bound_new,
+  lower_new = gs_spending_bound,
   lpar = lpar)
 rm(list = c("upar", "lpar"))
 
@@ -531,6 +531,15 @@ upar <- list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = 
 lpar <- list(sf = gsDesign::sfHSD, total_spend = 0.1, param = -1, timing = NULL)
 
 mbm_ex3.1 <- bench::mark(
+  gs_power_npe_(
+    theta = c(.15, .25, .35), 
+    theta1 = c(.1, .2, .3), 
+    info = (1:3) * 40,
+    upper = gs_spending_bound_,
+    upar = upar,
+    lower = gs_spending_bound_,
+    lpar = lpar
+  ),
   gs_power_npe(
     theta = c(.15, .25, .35), 
     theta1 = c(.1, .2, .3), 
@@ -538,15 +547,6 @@ mbm_ex3.1 <- bench::mark(
     upper = gs_spending_bound,
     upar = upar,
     lower = gs_spending_bound,
-    lpar = lpar
-  ),
-  gs_power_npe_new(
-    theta = c(.15, .25, .35), 
-    theta1 = c(.1, .2, .3), 
-    info = (1:3) * 40,
-    upper = gs_spending_bound_new,
-    upar = upar,
-    lower = gs_spending_bound_new,
     lpar = lpar
   ),
   iterations = 100
@@ -567,9 +567,9 @@ prof3.1 <- prof_gs_power_npe(
   theta = c(.15, .25, .35), 
   theta1 = c(.1, .2, .3), 
   info = (1:3) * 40,
-  upper = gs_spending_bound,
+  upper = gs_spending_bound_,
   upar = upar,
-  lower = gs_spending_bound,
+  lower = gs_spending_bound_,
   lpar = lpar)
 
 prof3.1_new <- prof_gs_power_npe(
@@ -577,9 +577,9 @@ prof3.1_new <- prof_gs_power_npe(
   theta = c(.15, .25, .35), 
   theta1 = c(.1, .2, .3), 
   info = (1:3) * 40,
-  upper_new = gs_spending_bound_new,
+  upper_new = gs_spending_bound,
   upar = upar,
-  lower_new = gs_spending_bound_new,
+  lower_new = gs_spending_bound,
   lpar = lpar)
 rm(list = c("upar", "lpar"))
 
@@ -595,6 +595,16 @@ upar <- list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = 
 lpar <- upar
 
 mbm_ex4 <- bench::mark(
+  gs_power_npe_(
+    theta = rep(0, 3), 
+    theta1 = rep(0, 3), 
+    info = (1:3) * 40,
+    upper = gs_spending_bound_,
+    binding = TRUE,
+    upar = upar,
+    lower = gs_spending_bound_,
+    lpar = lpar
+  ),
   gs_power_npe(
     theta = rep(0, 3), 
     theta1 = rep(0, 3), 
@@ -603,16 +613,6 @@ mbm_ex4 <- bench::mark(
     binding = TRUE,
     upar = upar,
     lower = gs_spending_bound,
-    lpar = lpar
-  ),
-  gs_power_npe_new(
-    theta = rep(0, 3), 
-    theta1 = rep(0, 3), 
-    info = (1:3) * 40,
-    upper = gs_spending_bound_new,
-    binding = TRUE,
-    upar = upar,
-    lower = gs_spending_bound_new,
     lpar = lpar
   ),
   iterations = 100
@@ -633,10 +633,10 @@ prof4 <- prof_gs_power_npe(
   theta = rep(0, 3), 
   theta1 = rep(0, 3), 
   info = (1:3) * 40,
-  upper = gs_spending_bound,
+  upper = gs_spending_bound_,
   binding = TRUE,
   upar = upar,
-  lower = gs_spending_bound,
+  lower = gs_spending_bound_,
   lpar = lpar)
 
 prof4_new <- prof_gs_power_npe(
@@ -644,10 +644,10 @@ prof4_new <- prof_gs_power_npe(
   theta = rep(0, 3), 
   theta1 = rep(0, 3), 
   info = (1:3) * 40,
-  upper_new = gs_spending_bound_new,
+  upper_new = gs_spending_bound,
   binding = TRUE,
   upar = upar,
-  lower_new = gs_spending_bound_new,
+  lower_new = gs_spending_bound,
   lpar = lpar)
 
 rm(list = c("upar", "lpar"))

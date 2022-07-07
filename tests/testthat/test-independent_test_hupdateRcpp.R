@@ -1,4 +1,4 @@
-test_that("hupdateRcpp() returns results as expected ",{
+test_that("hupdate() returns results as expected ",{
   #the design
   gstry <- gsDesign::gsDesign(k = 3,
                               sfl = gsDesign::sfLDOF,
@@ -10,7 +10,7 @@ test_that("hupdateRcpp() returns results as expected ",{
                 a = gstry$lower$bound[1],
                 b = gstry$upper$bound[1])
   #IA2 to reject H0, we integrate from upper bound to Inf
-  upper.null.02 <- sum(hupdateRcpp(theta = gstry$theta[1],
+  upper.null.02 <- sum(hupdate(theta = gstry$theta[1],
                            thetam1 = gstry$theta[1],
                            I = gstry$n.I[2],
                            Im1 = gstry$n.I[1],
@@ -18,7 +18,7 @@ test_that("hupdateRcpp() returns results as expected ",{
                            a = gstry$upper$bound[2],
                            b = Inf)$h)
   #IA2 to accept H0, we integrate from -Inf to lower bound
-  lower.null.02 <- sum(hupdateRcpp(theta = gstry$theta[1],
+  lower.null.02 <- sum(hupdate(theta = gstry$theta[1],
                            thetam1 = gstry$theta[1],
                            I = gstry$n.I[2],
                            Im1 = gstry$n.I[1],
@@ -26,12 +26,12 @@ test_that("hupdateRcpp() returns results as expected ",{
                            a = -Inf,
                            b = gstry$lower$bound[2])$h)
 
-  alt.01 <- h1Rcpp(theta = gstry$theta[2],
+  alt.01 <- h1(theta = gstry$theta[2],
                I = gstry$n.I[1],
                a = gstry$lower$bound[1],
                b = gstry$upper$bound[1])
   #IA2 to reject H0, we integrate from upper bound to Inf
-  upper.alt.02 <- sum(hupdateRcpp(theta = gstry$theta[2],
+  upper.alt.02 <- sum(hupdate(theta = gstry$theta[2],
                           thetam1 = gstry$theta[2],
                           I = gstry$n.I[2],
                           Im1 = gstry$n.I[1],
@@ -39,7 +39,7 @@ test_that("hupdateRcpp() returns results as expected ",{
                           a = gstry$upper$bound[2],
                           b = Inf)$h)
   #IA2 to accept H0, we integrate from -Inf to lower bound
-  lower.alt.02 <- sum(hupdateRcpp(theta = gstry$theta[2],
+  lower.alt.02 <- sum(hupdate(theta = gstry$theta[2],
                         thetam1 = gstry$theta[2],
                         I = gstry$n.I[2],
                         Im1 = gstry$n.I[1],
@@ -63,18 +63,18 @@ test_that("hupdateRcpp() returns results as expected ",{
   #     a = gstry$upper$bound[2],b=Inf) %>% summarise(p = sum(h))
 })
 
-test_that("hupdateRcpp() returns probability almost zero for extreme case",{
+test_that("hupdate() returns probability almost zero for extreme case",{
   #the design
   gstry <- gsDesign::gsDesign(k = 3,
                               sfl = gsDesign::sfLDOF,
                               delta = 0)
-  null.01 <- h1Rcpp(theta = gstry$theta[1],
+  null.01 <- h1(theta = gstry$theta[1],
                 I = gstry$n.I[1],
                 a = gstry$lower$bound[1],
                 b = gstry$upper$bound[1])
   #IA2 to reject H0, we integrate from upper bound to Inf
   #-8 is an arbitrary extreme case for theta
-  poor.02 <- sum(hupdateRcpp(theta = -8,
+  poor.02 <- sum(hupdate(theta = -8,
                      thetam1 = gstry$theta[1],
                      I = gstry$n.I[2],
                      Im1 = gstry$n.I[1],
@@ -83,7 +83,7 @@ test_that("hupdateRcpp() returns probability almost zero for extreme case",{
                      b = Inf)$h)
   #IA2 to accept H0, we integrate from -Inf to lower bound
   #-8 is an arbitrary extreme case for the bound
-  high.02 <- sum(hupdateRcpp(theta = gstry$theta[2],
+  high.02 <- sum(hupdate(theta = gstry$theta[2],
                      thetam1 = gstry$theta[2],
                      I = gstry$n.I[2],
                      Im1 = gstry$n.I[1],

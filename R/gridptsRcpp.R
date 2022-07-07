@@ -79,7 +79,7 @@ gridpts <- function(r = 18, mu = 0, a = -Inf, b = Inf) {
 #' @return A \code{list} with grid points in \code{z}, numerical integration weights in \code{w},
 #' and a normal density with mean \code{mu = theta * sqrt{I}} and variance 1 times the weight in \code{w}.
 #' @export
-h1Rcpp <- function(r = 18, theta = 0, I = 1, a = -Inf, b = Inf){
+h1 <- function(r = 18, theta = 0, I = 1, a = -Inf, b = Inf){
   .h1Rcpp(r = r, theta = theta, I = I, a = a, b = b)
 }
 
@@ -94,7 +94,7 @@ h1Rcpp <- function(r = 18, theta = 0, I = 1, a = -Inf, b = Inf){
 #' @param b upper limit of integration (scalar \code{> a})
 #' @param thetam1  Drift parameter for previous analysis
 #' @param Im1 Information at previous analysis
-#' @param gm1 numerical integration grid from \code{h1Rcpp()} or previous run of \code{hupdateRcpp()}
+#' @param gm1 numerical integration grid from \code{h1()} or previous run of \code{hupdate()}
 #' @section Specification:
 #' \if{latex}{
 #'  \itemize{
@@ -110,7 +110,7 @@ h1Rcpp <- function(r = 18, theta = 0, I = 1, a = -Inf, b = Inf){
 #' and a normal density with mean \code{mu = theta * sqrt{I}} and variance 1 times the weight in \code{w}.
 #'
 #' @export
-hupdateRcpp <- function(r = 18, theta = 0, I = 2, a = -Inf, b = Inf, thetam1 = 0, Im1 = 1, gm1 = h1Rcpp()){
+hupdate <- function(r = 18, theta = 0, I = 2, a = -Inf, b = Inf, thetam1 = 0, Im1 = 1, gm1 = h1()){
   .hupdateRcpp(r = r, theta = theta, I = I, a = a, b = b, thetam1 = thetam1, Im1 = Im1, gm1 = gm1)
 }
 
