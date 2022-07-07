@@ -32,7 +32,9 @@ Suggests:
     gt,
     ggplot2,
     tidyr,
-    covr
+    covr,
+    bench,
+    microbenchmark
 Remotes: 
     Merck/simtrial,
     Merck/gsDesign2
