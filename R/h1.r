@@ -42,7 +42,6 @@ NULL
 #'
 #' @return A \code{tibble} with grid points in \code{z}, numerical integration weights in \code{w},
 #' and a normal density with mean \code{mu = theta * sqrt{I}} and variance 1 times the weight in \code{w}.
-#' @export
 #'
 #' @examples
 #' library(dplyr)

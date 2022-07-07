@@ -73,7 +73,7 @@ gridptsls <- function(r = 18, mu = 0, a = -Inf, b = Inf){
 }
 
 mbm_gridpts <- microbenchmark(
-  t0 = gridpts_(r = r, mu = mu, a = a, b = b),
+  t0 = gsdmvn:::gridpts_(r = r, mu = mu, a = a, b = b),
   t1 = gridptsls(r = r, mu = mu, a = a, b = b),
   t2 = gridpts(r = r, mu = mu, a = a, b = b),
   times = 1000
@@ -109,7 +109,7 @@ h1ls <- function(r = 18, theta = 0, I = 1, a = -Inf, b = Inf){
   z <- w <- h <- NULL
   # compute drift at analysis 1
   mu <- theta * sqrt(I);
-  g <- gridpts_(r, mu, a, b)
+  g <- gsdmvn:::gridpts_(r, mu, a, b)
   # compute deviation from drift
   x <- g$z - mu
   # compute standard normal density, multiply by grid weight and return
@@ -118,7 +118,7 @@ h1ls <- function(r = 18, theta = 0, I = 1, a = -Inf, b = Inf){
 }
 
 mbm_h1 <- microbenchmark(
-  t0 = h1_(r = r, theta = theta, I = I, a = a, b = b),
+  t0 = gsdmvn:::h1_(r = r, theta = theta, I = I, a = a, b = b),
   t1 = h1ls(r = r, theta = theta, I = I, a = a, b = b),
   t2 = h1(r = r, theta = theta, I = I, a = a, b = b),
   times = 1000
@@ -150,7 +150,7 @@ b = 0
 thetam1 = 2
 Im1 = 1
 gm1ls = h1(r = 18, theta = 2, I = 1, a = -.5, b = 3)
-gm1 = h1_(r = 18, theta = 2, I = 1, a = -.5, b = 3)
+gm1 = gsdmvn:::h1_(r = 18, theta = 2, I = 1, a = -.5, b = 3)
 
 # The same function as h1, but return a list instead of a tibble
 hupdatels <- function(r = 18, theta = 0, I = 2, a = -Inf, b = Inf, thetam1 = 0, Im1 = 1, gm1 = h1()){
@@ -158,7 +158,7 @@ hupdatels <- function(r = 18, theta = 0, I = 2, a = -Inf, b = Inf, thetam1 = 0, 
   rtdelta <- sqrt(I - Im1)
   rtI <- sqrt(I)
   rtIm1 <- sqrt(Im1)
-  g <- gridpts_(r = r, mu = theta * rtI, a= a, b = b)
+  g <- gsdmvn:::gridpts_(r = r, mu = theta * rtI, a= a, b = b)
   # update integration
   mu <- theta * I - thetam1 * Im1
   h <- rep(0, length(g$z))
@@ -171,7 +171,7 @@ hupdatels <- function(r = 18, theta = 0, I = 2, a = -Inf, b = Inf, thetam1 = 0, 
 }
 
 mbm_hupdate <- microbenchmark(
-  hupdate_(r = r, theta = theta, I = I, a = a, b = b, thetam1 = thetam1, Im1 = Im1, gm1 = gm1),
+  gsdmvn:::hupdate_(r = r, theta = theta, I = I, a = a, b = b, thetam1 = thetam1, Im1 = Im1, gm1 = gm1),
   hupdatels(r = r, theta = theta, I = I, a = a, b = b, thetam1 = thetam1, Im1 = Im1, gm1 = gm1ls),
   hupdate(r = r, theta = theta, I = I, a = a, b = b, thetam1 = thetam1, Im1 = Im1, gm1 = gm1ls),
   times = 1000
@@ -282,9 +282,9 @@ for (itr in 1:n_iter) {
       } else {
       start4 <- Sys.time()
 
-      hgm1_0 <- h1_(r = r, theta = 0,         I = info0[1], a = if(binding){a[1]}else{-Inf}, b = b[1])
-      hgm1_1 <- h1_(r = r, theta = theta1[1], I = info1[1], a = a[1], b = b[1])
-      hgm1   <- h1_(r = r, theta = theta[1],  I = info[1],  a = a[1], b = b[1])
+      hgm1_0 <- gsdmvn:::h1_(r = r, theta = 0,         I = info0[1], a = if(binding){a[1]}else{-Inf}, b = b[1])
+      hgm1_1 <- gsdmvn:::h1_(r = r, theta = theta1[1], I = info1[1], a = a[1], b = b[1])
+      hgm1   <- gsdmvn:::h1_(r = r, theta = theta[1],  I = info[1],  a = a[1], b = b[1])
       
       times[4] <- times[4] + difftime(Sys.time(), start4, units = "sec")[[1]]
       }
@@ -330,22 +330,22 @@ for (itr in 1:n_iter) {
 
       # Cross upper bound
       upperProb[k] <- if(b[k]< Inf){
-        hupdate_(r = r, theta = theta[k], I = info[k], a = b[k], b = Inf,
+        gsdmvn:::hupdate_(r = r, theta = theta[k], I = info[k], a = b[k], b = Inf,
                 thetam1 = theta[k - 1], Im1 = info[k - 1], gm1 = hgm1) %>%
           summarise(sum(h)) %>% as.numeric()
       }else{0}
       # Cross lower bound
       lowerProb[k] <- if(a[k] > -Inf){
-        hupdate_(r = r, theta = theta[k], I = info[k], a = -Inf, b = a[k],
+        gsdmvn:::hupdate_(r = r, theta = theta[k], I = info[k], a = -Inf, b = a[k],
                 thetam1 = theta[k - 1], Im1 = info[k - 1], gm1 = hgm1) %>%
           summarise(sum(h)) %>% as.numeric()
       }else{0}
       if(k < K){
-        hgm1_0 <- hupdate_(r = r, theta = 0,         I = info0[k], a = if(binding){a[k]}else{-Inf}, b = b[k],
+        hgm1_0 <- gsdmvn:::hupdate_(r = r, theta = 0,         I = info0[k], a = if(binding){a[k]}else{-Inf}, b = b[k],
                           thetam1 = 0,           Im1 = info0[k-1], gm1 = hgm1_0)
-        hgm1_1 <- hupdate_(r = r, theta = theta1[k], I = info1[k], a = a[k], b = b[k],
+        hgm1_1 <- gsdmvn:::hupdate_(r = r, theta = theta1[k], I = info1[k], a = a[k], b = b[k],
                           thetam1 = theta1[k-1], Im1 = info1[k-1], gm1 = hgm1_1)
-        hgm1   <- hupdate_(r = r, theta = theta[k],  I = info[k],  a = a[k], b = b[k],
+        hgm1   <- gsdmvn:::hupdate_(r = r, theta = theta[k],  I = info[k],  a = a[k], b = b[k],
                           thetam1 = theta[k-1],  Im1 = info[k-1],  gm1 = hgm1)
       }
       times[5] <- times[5] + difftime(Sys.time(), start5, units = "sec")[[1]]

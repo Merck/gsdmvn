@@ -51,7 +51,6 @@ NULL
 #' \if{html}{The contents of this section are shown in PDF user manual only.}
 #'
 #' @return A \code{tibble} with grid points in \code{z} and numerical integration weights in \code{w}
-#' @export
 #'
 #' @examples
 #' library(dplyr)

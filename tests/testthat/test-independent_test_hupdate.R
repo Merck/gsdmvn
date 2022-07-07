@@ -5,12 +5,12 @@ test_that("hupdate_() returns results as expected ",{
                               delta = 0)
   #probabilities calculated based on function h1_(), IA1 needs to full between low and upper bound
   #in order to continue to IA2
-  null.01 <- h1_(theta = gstry$theta[1],
+  null.01 <- gsdmvn:::h1_(theta = gstry$theta[1],
                 I = gstry$n.I[1],
                 a = gstry$lower$bound[1],
                 b = gstry$upper$bound[1])
   #IA2 to reject H0, we integrate from upper bound to Inf
-  upper.null.02 <- hupdate_(theta = gstry$theta[1],
+  upper.null.02 <- gsdmvn:::hupdate_(theta = gstry$theta[1],
                            thetam1 = gstry$theta[1],
                            I = gstry$n.I[2],
                            Im1 = gstry$n.I[1],
@@ -18,7 +18,7 @@ test_that("hupdate_() returns results as expected ",{
                            a = gstry$upper$bound[2],
                            b = Inf) %>% summarise(p = sum(h))
   #IA2 to accept H0, we integrate from -Inf to lower bound
-  lower.null.02 <- hupdate_(theta = gstry$theta[1],
+  lower.null.02 <- gsdmvn:::hupdate_(theta = gstry$theta[1],
                            thetam1 = gstry$theta[1],
                            I = gstry$n.I[2],
                            Im1 = gstry$n.I[1],
@@ -26,12 +26,12 @@ test_that("hupdate_() returns results as expected ",{
                            a = -Inf,
                            b = gstry$lower$bound[2]) %>% summarise(p = sum(h))
 
-  alt.01 <- h1_(theta = gstry$theta[2],
+  alt.01 <- gsdmvn:::h1_(theta = gstry$theta[2],
                I = gstry$n.I[1],
                a = gstry$lower$bound[1],
                b = gstry$upper$bound[1])
   #IA2 to reject H0, we integrate from upper bound to Inf
-  upper.alt.02 <- hupdate_(theta = gstry$theta[2],
+  upper.alt.02 <- gsdmvn:::hupdate_(theta = gstry$theta[2],
                           thetam1 = gstry$theta[2],
                           I = gstry$n.I[2],
                           Im1 = gstry$n.I[1],
@@ -39,7 +39,7 @@ test_that("hupdate_() returns results as expected ",{
                           a = gstry$upper$bound[2],
                           b = Inf) %>% summarise(p = sum(h))
   #IA2 to accept H0, we integrate from -Inf to lower bound
-  lower.alt.02 <- hupdate_(theta = gstry$theta[2],
+  lower.alt.02 <- gsdmvn:::hupdate_(theta = gstry$theta[2],
                         thetam1 = gstry$theta[2],
                         I = gstry$n.I[2],
                         Im1 = gstry$n.I[1],
@@ -58,7 +58,7 @@ test_that("hupdate_() returns results as expected ",{
   expect_equal(object = as.numeric(c(lower.null.02, lower.alt.02)), expected = x$lower$prob[2, ], tolerance = 0.0001)
   expect_equal(object = as.numeric(c(upper.null.02, upper.alt.02)), expected = x$upper$prob[2, ], tolerance = 0.0001)
   #problem with below code on extreme case:
-  #hupdate_(theta = gstry$theta[1], thetam1= gstry$theta[1],
+  #gsdmvn:::hupdate_(theta = gstry$theta[1], thetam1= gstry$theta[1],
   #     I=gstry$n.I[1]+0.00000000000001,Im1=gstry$n.I[1],gm1=null.01,
   #     a = gstry$upper$bound[2],b=Inf) %>% summarise(p = sum(h))
 })
@@ -68,13 +68,13 @@ test_that("hupdate_() returns probability almost zero for extreme case",{
   gstry <- gsDesign::gsDesign(k = 3,
                               sfl = gsDesign::sfLDOF,
                               delta = 0)
-  null.01 <- h1_(theta = gstry$theta[1],
+  null.01 <- gsdmvn:::h1_(theta = gstry$theta[1],
                 I = gstry$n.I[1],
                 a = gstry$lower$bound[1],
                 b = gstry$upper$bound[1])
   #IA2 to reject H0, we integrate from upper bound to Inf
   #-8 is an arbitrary extreme case for theta
-  poor.02 <- hupdate_(theta = -8,
+  poor.02 <- gsdmvn:::hupdate_(theta = -8,
                      thetam1 = gstry$theta[1],
                      I = gstry$n.I[2],
                      Im1 = gstry$n.I[1],
@@ -83,7 +83,7 @@ test_that("hupdate_() returns probability almost zero for extreme case",{
                      b = Inf) %>% summarise(p = sum(h))
   #IA2 to accept H0, we integrate from -Inf to lower bound
   #-8 is an arbitrary extreme case for the bound
-  high.02 <- hupdate_(theta = gstry$theta[2],
+  high.02 <- gsdmvn:::hupdate_(theta = gstry$theta[2],
                      thetam1 = gstry$theta[2],
                      I = gstry$n.I[2],
                      Im1 = gstry$n.I[1],

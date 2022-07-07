@@ -1,6 +1,6 @@
 
 testthat::test_that("compare gridpts_ results with gsDesign::normalGrid results", {
-  test1 <- gsdmvn::gridpts_(r = 18, mu = 4, a = -Inf, b = Inf)
+  test1 <- gsdmvn:::gridpts_(r = 18, mu = 4, a = -Inf, b = Inf)
   x <- gsDesign::normalGrid(r = 18, bounds = c(-40, 40), mu = 4, sigma = 1)
   expect_equal(test1$w, x$gridwgts)
   expect_equal(test1$z, x$z)
