@@ -43,8 +43,8 @@ Mean for standard normal distribution under consideration is \code{mu = theta * 
 \examples{
 library(dplyr)
 # Replicate variance of 1, mean of 35
-h1_(theta = 5, I = 49) \%>\% summarise(mu = sum(z * h), var = sum((z - mu)^2 * h))
+gsdmvn:::h1_(theta = 5, I = 49) \%>\% summarise(mu = sum(z * h), var = sum((z - mu)^2 * h))
 
 # Replicate p-value of .0001 by numerical integration of tail
-h1_(a = qnorm(.9999)) \%>\% summarise(p = sum(h))
+gsdmvn:::h1_(a = qnorm(.9999)) \%>\% summarise(p = sum(h))
 }

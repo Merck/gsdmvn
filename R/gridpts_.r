@@ -56,10 +56,10 @@ NULL
 #' library(dplyr)
 #'
 #' # approximate variance of standard normal (i.e., 1)
-#' gridpts_() %>% summarise(var = sum(z^2 * w * dnorm(z)))
+#' gsdmvn:::gridpts_() %>% summarise(var = sum(z^2 * w * dnorm(z)))
 #'
 #' # approximate probability above .95 quantile (i.e., .05)
-#' gridpts_(a = qnorm(.95), b = Inf) %>% summarise(p05 = sum(w * dnorm(z)))
+#' gsdmvn:::gridpts_(a = qnorm(.95), b = Inf) %>% summarise(p05 = sum(w * dnorm(z)))
 gridpts_ <- function(r = 18, mu = 0, a = -Inf, b = Inf){
   # Define odd numbered grid points for real line
   x <- c(mu - 3 - 4 * log(r / (1:(r - 1))),

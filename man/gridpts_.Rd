@@ -51,8 +51,8 @@ The numerical integration grid spreads out at the tail to enable accurate tail p
 library(dplyr)
 
 # approximate variance of standard normal (i.e., 1)
-gridpts_() \%>\% summarise(var = sum(z^2 * w * dnorm(z)))
+gsdmvn:::gridpts_() \%>\% summarise(var = sum(z^2 * w * dnorm(z)))
 
 # approximate probability above .95 quantile (i.e., .05)
-gridpts_(a = qnorm(.95), b = Inf) \%>\% summarise(p05 = sum(w * dnorm(z)))
+gsdmvn:::gridpts_(a = qnorm(.95), b = Inf) \%>\% summarise(p05 = sum(w * dnorm(z)))
 }
