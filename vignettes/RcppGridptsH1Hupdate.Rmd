@@ -81,7 +81,7 @@ mbm_gridpts <- microbenchmark(
   t2 = gridpts(r = r, mu = mu, a = a, b = b),
   times = 1000
 )
-levels(mbm_gridpts$expr) <- c("gridpts_", "gridptsls", "gridptsRcpp")
+levels(mbm_gridpts$expr) <- c("old gridpts", "old gridpts returning list", "new gridpts")
 mbm_gridpts
 ```
 
@@ -92,8 +92,8 @@ mbm_gridpts2 <- bench::mark(
   gridpts(r = r, mu = mu, a = a, b = b),
   iterations = 1000
 )
-mbm_gridpts2$expression[[1]] <- c("gridptsls")
-mbm_gridpts2$expression[[2]] <- c("gridptsRcpp")
+mbm_gridpts2$expression[[1]] <- c("old gridpts returning list")
+mbm_gridpts2$expression[[2]] <- c("new gridpts")
 mbm_gridpts2
 plot(mbm_gridpts2)
 ```
@@ -126,7 +126,7 @@ mbm_h1 <- microbenchmark(
   t2 = h1(r = r, theta = theta, I = I, a = a, b = b),
   times = 1000
 )
-levels(mbm_h1$expr) <- c("h1", "h1ls", "h1Rcpp")
+levels(mbm_h1$expr) <- c("old h1", "old h1 returning ls", "new h1")
 mbm_h1
 ```
 
@@ -137,8 +137,8 @@ mbm_h12 <- bench::mark(
   h1(r = r, theta = theta, I = I, a = a, b = b),
   iterations = 1000
 )
-mbm_h12$expression[[1]] <- c("h1ls")
-mbm_h12$expression[[2]] <- c("h1Rcpp")
+mbm_h12$expression[[1]] <- c("old h1 returning list")
+mbm_h12$expression[[2]] <- c("new h1")
 mbm_h12
 plot(mbm_h12)
 ```
@@ -179,7 +179,7 @@ mbm_hupdate <- microbenchmark(
   hupdate(r = r, theta = theta, I = I, a = a, b = b, thetam1 = thetam1, Im1 = Im1, gm1 = gm1ls),
   times = 1000
 )
-levels(mbm_hupdate$expr) <- c("hupdate", "hupdatels", "hupdateRcpp")
+levels(mbm_hupdate$expr) <- c("old hupdate", "old hupdate returning list", "new hupdate")
 mbm_hupdate
 ```
 
@@ -190,8 +190,8 @@ mbm_hupdate2 <- bench::mark(
   hupdate(r = r, theta = theta, I = I, a = a, b = b, thetam1 = thetam1, Im1 = Im1, gm1 = gm1ls),
   iterations = 1000
 )
-mbm_hupdate2$expression[[1]] <- c("hupdatels")
-mbm_hupdate2$expression[[2]] <- c("hupdateRcpp")
+mbm_hupdate2$expression[[1]] <- c("old hupdate returning list")
+mbm_hupdate2$expression[[2]] <- c("new hupdate")
 mbm_hupdate2
 plot(mbm_hupdate2)
 ```
@@ -567,7 +567,7 @@ for (itr in 1:n_iter) {
   if (runNew) {
     names(tb) <- c("eval", "new runtime in sec", "new %")
   } else {
-    names(tb) <- c("eval", "runtime in sec", "%")
+    names(tb) <- c("eval", "old runtime in sec", "old %")
   }
   return (tb)
 }
@@ -582,10 +582,10 @@ mbm_ex1 <- bench::mark(
   gs_power_npe(theta = 0),
   iterations = 100
 )
-mbm_ex1$expression[[1]] <- c("gs_power_npe")
-mbm_ex1$expression[[2]] <- c("gs_power_npe_new")
+mbm_ex1$expression[[1]] <- c("old gs_power_npe")
+mbm_ex1$expression[[2]] <- c("new gs_power_npe")
 mbm_ex1
-plot(mbm_ex1)
+# plot(mbm_ex1)
 ```
 
 ### Profile
@@ -615,10 +615,10 @@ mbm_ex2 <- bench::mark(
     lpar = c(-1, 0, 0)),
   iterations = 100
 )
-mbm_ex2$expression[[1]] <- c("gs_power_npe")
-mbm_ex2$expression[[2]] <- c("gs_power_npe_new")
+mbm_ex2$expression[[1]] <- c("old gs_power_npe")
+mbm_ex2$expression[[2]] <- c("new gs_power_npe")
 mbm_ex2
-plot(mbm_ex2)
+# plot(mbm_ex2)
 ```
 
 ### Profile
@@ -674,10 +674,10 @@ mbm_ex3 <- bench::mark(
   iterations = 100
 )
 rm(list = c("upar", "lpar"))
-mbm_ex3$expression[[1]] <- c("gs_power_npe")
-mbm_ex3$expression[[2]] <- c("gs_power_npe_new")
+mbm_ex3$expression[[1]] <- c("old gs_power_npe")
+mbm_ex3$expression[[2]] <- c("new gs_power_npe")
 mbm_ex3
-plot(mbm_ex3)
+# plot(mbm_ex3)
 ```
 
 ### Profile
@@ -735,10 +735,10 @@ mbm_ex3.1 <- bench::mark(
   iterations = 100
 )
 rm(list = c("upar", "lpar"))
-mbm_ex3.1$expression[[1]] <- c("gs_power_npe")
-mbm_ex3.1$expression[[2]] <- c("gs_power_npe_new")
+mbm_ex3.1$expression[[1]] <- c("old gs_power_npe")
+mbm_ex3.1$expression[[2]] <- c("new gs_power_npe")
 mbm_ex3.1
-plot(mbm_ex3.1)
+# plot(mbm_ex3.1)
 ```
 
 #### Profile
@@ -801,10 +801,10 @@ mbm_ex4 <- bench::mark(
   iterations = 100
 )
 rm(list = c("upar", "lpar"))
-mbm_ex4$expression[[1]] <- c("gs_power_npe")
-mbm_ex4$expression[[2]] <- c("gs_power_npe_new")
+mbm_ex4$expression[[1]] <- c("old gs_power_npe")
+mbm_ex4$expression[[2]] <- c("new gs_power_npe")
 mbm_ex4
-plot(mbm_ex4)
+# plot(mbm_ex4)
 ```
 
 ### Profile
