@@ -209,8 +209,9 @@ gs_power_npe <- function(theta = .1, theta1 = NULL, info = 1, info1 = NULL, info
     # Upper bound update
     b[k] <- upper(k = k, par = upar, hgm1 = hgm1_0, info = info0, r = r, tol = tol, test_bound = test_upper)
     if(k==1){
-      upperProb[1] <- if(b[1] < Inf) {pnorm(b[1], mean = sqrt(info[1]) * theta[1], lower.tail = FALSE)}else{0}
-      lowerProb[1] <- if(a[1] > -Inf){pnorm(a[1], mean = sqrt(info[1]) * theta[1])}else{0}
+      upperProb[1] <- if(b[1] < Inf) {pnorm(sqrt(info[1])*(theta[1] - b[1]/sqrt(info0[1])))}else{0}
+                                    # pnorm(sqrt(info)   *(.15 - .1 - qnorm(.975)/sqrt(info0)))
+      lowerProb[1] <- if(a[1] > -Inf){pnorm(-sqrt(info[1])*(theta[1] - a[1]/sqrt(info0[1])))}else{0}
       hgm1_0 <- h1(r = r, theta = 0,         I = info0[1], a = if(binding){a[1]}else{-Inf}, b = b[1])
       hgm1_1 <- h1(r = r, theta = theta1[1], I = info1[1], a = a[1], b = b[1])
       hgm1   <- h1(r = r, theta = theta[1],  I = info[1],  a = a[1], b = b[1])
