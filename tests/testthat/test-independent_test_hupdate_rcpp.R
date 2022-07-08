@@ -10,42 +10,42 @@ test_that("hupdate() returns results as expected ",{
                 a = gstry$lower$bound[1],
                 b = gstry$upper$bound[1])
   #IA2 to reject H0, we integrate from upper bound to Inf
-  upper.null.02 <- hupdate(theta = gstry$theta[1],
+  upper.null.02 <- sum(hupdate(theta = gstry$theta[1],
                            thetam1 = gstry$theta[1],
                            I = gstry$n.I[2],
                            Im1 = gstry$n.I[1],
                            gm1 = null.01,
                            a = gstry$upper$bound[2],
-                           b = Inf) %>% summarise(p = sum(h))
+                           b = Inf)$h)
   #IA2 to accept H0, we integrate from -Inf to lower bound
-  lower.null.02 <- hupdate(theta = gstry$theta[1],
+  lower.null.02 <- sum(hupdate(theta = gstry$theta[1],
                            thetam1 = gstry$theta[1],
                            I = gstry$n.I[2],
                            Im1 = gstry$n.I[1],
                            gm1 = null.01,
                            a = -Inf,
-                           b = gstry$lower$bound[2]) %>% summarise(p = sum(h))
+                           b = gstry$lower$bound[2])$h)
 
   alt.01 <- h1(theta = gstry$theta[2],
                I = gstry$n.I[1],
                a = gstry$lower$bound[1],
                b = gstry$upper$bound[1])
   #IA2 to reject H0, we integrate from upper bound to Inf
-  upper.alt.02 <- hupdate(theta = gstry$theta[2],
+  upper.alt.02 <- sum(hupdate(theta = gstry$theta[2],
                           thetam1 = gstry$theta[2],
                           I = gstry$n.I[2],
                           Im1 = gstry$n.I[1],
                           gm1 = alt.01,
                           a = gstry$upper$bound[2],
-                          b = Inf) %>% summarise(p = sum(h))
+                          b = Inf)$h)
   #IA2 to accept H0, we integrate from -Inf to lower bound
-  lower.alt.02 <- hupdate(theta = gstry$theta[2],
+  lower.alt.02 <- sum(hupdate(theta = gstry$theta[2],
                         thetam1 = gstry$theta[2],
                         I = gstry$n.I[2],
                         Im1 = gstry$n.I[1],
                         gm1 = alt.01,
                         a = -Inf,
-                        b = gstry$lower$bound[2]) %>% summarise(p = sum(h))
+                        b = gstry$lower$bound[2])$h)
   #probabilities calculated based on function gsProbability
   x <- gsDesign::gsProbability(
     k = 3,
@@ -74,21 +74,21 @@ test_that("hupdate() returns probability almost zero for extreme case",{
                 b = gstry$upper$bound[1])
   #IA2 to reject H0, we integrate from upper bound to Inf
   #-8 is an arbitrary extreme case for theta
-  poor.02 <- hupdate(theta = -8,
+  poor.02 <- sum(hupdate(theta = -8,
                      thetam1 = gstry$theta[1],
                      I = gstry$n.I[2],
                      Im1 = gstry$n.I[1],
                      gm1 = null.01,
                      a = gstry$upper$bound[2],
-                     b = Inf) %>% summarise(p = sum(h))
+                     b = Inf)$h)
   #IA2 to accept H0, we integrate from -Inf to lower bound
   #-8 is an arbitrary extreme case for the bound
-  high.02 <- hupdate(theta = gstry$theta[2],
+  high.02 <- sum(hupdate(theta = gstry$theta[2],
                      thetam1 = gstry$theta[2],
                      I = gstry$n.I[2],
                      Im1 = gstry$n.I[1],
                      gm1 = null.01,
                      a = -Inf,
-                     b = -8) %>% summarise(p = sum(h))
+                     b = -8)$h)
   expect_equal(object = as.numeric(c(poor.02, high.02)), expected = c(0, 0), tolerance = 0.0001)
 })

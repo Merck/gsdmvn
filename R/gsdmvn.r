@@ -61,4 +61,6 @@
 #' @docType package
 #' @name gsdmvn
 #' @keywords design survival nonparametric
+#' @import Rcpp
+#' @useDynLib gsdmvn, .registration = TRUE
 NULL

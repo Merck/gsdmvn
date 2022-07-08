@@ -47,14 +47,13 @@ NULL
 #' @examples
 #' library(dplyr)
 #' # 2nd analysis with no interim bound and drift 0 should have mean 0, variance 1
-#' hupdate() %>% summarise(mu = sum(z * h), var = sum((z - mu)^2 * h))
-#' @export
-hupdate <- function(r = 18, theta = 0, I = 2, a = -Inf, b = Inf, thetam1 = 0, Im1 = 1, gm1 = h1()){
+#' gsdmvn:::hupdate_() %>% summarise(mu = sum(z * h), var = sum((z - mu)^2 * h))
+hupdate_ <- function(r = 18, theta = 0, I = 2, a = -Inf, b = Inf, thetam1 = 0, Im1 = 1, gm1 = h1_()){
   # sqrt of change in information
   rtdelta <- sqrt(I - Im1)
   rtI <- sqrt(I)
   rtIm1 <- sqrt(Im1)
-  g <- gridpts(r = r, mu = theta * rtI, a= a, b = b)
+  g <- gridpts_(r = r, mu = theta * rtI, a= a, b = b)
   # update integration
   mu <- theta * I - thetam1 * Im1
   h <- rep(0, length(g$z))

@@ -19,7 +19,8 @@ Imports:
     npsurvSS,
     corpcor,
     utils,
-    mvtnorm
+    mvtnorm,
+    Rcpp
 Suggests:
     testthat,
     knitr,
@@ -31,9 +32,13 @@ Suggests:
     gt,
     ggplot2,
     tidyr,
-    covr
+    covr,
+    bench,
+    microbenchmark
 Remotes: 
     Merck/simtrial,
     Merck/gsDesign2
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
+LinkingTo: 
+    Rcpp

@@ -67,15 +67,19 @@ gs_prob <- function(theta, upper=gs_b, lower=gs_b, upar, lpar, info, r = 18){
      }else{
         # Cross upper bound
         upperProb[k] <- if(Zupper[k]< Inf){
-              hupdate(r = r, theta = theta[k], I = info[k], a = Zupper[k], b = Inf,
-                             thetam1 = theta[k - 1], Im1 = info[k - 1], gm1 = g) %>%
-              summarise(sum(h)) %>% as.numeric()
+            # hupdate(r = r, theta = theta[k], I = info[k], a = Zupper[k], b = Inf,
+            #       thetam1 = theta[k - 1], Im1 = info[k - 1], gm1 = g) %>%
+            # summarise(sum(h)) %>% as.numeric()
+              sum(hupdate(r = r, theta = theta[k], I = info[k], a = Zupper[k], b = Inf,
+                             thetam1 = theta[k - 1], Im1 = info[k - 1], gm1 = g)$h)
            }else{0}
       # Cross lower bound
         lowerProb[k] <- if(Zlower[k] > -Inf){
-              hupdate(r = r, theta = theta[k], I = info[k], a = -Inf, b = Zlower[k],
-                             thetam1 = theta[k - 1], Im1 = info[k - 1], gm1 = g) %>%
-              summarise(sum(h)) %>% as.numeric()
+            # hupdate(r = r, theta = theta[k], I = info[k], a = -Inf, b = Zlower[k],
+            #       thetam1 = theta[k - 1], Im1 = info[k - 1], gm1 = g) %>%
+            # summarise(sum(h)) %>% as.numeric()
+              sum(hupdate(r = r, theta = theta[k], I = info[k], a = -Inf, b = Zlower[k],
+                             thetam1 = theta[k - 1], Im1 = info[k - 1], gm1 = g)$h)
         }else{0}
         # if k < K, update numerical integration for next analy
         if (k < K) g <- hupdate(r = r, theta = theta[k], I = info[k], a = Zlower[k], b = Zupper[k],
