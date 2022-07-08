@@ -63,74 +63,109 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">gs_design_ahr</span><span class="op">(</span>
-  enrollRates <span class="op">=</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>Stratum <span class="op">=</span> <span class="st">"All"</span>, duration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">10</span><span class="op">)</span>, rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">6</span>,
-    <span class="fl">9</span><span class="op">)</span><span class="op">)</span>,
-  failRates <span class="op">=</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>Stratum <span class="op">=</span> <span class="st">"All"</span>, duration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">100</span><span class="op">)</span>, failRate <span class="op">=</span>
-    <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">9</span>, <span class="fl">18</span><span class="op">)</span>, hr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.9</span>, <span class="fl">0.6</span><span class="op">)</span>, dropoutRate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.001</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span>,
-  ratio <span class="op">=</span> <span class="fl">1</span>,
-  alpha <span class="op">=</span> <span class="fl">0.025</span>,
-  beta <span class="op">=</span> <span class="fl">0.1</span>,
-  IF <span class="op">=</span> <span class="cn">NULL</span>,
-  analysisTimes <span class="op">=</span> <span class="fl">36</span>,
-  binding <span class="op">=</span> <span class="cn">FALSE</span>,
-  upper <span class="op">=</span> <span class="va">gs_b</span>,
-  upar <span class="op">=</span> <span class="fu"><a href="https://keaven.github.io/gsDesign/reference/gsDesign.html" class="external-link">gsDesign</a></span><span class="op">(</span>k <span class="op">=</span> <span class="fl">3</span>, test.type <span class="op">=</span> <span class="fl">1</span>, n.I <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">0.75</span>, <span class="fl">1</span><span class="op">)</span>, sfu <span class="op">=</span> <span class="va">sfLDOF</span>, sfupar <span class="op">=</span>
-    <span class="cn">NULL</span><span class="op">)</span><span class="op">$</span><span class="va">upper</span><span class="op">$</span><span class="va">bound</span>,
-  lower <span class="op">=</span> <span class="va">gs_b</span>,
-  lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">qnorm</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">)</span>, <span class="op">-</span><span class="cn">Inf</span>, <span class="op">-</span><span class="cn">Inf</span><span class="op">)</span>,
-  h1_spending <span class="op">=</span> <span class="cn">TRUE</span>,
-  test_upper <span class="op">=</span> <span class="cn">TRUE</span>,
-  test_lower <span class="op">=</span> <span class="cn">TRUE</span>,
-  r <span class="op">=</span> <span class="fl">18</span>,
-  tol <span class="op">=</span> <span class="fl">1e-06</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">gs_design_ahr</span><span class="op">(</span></span>
+<span>  enrollRates <span class="op">=</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>Stratum <span class="op">=</span> <span class="st">"All"</span>, duration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">10</span><span class="op">)</span>, rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">6</span>,</span>
+<span>    <span class="fl">9</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  failRates <span class="op">=</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>Stratum <span class="op">=</span> <span class="st">"All"</span>, duration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">100</span><span class="op">)</span>, failRate <span class="op">=</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">9</span>, <span class="fl">18</span><span class="op">)</span>, hr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.9</span>, <span class="fl">0.6</span><span class="op">)</span>, dropoutRate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.001</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  ratio <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  alpha <span class="op">=</span> <span class="fl">0.025</span>,</span>
+<span>  beta <span class="op">=</span> <span class="fl">0.1</span>,</span>
+<span>  IF <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  analysisTimes <span class="op">=</span> <span class="fl">36</span>,</span>
+<span>  binding <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  upper <span class="op">=</span> <span class="va">gs_b</span>,</span>
+<span>  upar <span class="op">=</span> <span class="fu"><a href="https://keaven.github.io/gsDesign/reference/gsDesign.html" class="external-link">gsDesign</a></span><span class="op">(</span>k <span class="op">=</span> <span class="fl">3</span>, test.type <span class="op">=</span> <span class="fl">1</span>, n.I <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">0.75</span>, <span class="fl">1</span><span class="op">)</span>, sfu <span class="op">=</span> <span class="va">sfLDOF</span>, sfupar <span class="op">=</span></span>
+<span>    <span class="cn">NULL</span><span class="op">)</span><span class="op">$</span><span class="va">upper</span><span class="op">$</span><span class="va">bound</span>,</span>
+<span>  lower <span class="op">=</span> <span class="va">gs_b</span>,</span>
+<span>  lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">qnorm</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">)</span>, <span class="op">-</span><span class="cn">Inf</span>, <span class="op">-</span><span class="cn">Inf</span><span class="op">)</span>,</span>
+<span>  h1_spending <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  test_upper <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  test_lower <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  r <span class="op">=</span> <span class="fl">18</span>,</span>
+<span>  tol <span class="op">=</span> <span class="fl">1e-06</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>enrollRates</dt>
 <dd><p>enrollment rates</p></dd>
+
+
 <dt>failRates</dt>
 <dd><p>failure and dropout rates</p></dd>
+
+
 <dt>ratio</dt>
 <dd><p>Experimental:Control randomization ratio (not yet implemented)</p></dd>
+
+
 <dt>alpha</dt>
 <dd><p>One-sided Type I error</p></dd>
+
+
 <dt>beta</dt>
 <dd><p>Type II error</p></dd>
+
+
 <dt>IF</dt>
 <dd><p>Targeted information fraction at each analysis</p></dd>
+
+
 <dt>analysisTimes</dt>
 <dd><p>Minimum time of analysis</p></dd>
+
+
 <dt>binding</dt>
 <dd><p>indicator of whether futility bound is binding; default of FALSE is recommended</p></dd>
+
+
 <dt>upper</dt>
 <dd><p>Function to compute upper bound</p></dd>
+
+
 <dt>upar</dt>
 <dd><p>Parameter passed to <code>upper()</code></p></dd>
+
+
 <dt>lower</dt>
 <dd><p>Function to compute lower bound</p></dd>
+
+
 <dt>lpar</dt>
 <dd><p>Parameter passed to <code>lower()</code></p></dd>
+
+
 <dt>h1_spending</dt>
 <dd><p>Indicator that lower bound to be set by spending under alternate hypothesis (input <code>failRates</code>)
 if spending is used for lower bound</p></dd>
+
+
 <dt>test_upper</dt>
 <dd><p>indicator of which analyses should include an upper (efficacy) bound; single value of TRUE (default) indicates all analyses;
 otherwise, a logical vector of the same length as <code>info</code> should indicate which analyses will have an efficacy bound</p></dd>
+
+
 <dt>test_lower</dt>
 <dd><p>indicator of which analyses should include an lower bound; single value of TRUE (default) indicates all analyses;
 single value FALSE indicated no lower bound; otherwise, a logical vector of the same length as <code>info</code> should indicate which analyses will have a
 lower bound</p></dd>
+
+
 <dt>r</dt>
 <dd><p>Integer, at least 2; default of 18 recommended by Jennison and Turnbull</p></dd>
+
+
 <dt>tol</dt>
 <dd><p>Tolerance parameter for boundary convergence (on Z-scale)</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>a <code>tibble</code> with columns Analysis, Bound, Z, Probability, theta, Time, AHR, Events</p>
+    
+
+<p>a <code>tibble</code> with columns Analysis, Bound, Z, Probability, theta, Time, AHR, Events</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -145,11 +180,11 @@ lower bound</p></dd>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://keaven.github.io/gsDesign/" class="external-link">gsDesign</a></span><span class="op">)</span></span>
-<span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://merck.github.io/gsDesign2/" class="external-link">gsDesign2</a></span><span class="op">)</span></span>
-<span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
-<span class="r-in"><span class="co"># call with defaults</span></span>
-<span class="r-in"><span class="fu">gs_design_ahr</span><span class="op">(</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://keaven.github.io/gsDesign/" class="external-link">gsDesign</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://merck.github.io/gsDesign2/" class="external-link">gsDesign2</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># call with defaults</span></span></span>
+<span class="r-in"><span><span class="fu">gs_design_ahr</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $enrollRates</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 3</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Stratum duration  rate</span>
@@ -171,9 +206,9 @@ lower bound</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>        1 Upper    36  476.   292.  1.96         0.9 0.683 0.381  71.7  73.0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Single analysis</span></span>
-<span class="r-in"><span class="fu">gs_design_ahr</span><span class="op">(</span>analysisTimes <span class="op">=</span> <span class="fl">40</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Single analysis</span></span></span>
+<span class="r-in"><span><span class="fu">gs_design_ahr</span><span class="op">(</span>analysisTimes <span class="op">=</span> <span class="fl">40</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $enrollRates</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 3</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Stratum duration  rate</span>
@@ -195,9 +230,9 @@ lower bound</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>        1 Upper    40  428.   280.  1.96         0.9 0.678 0.389  68.8  69.9</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Multiple analysisTimes</span></span>
-<span class="r-in"><span class="fu">gs_design_ahr</span><span class="op">(</span>analysisTimes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>,<span class="fl">24</span>,<span class="fl">36</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Multiple analysisTimes</span></span></span>
+<span class="r-in"><span><span class="fu">gs_design_ahr</span><span class="op">(</span>analysisTimes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>,<span class="fl">24</span>,<span class="fl">36</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $enrollRates</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 3</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Stratum duration  rate</span>
@@ -224,9 +259,9 @@ lower bound</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span>        2 Lower    24  503.  229.  -<span style="color: #BB0000;">Inf</span>       0.010<span style="text-decoration: underline;">8</span>   0.715 0.335  55.9  57.1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span>        3 Lower    36  503.  309.  -<span style="color: #BB0000;">Inf</span>       0.010<span style="text-decoration: underline;">8</span>   0.683 0.381  75.8  77.1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Specified information fraction</span></span>
-<span class="r-in"><span class="fu">gs_design_ahr</span><span class="op">(</span>IF <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.25</span>,<span class="fl">.75</span>,<span class="fl">1</span><span class="op">)</span>, analysisTimes <span class="op">=</span> <span class="fl">36</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Specified information fraction</span></span></span>
+<span class="r-in"><span><span class="fu">gs_design_ahr</span><span class="op">(</span>IF <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.25</span>,<span class="fl">.75</span>,<span class="fl">1</span><span class="op">)</span>, analysisTimes <span class="op">=</span> <span class="fl">36</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $enrollRates</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 3</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Stratum duration  rate</span>
@@ -253,10 +288,10 @@ lower bound</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span>        2 Lower  24.4  511.  235.  -<span style="color: #BB0000;">Inf</span>       0.016<span style="text-decoration: underline;">3</span>   0.714 0.337  57.4  58.7</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span>        3 Lower  36    511.  313.  -<span style="color: #BB0000;">Inf</span>       0.016<span style="text-decoration: underline;">3</span>   0.683 0.381  76.9  78.3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># multiple analysis times &amp; IF</span></span>
-<span class="r-in"><span class="co"># driven by times</span></span>
-<span class="r-in"><span class="fu">gs_design_ahr</span><span class="op">(</span>IF <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.25</span>,<span class="fl">.75</span>,<span class="fl">1</span><span class="op">)</span>, analysisTimes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>,<span class="fl">25</span>,<span class="fl">36</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># multiple analysis times &amp; IF</span></span></span>
+<span class="r-in"><span><span class="co"># driven by times</span></span></span>
+<span class="r-in"><span><span class="fu">gs_design_ahr</span><span class="op">(</span>IF <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.25</span>,<span class="fl">.75</span>,<span class="fl">1</span><span class="op">)</span>, analysisTimes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>,<span class="fl">25</span>,<span class="fl">36</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $enrollRates</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 3</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Stratum duration  rate</span>
@@ -283,8 +318,8 @@ lower bound</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span>        2 Lower    25  503.  236.  -<span style="color: #BB0000;">Inf</span>       0.010<span style="text-decoration: underline;">8</span>   0.711 0.341  57.8  59.1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span>        3 Lower    36  503.  308.  -<span style="color: #BB0000;">Inf</span>       0.010<span style="text-decoration: underline;">8</span>   0.683 0.381  75.8  77.1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span class="co"># driven by IF</span></span>
-<span class="r-in"><span class="fu">gs_design_ahr</span><span class="op">(</span>IF <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">/</span><span class="fl">3</span>, <span class="fl">.8</span>, <span class="fl">1</span><span class="op">)</span>, analysisTimes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>,<span class="fl">25</span>,<span class="fl">36</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="co"># driven by IF</span></span></span>
+<span class="r-in"><span><span class="fu">gs_design_ahr</span><span class="op">(</span>IF <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">/</span><span class="fl">3</span>, <span class="fl">.8</span>, <span class="fl">1</span><span class="op">)</span>, analysisTimes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>,<span class="fl">25</span>,<span class="fl">36</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $enrollRates</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 3</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Stratum duration  rate</span>
@@ -311,17 +346,17 @@ lower bound</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span>        2 Lower  26.4  501.   246. -<span style="color: #BB0000;">Inf</span>       0.009<span style="text-decoration: underline;">04</span>  0.706 0.348  60.1  61.4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span>        3 Lower  36    501.   307. -<span style="color: #BB0000;">Inf</span>       0.009<span style="text-decoration: underline;">04</span>  0.683 0.381  75.4  76.8</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># 2-sided symmetric design with O'Brien-Fleming spending</span></span>
-<span class="r-in"><span class="fu">gs_design_ahr</span><span class="op">(</span>analysisTimes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">24</span>, <span class="fl">36</span><span class="op">)</span>,</span>
-<span class="r-in">              binding <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span class="r-in">              upper <span class="op">=</span> <span class="va">gs_spending_bound</span>,</span>
-<span class="r-in">              upar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://keaven.github.io/gsDesign/reference/sfLDOF.html" class="external-link">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span>, </span>
-<span class="r-in">                          param <span class="op">=</span> <span class="cn">NULL</span>, timing <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>,</span>
-<span class="r-in">              lower <span class="op">=</span> <span class="va">gs_spending_bound</span>,</span>
-<span class="r-in">              lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://keaven.github.io/gsDesign/reference/sfLDOF.html" class="external-link">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span>, </span>
-<span class="r-in">                          param <span class="op">=</span> <span class="cn">NULL</span>, timing <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>,</span>
-<span class="r-in">              h1_spending <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># 2-sided symmetric design with O'Brien-Fleming spending</span></span></span>
+<span class="r-in"><span><span class="fu">gs_design_ahr</span><span class="op">(</span>analysisTimes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">24</span>, <span class="fl">36</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>              binding <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>              upper <span class="op">=</span> <span class="va">gs_spending_bound</span>,</span></span>
+<span class="r-in"><span>              upar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://keaven.github.io/gsDesign/reference/sfLDOF.html" class="external-link">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span>, </span></span>
+<span class="r-in"><span>                          param <span class="op">=</span> <span class="cn">NULL</span>, timing <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>              lower <span class="op">=</span> <span class="va">gs_spending_bound</span>,</span></span>
+<span class="r-in"><span>              lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://keaven.github.io/gsDesign/reference/sfLDOF.html" class="external-link">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span>, </span></span>
+<span class="r-in"><span>                          param <span class="op">=</span> <span class="cn">NULL</span>, timing <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>              h1_spending <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $enrollRates</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 3</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Stratum duration  rate</span>
@@ -348,18 +383,18 @@ lower bound</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span>        2 Lower    24  494.  225.  -<span style="color: #BB0000;">2.36</span> 0.000<span style="text-decoration: underline;">001</span>16  0.715 0.335  54.9  56.2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span>        3 Lower    36  494.  303.  -<span style="color: #BB0000;">2.01</span> 0.000<span style="text-decoration: underline;">001</span>20  0.683 0.381  74.5  75.8</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># 2-sided asymmetric design with O'Brien-Fleming upper spending</span></span>
-<span class="r-in"><span class="co"># Pocock lower spending under H1 (NPH)</span></span>
-<span class="r-in"><span class="fu">gs_design_ahr</span><span class="op">(</span>analysisTimes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">24</span>, <span class="fl">36</span><span class="op">)</span>,</span>
-<span class="r-in">              binding <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span class="r-in">              upper <span class="op">=</span> <span class="va">gs_spending_bound</span>,</span>
-<span class="r-in">              upar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://keaven.github.io/gsDesign/reference/sfLDOF.html" class="external-link">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span>, </span>
-<span class="r-in">                          param <span class="op">=</span> <span class="cn">NULL</span>, timing <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>,</span>
-<span class="r-in">              lower <span class="op">=</span> <span class="va">gs_spending_bound</span>,</span>
-<span class="r-in">              lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://keaven.github.io/gsDesign/reference/sfLDOF.html" class="external-link">sfLDPocock</a></span>, total_spend <span class="op">=</span> <span class="fl">0.1</span>, </span>
-<span class="r-in">                          param <span class="op">=</span> <span class="cn">NULL</span>, timing <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>,</span>
-<span class="r-in">              h1_spending <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># 2-sided asymmetric design with O'Brien-Fleming upper spending</span></span></span>
+<span class="r-in"><span><span class="co"># Pocock lower spending under H1 (NPH)</span></span></span>
+<span class="r-in"><span><span class="fu">gs_design_ahr</span><span class="op">(</span>analysisTimes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">24</span>, <span class="fl">36</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>              binding <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>              upper <span class="op">=</span> <span class="va">gs_spending_bound</span>,</span></span>
+<span class="r-in"><span>              upar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://keaven.github.io/gsDesign/reference/sfLDOF.html" class="external-link">sfLDOF</a></span>, total_spend <span class="op">=</span> <span class="fl">0.025</span>, </span></span>
+<span class="r-in"><span>                          param <span class="op">=</span> <span class="cn">NULL</span>, timing <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>              lower <span class="op">=</span> <span class="va">gs_spending_bound</span>,</span></span>
+<span class="r-in"><span>              lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sf <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="va"><a href="https://keaven.github.io/gsDesign/reference/sfLDOF.html" class="external-link">sfLDPocock</a></span>, total_spend <span class="op">=</span> <span class="fl">0.1</span>, </span></span>
+<span class="r-in"><span>                          param <span class="op">=</span> <span class="cn">NULL</span>, timing <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>              h1_spending <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $enrollRates</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 3</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Stratum duration  rate</span>
@@ -393,7 +428,7 @@ lower bound</p></dd>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p><p>Developed by Keaven Anderson. Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3. <br>Copyright © Merck Sharp &amp; Dohme Corp., a subsidiary of Merck &amp; Co., Inc., Kenilworth, NJ, USA.</p>
+  <p></p><p>Developed by Keaven Anderson. Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5. <br>Copyright © Merck Sharp &amp; Dohme Corp., a subsidiary of Merck &amp; Co., Inc., Kenilworth, NJ, USA.</p>
 </div>
 
 <div class="pkgdown-footer-right">

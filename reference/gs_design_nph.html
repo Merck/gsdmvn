@@ -78,56 +78,81 @@ where the enrollment, failure and dropout rates changes over time.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">gs_design_nph</span><span class="op">(</span>
-  enrollRates <span class="op">=</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>Stratum <span class="op">=</span> <span class="st">"All"</span>, duration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">10</span><span class="op">)</span>, rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">6</span>,
-    <span class="fl">9</span><span class="op">)</span><span class="op">)</span>,
-  failRates <span class="op">=</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>Stratum <span class="op">=</span> <span class="st">"All"</span>, duration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">100</span><span class="op">)</span>, failRate <span class="op">=</span>
-    <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">9</span>, <span class="fl">18</span><span class="op">)</span>, hr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.9</span>, <span class="fl">0.6</span><span class="op">)</span>, dropoutRate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.001</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span>,
-  ratio <span class="op">=</span> <span class="fl">1</span>,
-  alpha <span class="op">=</span> <span class="fl">0.025</span>,
-  beta <span class="op">=</span> <span class="fl">0.1</span>,
-  analysisTimes <span class="op">=</span> <span class="fl">30</span>,
-  IF <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">0.75</span>, <span class="fl">1</span><span class="op">)</span>,
-  upper <span class="op">=</span> <span class="va">gs_b</span>,
-  upar <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="fu"><a href="https://keaven.github.io/gsDesign/reference/gsDesign.html" class="external-link">gsDesign</a></span><span class="op">(</span>k <span class="op">=</span> <span class="fl">3</span>, test.type <span class="op">=</span> <span class="fl">1</span>, n.I <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">0.75</span>, <span class="fl">1</span><span class="op">)</span>, maxn.IPlan <span class="op">=</span>
-    <span class="fl">1</span>, sfu <span class="op">=</span> <span class="va">sfLDOF</span>, sfupar <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span><span class="op">$</span><span class="va">upper</span><span class="op">$</span><span class="va">bound</span>,
-  lower <span class="op">=</span> <span class="va">gs_b</span>,
-  lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">qnorm</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="op">-</span><span class="cn">Inf</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">IF</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span>,
-  r <span class="op">=</span> <span class="fl">18</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">gs_design_nph</span><span class="op">(</span></span>
+<span>  enrollRates <span class="op">=</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>Stratum <span class="op">=</span> <span class="st">"All"</span>, duration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">10</span><span class="op">)</span>, rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">6</span>,</span>
+<span>    <span class="fl">9</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  failRates <span class="op">=</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>Stratum <span class="op">=</span> <span class="st">"All"</span>, duration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">100</span><span class="op">)</span>, failRate <span class="op">=</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">9</span>, <span class="fl">18</span><span class="op">)</span>, hr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.9</span>, <span class="fl">0.6</span><span class="op">)</span>, dropoutRate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.001</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  ratio <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  alpha <span class="op">=</span> <span class="fl">0.025</span>,</span>
+<span>  beta <span class="op">=</span> <span class="fl">0.1</span>,</span>
+<span>  analysisTimes <span class="op">=</span> <span class="fl">30</span>,</span>
+<span>  IF <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">0.75</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>  upper <span class="op">=</span> <span class="va">gs_b</span>,</span>
+<span>  upar <span class="op">=</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="fu"><a href="https://keaven.github.io/gsDesign/reference/gsDesign.html" class="external-link">gsDesign</a></span><span class="op">(</span>k <span class="op">=</span> <span class="fl">3</span>, test.type <span class="op">=</span> <span class="fl">1</span>, n.I <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">0.75</span>, <span class="fl">1</span><span class="op">)</span>, maxn.IPlan <span class="op">=</span></span>
+<span>    <span class="fl">1</span>, sfu <span class="op">=</span> <span class="va">sfLDOF</span>, sfupar <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span><span class="op">$</span><span class="va">upper</span><span class="op">$</span><span class="va">bound</span>,</span>
+<span>  lower <span class="op">=</span> <span class="va">gs_b</span>,</span>
+<span>  lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">qnorm</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="op">-</span><span class="cn">Inf</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">IF</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  r <span class="op">=</span> <span class="fl">18</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>enrollRates</dt>
 <dd><p>Piecewise constant enrollment rates by stratum and time period.</p></dd>
+
+
 <dt>failRates</dt>
 <dd><p>Piecewise constant control group failure rates, duration for each piecewise constant period,
 hazard ratio for experimental vs control, and dropout rates by stratum and time period.</p></dd>
+
+
 <dt>ratio</dt>
 <dd><p>Experimental:Control randomization ratio</p></dd>
+
+
 <dt>alpha</dt>
 <dd><p>One-sided Type I error</p></dd>
+
+
 <dt>beta</dt>
 <dd><p>Type II error</p></dd>
+
+
 <dt>analysisTimes</dt>
 <dd><p>Final calendar time if beta is not NULL</p></dd>
+
+
 <dt>IF</dt>
 <dd><p>information fraction at planned analyses</p></dd>
+
+
 <dt>upper</dt>
 <dd><p>Function to produce upper bound</p></dd>
+
+
 <dt>upar</dt>
 <dd><p>Parameters to pass to upper</p></dd>
+
+
 <dt>lower</dt>
 <dd><p>Function to produce lower bound</p></dd>
+
+
 <dt>lpar</dt>
 <dd><p>Parameters to pass to lower</p></dd>
+
+
 <dt>r</dt>
 <dd><p>Control for grid size; normally leave at default of <code>r=18</code></p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A list with 3 tibbles: 1) <code>enrollRates</code> with <code>enrollRates$rate</code> adjusted by sample size calculation and adding <code>N</code> with
+    
+
+<p>A list with 3 tibbles: 1) <code>enrollRates</code> with <code>enrollRates$rate</code> adjusted by sample size calculation and adding <code>N</code> with
 cumulative enrollment at end of each enrollment rate period,
 2) <code>failRates</code> as input,
 3) codebounds with a row for each bound and each analysis; rows contain the variables <code>Analysis</code> with analysis number, <code>Z</code> with Z-value bound,
@@ -142,14 +167,14 @@ cumulative enrollment at end of each enrollment rate period,
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Design</span></span>
-<span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">gs_design_nph</span><span class="op">(</span><span class="op">)</span></span>
-<span class="r-in"><span class="co"># Notice cumulative power is 0.9 (90%)</span></span>
-<span class="r-in"><span class="va">x</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Design</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">gs_design_nph</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Notice cumulative power is 0.9 (90%)</span></span></span>
+<span class="r-in"><span><span class="va">x</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $enrollRates</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 4</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Stratum duration  rate     N</span>
@@ -176,37 +201,37 @@ cumulative enrollment at end of each enrollment rate period,
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span>        2 Lower -<span style="color: #BB0000;">Inf</span>       0.016<span style="text-decoration: underline;">1</span>   0.314  63.2  21.1 0.730  258.   64.6  636.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span>        3 Lower -<span style="color: #BB0000;">Inf</span>       0.016<span style="text-decoration: underline;">1</span>   0.364  84.4  30.0 0.695  345.   86.2  636.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span class="co"># Check Type I error, non-binding; should be .025 (2.5%)</span></span>
-<span class="r-in"><span class="fu"><a href="gs_power_nph.html">gs_power_nph</a></span><span class="op">(</span>enrollRates <span class="op">=</span> <span class="va">x</span><span class="op">$</span><span class="va">enrollRates</span>,</span>
-<span class="r-in">           failRates <span class="op">=</span> <span class="va">x</span><span class="op">$</span><span class="va">failRates</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>hr <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
-<span class="r-in">           events <span class="op">=</span> <span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">bounds</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Bound</span> <span class="op">==</span> <span class="st">"Upper"</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">Events</span>,</span>
-<span class="r-in">           upar <span class="op">=</span> <span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">bounds</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Bound</span> <span class="op">==</span> <span class="st">"Upper"</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">Z</span>,</span>
-<span class="r-in">           lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="op">-</span><span class="cn">Inf</span>,<span class="fl">3</span><span class="op">)</span>,</span>
-<span class="r-in">           upper <span class="op">=</span> <span class="va">gs_b</span>,</span>
-<span class="r-in">           lower <span class="op">=</span> <span class="va">gs_b</span></span>
-<span class="r-in">           <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">Z</span><span class="op">)</span> <span class="op">&lt;</span> <span class="cn">Inf</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="co"># Check Type I error, non-binding; should be .025 (2.5%)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="gs_power_nph.html">gs_power_nph</a></span><span class="op">(</span>enrollRates <span class="op">=</span> <span class="va">x</span><span class="op">$</span><span class="va">enrollRates</span>,</span></span>
+<span class="r-in"><span>           failRates <span class="op">=</span> <span class="va">x</span><span class="op">$</span><span class="va">failRates</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>hr <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>           events <span class="op">=</span> <span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">bounds</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Bound</span> <span class="op">==</span> <span class="st">"Upper"</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">Events</span>,</span></span>
+<span class="r-in"><span>           upar <span class="op">=</span> <span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">bounds</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Bound</span> <span class="op">==</span> <span class="st">"Upper"</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">Z</span>,</span></span>
+<span class="r-in"><span>           lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="op">-</span><span class="cn">Inf</span>,<span class="fl">3</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>           upper <span class="op">=</span> <span class="va">gs_b</span>,</span></span>
+<span class="r-in"><span>           lower <span class="op">=</span> <span class="va">gs_b</span></span></span>
+<span class="r-in"><span>           <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">Z</span><span class="op">)</span> <span class="op">&lt;</span> <span class="cn">Inf</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 10</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Analysis Bound     Z Probability  Time Events   AHR theta  info info0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>        1 Upper  4.33  0.000<span style="text-decoration: underline;">007</span>37  9.66   86.2     1     0  21.5  21.5</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>        2 Upper  2.34  0.009<span style="text-decoration: underline;">65</span>    18.8   258.      1     0  64.6  64.6</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>        3 Upper  2.01  0.025<span style="text-decoration: underline;">0</span>     25.6   345.      1     0  86.2  86.2</span>
-<span class="r-in"><span class="co"># Power under proportional hazards, HR = 0.75</span></span>
-<span class="r-in"><span class="fu"><a href="gs_power_nph.html">gs_power_nph</a></span><span class="op">(</span>enrollRates <span class="op">=</span> <span class="va">x</span><span class="op">$</span><span class="va">enrollRates</span>,</span>
-<span class="r-in">           failRates <span class="op">=</span> <span class="va">x</span><span class="op">$</span><span class="va">failRates</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>hr <span class="op">=</span> <span class="fl">.75</span><span class="op">)</span>,</span>
-<span class="r-in">           events <span class="op">=</span> <span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">bounds</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Bound</span> <span class="op">==</span> <span class="st">"Upper"</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">Events</span>,</span>
-<span class="r-in">           upar <span class="op">=</span> <span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">bounds</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Bound</span> <span class="op">==</span> <span class="st">"Upper"</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">Z</span>,</span>
-<span class="r-in">           lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="op">-</span><span class="cn">Inf</span>,<span class="fl">3</span><span class="op">)</span>,</span>
-<span class="r-in">           upper <span class="op">=</span> <span class="va">gs_b</span>,</span>
-<span class="r-in">           lower <span class="op">=</span> <span class="va">gs_b</span></span>
-<span class="r-in">           <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">Z</span><span class="op">)</span> <span class="op">&lt;</span> <span class="cn">Inf</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="co"># Power under proportional hazards, HR = 0.75</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="gs_power_nph.html">gs_power_nph</a></span><span class="op">(</span>enrollRates <span class="op">=</span> <span class="va">x</span><span class="op">$</span><span class="va">enrollRates</span>,</span></span>
+<span class="r-in"><span>           failRates <span class="op">=</span> <span class="va">x</span><span class="op">$</span><span class="va">failRates</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>hr <span class="op">=</span> <span class="fl">.75</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>           events <span class="op">=</span> <span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">bounds</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Bound</span> <span class="op">==</span> <span class="st">"Upper"</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">Events</span>,</span></span>
+<span class="r-in"><span>           upar <span class="op">=</span> <span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">bounds</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Bound</span> <span class="op">==</span> <span class="st">"Upper"</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">Z</span>,</span></span>
+<span class="r-in"><span>           lpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="op">-</span><span class="cn">Inf</span>,<span class="fl">3</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>           upper <span class="op">=</span> <span class="va">gs_b</span>,</span></span>
+<span class="r-in"><span>           lower <span class="op">=</span> <span class="va">gs_b</span></span></span>
+<span class="r-in"><span>           <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">Z</span><span class="op">)</span> <span class="op">&lt;</span> <span class="cn">Inf</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 10</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Analysis Bound     Z Probability  Time Events   AHR theta  info info0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>        1 Upper  4.33     0.001<span style="text-decoration: underline;">32</span>  10.2   86.2  0.75 0.288  21.2  21.5</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>        2 Upper  2.34     0.484    20.8  258.   0.75 0.288  63.8  64.6</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>        3 Upper  2.01     0.750    28.7  345.   0.75 0.288  85.3  86.2</span>
-<span class="r-in"></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
@@ -214,7 +239,7 @@ cumulative enrollment at end of each enrollment rate period,
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p><p>Developed by Keaven Anderson. Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3. <br>Copyright © Merck Sharp &amp; Dohme Corp., a subsidiary of Merck &amp; Co., Inc., Kenilworth, NJ, USA.</p>
+  <p></p><p>Developed by Keaven Anderson. Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5. <br>Copyright © Merck Sharp &amp; Dohme Corp., a subsidiary of Merck &amp; Co., Inc., Kenilworth, NJ, USA.</p>
 </div>
 
 <div class="pkgdown-footer-right">

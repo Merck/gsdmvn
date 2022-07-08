@@ -63,48 +63,69 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">gs_bound</span><span class="op">(</span>
-  <span class="va">alpha</span>,
-  <span class="va">beta</span>,
-  <span class="va">theta</span>,
-  <span class="va">corr</span>,
-  analysis <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">alpha</span><span class="op">)</span>,
-  theta0 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">analysis</span><span class="op">)</span><span class="op">)</span>,
-  binding_lower_bound <span class="op">=</span> <span class="cn">FALSE</span>,
-  algorithm <span class="op">=</span> <span class="fu">GenzBretz</span><span class="op">(</span>maxpts <span class="op">=</span> <span class="fl">1e+05</span>, abseps <span class="op">=</span> <span class="fl">1e-05</span><span class="op">)</span>,
-  alpha_bound <span class="op">=</span> <span class="cn">FALSE</span>,
-  beta_bound <span class="op">=</span> <span class="cn">FALSE</span>,
-  <span class="va">...</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">gs_bound</span><span class="op">(</span></span>
+<span>  <span class="va">alpha</span>,</span>
+<span>  <span class="va">beta</span>,</span>
+<span>  <span class="va">theta</span>,</span>
+<span>  <span class="va">corr</span>,</span>
+<span>  analysis <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">alpha</span><span class="op">)</span>,</span>
+<span>  theta0 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">analysis</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  binding_lower_bound <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  algorithm <span class="op">=</span> <span class="fu">GenzBretz</span><span class="op">(</span>maxpts <span class="op">=</span> <span class="fl">1e+05</span>, abseps <span class="op">=</span> <span class="fl">1e-05</span><span class="op">)</span>,</span>
+<span>  alpha_bound <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  beta_bound <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>alpha</dt>
 <dd><p>a numeric vector of cumulative allocated alpha in each interim analysis</p></dd>
+
+
 <dt>beta</dt>
 <dd><p>a numeric vector of cumulative allocated beta in each interim analysis</p></dd>
+
+
 <dt>theta</dt>
 <dd><p>a numeric vector of effect size under alternative.</p></dd>
+
+
 <dt>corr</dt>
 <dd><p>a matrix of correlation matrix</p></dd>
+
+
 <dt>analysis</dt>
 <dd><p>a numeric vector of interim analysis indicator. Default is 1:length(alpha).</p></dd>
+
+
 <dt>theta0</dt>
 <dd><p>a numeric vector of effect size under null hypothesis. Default is 0.</p></dd>
+
+
 <dt>binding_lower_bound</dt>
 <dd><p>a logical value to indicate binding lower bound.</p></dd>
+
+
 <dt>algorithm</dt>
 <dd><p>an object of class <code><a href="https://rdrr.io/pkg/mvtnorm/man/algorithms.html" class="external-link">GenzBretz</a></code>,
                     <code><a href="https://rdrr.io/pkg/mvtnorm/man/algorithms.html" class="external-link">Miwa</a></code> or <code><a href="https://rdrr.io/pkg/mvtnorm/man/algorithms.html" class="external-link">TVPACK</a></code>
                     specifying both the algorithm to be used as well as
                     the associated hyper parameters.</p></dd>
+
+
 <dt>alpha_bound</dt>
 <dd><p>logical value to indicate if alpha is Type I error or upper bound. Default is FALSE.</p></dd>
+
+
 <dt>beta_bound</dt>
 <dd><p>logical value to indicate if beta is Type II error or lower bound. Default is FALSE.</p></dd>
+
+
 <dt>...</dt>
 <dd><p>additional parameters transfer to <code><a href="https://rdrr.io/pkg/mvtnorm/man/pmvnorm.html" class="external-link">mvtnorm::pmvnorm</a></code></p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="specification">Specification<a class="anchor" aria-label="anchor" href="#specification"></a></h2>
@@ -115,34 +136,34 @@
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://keaven.github.io/gsDesign/" class="external-link">gsDesign</a></span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://keaven.github.io/gsDesign/" class="external-link">gsDesign</a></span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Loading required package: ggplot2</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="fu"><a href="https://keaven.github.io/gsDesign/reference/nSurv.html" class="external-link">gsSurv</a></span><span class="op">(</span> k <span class="op">=</span> <span class="fl">3</span> , test.type <span class="op">=</span> <span class="fl">4</span> , alpha <span class="op">=</span> <span class="fl">0.025</span> ,</span>
-<span class="r-in">                       beta <span class="op">=</span> <span class="fl">0.2</span> , astar <span class="op">=</span> <span class="fl">0</span> , timing <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="fl">1</span> <span class="op">)</span> ,</span>
-<span class="r-in">                       sfu <span class="op">=</span> <span class="va">sfLDOF</span> , sfupar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="fl">0</span> <span class="op">)</span> , sfl <span class="op">=</span> <span class="va">sfLDOF</span> ,</span>
-<span class="r-in">                       sflpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="fl">0</span> <span class="op">)</span> , lambdaC <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="fl">0.1</span> <span class="op">)</span> ,</span>
-<span class="r-in">                       hr <span class="op">=</span> <span class="fl">0.6</span> , hr0 <span class="op">=</span> <span class="fl">1</span> , eta <span class="op">=</span> <span class="fl">0.01</span> ,</span>
-<span class="r-in">                       gamma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="fl">10</span> <span class="op">)</span> ,</span>
-<span class="r-in">                       R <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="fl">12</span> <span class="op">)</span> , S <span class="op">=</span> <span class="cn">NULL</span> ,</span>
-<span class="r-in">                       T <span class="op">=</span> <span class="fl">36</span> , minfup <span class="op">=</span> <span class="fl">24</span> , ratio <span class="op">=</span> <span class="fl">1</span> <span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">lower</span><span class="op">$</span><span class="va">bound</span>, <span class="va">x</span><span class="op">$</span><span class="va">upper</span><span class="op">$</span><span class="va">bound</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">gsDesign</span><span class="fu">::</span><span class="fu"><a href="https://keaven.github.io/gsDesign/reference/nSurv.html" class="external-link">gsSurv</a></span><span class="op">(</span> k <span class="op">=</span> <span class="fl">3</span> , test.type <span class="op">=</span> <span class="fl">4</span> , alpha <span class="op">=</span> <span class="fl">0.025</span> ,</span></span>
+<span class="r-in"><span>                       beta <span class="op">=</span> <span class="fl">0.2</span> , astar <span class="op">=</span> <span class="fl">0</span> , timing <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="fl">1</span> <span class="op">)</span> ,</span></span>
+<span class="r-in"><span>                       sfu <span class="op">=</span> <span class="va">sfLDOF</span> , sfupar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="fl">0</span> <span class="op">)</span> , sfl <span class="op">=</span> <span class="va">sfLDOF</span> ,</span></span>
+<span class="r-in"><span>                       sflpar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="fl">0</span> <span class="op">)</span> , lambdaC <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="fl">0.1</span> <span class="op">)</span> ,</span></span>
+<span class="r-in"><span>                       hr <span class="op">=</span> <span class="fl">0.6</span> , hr0 <span class="op">=</span> <span class="fl">1</span> , eta <span class="op">=</span> <span class="fl">0.01</span> ,</span></span>
+<span class="r-in"><span>                       gamma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="fl">10</span> <span class="op">)</span> ,</span></span>
+<span class="r-in"><span>                       R <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="fl">12</span> <span class="op">)</span> , S <span class="op">=</span> <span class="cn">NULL</span> ,</span></span>
+<span class="r-in"><span>                       T <span class="op">=</span> <span class="fl">36</span> , minfup <span class="op">=</span> <span class="fl">24</span> , ratio <span class="op">=</span> <span class="fl">1</span> <span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">lower</span><span class="op">$</span><span class="va">bound</span>, <span class="va">x</span><span class="op">$</span><span class="va">upper</span><span class="op">$</span><span class="va">bound</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            [,1]     [,2]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1,] -0.2361874 3.710303</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [2,]  1.1703638 2.511407</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [3,]  1.9929702 1.992970</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="fu">gsdmvn</span><span class="fu">:::</span><span class="fu">gs_bound</span><span class="op">(</span>alpha <span class="op">=</span> <span class="fu"><a href="https://keaven.github.io/gsDesign/reference/sfLDOF.html" class="external-link">sfLDOF</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">/</span><span class="fl">3</span><span class="op">)</span><span class="op">$</span><span class="va">spend</span>,</span>
-<span class="r-in">         beta <span class="op">=</span> <span class="fu"><a href="https://keaven.github.io/gsDesign/reference/sfLDOF.html" class="external-link">sfLDOF</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">/</span><span class="fl">3</span><span class="op">)</span><span class="op">$</span><span class="va">spend</span>,</span>
-<span class="r-in">         analysis <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,</span>
-<span class="r-in">         theta <span class="op">=</span> <span class="va">x</span><span class="op">$</span><span class="va">theta</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">n.I</span><span class="op">)</span>,</span>
-<span class="r-in">         corr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/outer.html" class="external-link">outer</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmin</a></span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmax</a></span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">gsdmvn</span><span class="fu">:::</span><span class="fu">gs_bound</span><span class="op">(</span>alpha <span class="op">=</span> <span class="fu"><a href="https://keaven.github.io/gsDesign/reference/sfLDOF.html" class="external-link">sfLDOF</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">/</span><span class="fl">3</span><span class="op">)</span><span class="op">$</span><span class="va">spend</span>,</span></span>
+<span class="r-in"><span>         beta <span class="op">=</span> <span class="fu"><a href="https://keaven.github.io/gsDesign/reference/sfLDOF.html" class="external-link">sfLDOF</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">/</span><span class="fl">3</span><span class="op">)</span><span class="op">$</span><span class="va">spend</span>,</span></span>
+<span class="r-in"><span>         analysis <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,</span></span>
+<span class="r-in"><span>         theta <span class="op">=</span> <span class="va">x</span><span class="op">$</span><span class="va">theta</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">n.I</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>         corr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/outer.html" class="external-link">outer</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmin</a></span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmax</a></span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      upper      lower</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1 3.710295 -0.2361879</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 2.513755  1.1335603</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 2.023239  2.0232386</span>
-<span class="r-in"></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 2.023200  2.0231996</span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
@@ -150,7 +171,7 @@
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p><p>Developed by Keaven Anderson. Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3. <br>Copyright © Merck Sharp &amp; Dohme Corp., a subsidiary of Merck &amp; Co., Inc., Kenilworth, NJ, USA.</p>
+  <p></p><p>Developed by Keaven Anderson. Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5. <br>Copyright © Merck Sharp &amp; Dohme Corp., a subsidiary of Merck &amp; Co., Inc., Kenilworth, NJ, USA.</p>
 </div>
 
 <div class="pkgdown-footer-right">
