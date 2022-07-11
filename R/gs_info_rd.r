@@ -214,7 +214,7 @@ gs_info_rd <- function(
   #           pool the strata together               #
   # -------------------------------------------------#
   output <- tbl %>% 
-    group_by(Analysis) %>%
+    dplyr::group_by(Analysis) %>%
     summarize(N = sum(N),
               rd = sum((p_c - p_e) * d * weight_per_k_per_s),
               rd0 = sum(rd0 * weight_per_k_per_s),
@@ -230,7 +230,7 @@ gs_info_rd <- function(
            theta0 = rd0 / sqrt(sigma2_H0),
            info1 = 1 / sigma2_H1,
            info0 = 1 / sigma2_H0) %>%
-    ungroup() %>% 
+    dplyr::ungroup() %>% 
     select(Analysis, N, rd, rd0, theta1, theta0, info1, info0)
 
   return(output)

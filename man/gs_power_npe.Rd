@@ -7,6 +7,8 @@
 gs_power_npe(
   theta = 0.1,
   info = 1,
+  info0 = NULL,
+  info1 = NULL,
   info_scale = c(0, 1, 2),
   binding = FALSE,
   upper = gs_b,
@@ -24,6 +26,12 @@ gs_power_npe(
 expected incremental drift at all analyses; used for power calculation}
 
 \item{info}{statistical information at all analyses for input \code{theta}}
+
+\item{info0}{statistical information under null hypothesis, if different than \code{info};
+impacts null hypothesis bound calculation}
+
+\item{info1}{statistical information under hypothesis used for futility bound calculation if different from
+\code{info}; impacts futility hypothesis bound calculation}
 
 \item{info_scale}{only used when \code{gs_spending_bound} is used}
 

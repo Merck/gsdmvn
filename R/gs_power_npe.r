@@ -34,6 +34,10 @@ NULL
 #' @param theta natural parameter for group sequential design representing
 #' expected incremental drift at all analyses; used for power calculation
 #' @param info statistical information at all analyses for input \code{theta}
+#' @param info0 statistical information under null hypothesis, if different than \code{info};
+#' impacts null hypothesis bound calculation
+#' @param info1 statistical information under hypothesis used for futility bound calculation if different from
+#' \code{info}; impacts futility hypothesis bound calculation
 #' @param info_scale only used when \code{gs_spending_bound} is used
 #' @param binding indicator of whether futility bound is binding; default of FALSE is recommended
 #' @param upper function to compute upper bound
@@ -163,6 +167,8 @@ NULL
 gs_power_npe <- function(
   theta = .1, 
   info = 1, 
+  info0 = NULL,
+  info1 = NULL,
   info_scale = c(0, 1, 2),
   binding = FALSE,
   upper = gs_b, 
@@ -174,6 +180,7 @@ gs_power_npe <- function(
   r = 18, 
   tol = 1e-6){
   
+  
   # --------------------------------------------- #
   #     check & set up parameters                 #
   # --------------------------------------------- #
@@ -182,47 +189,18 @@ gs_power_npe <- function(
   if (length(test_upper) == 1 && K > 1) test_upper <- rep(test_upper, K)
   if (length(test_lower) == 1 && K > 1) test_lower <- rep(test_lower, K)
   
-  flag_info_in_upar <- "info" %in% names(upar)
-  flag_info_in_lpar <- "info" %in% names(lpar)
-  flag_upper_spending <- identical(upper, gs_spending_bound)
-  flag_lower_spending <- identical(lower, gs_spending_bound)
-  flag_upper_fix <- identical(upper, gs_b)
-  flag_lower_fix <- identical(lower, gs_b)
-  
   # --------------------------------------------- #
   #     set up info                               #
   # --------------------------------------------- #
   # upper boundary
-  if(flag_upper_fix){
-    info0 <- if(flag_info_in_upar){upar$info}else{info}
-  }else if(flag_upper_spending){
-    info0 <- if(flag_info_in_upar){upar$info}else{info}
+  if(is.null(info0) & "info" %in% names(upar)){
+    info0 <- upar$info
   }
-  # lower boundary
-  if(flag_lower_fix){
-    info1 <- if(flag_info_in_lpar){lpar$info}else{info}
-  }else if(flag_lower_spending){
-    info1 <- if(flag_info_in_lpar){lpar$info}else{info}
+  if(is.null(info1) & "info" %in% names(lpar)){
+    info1 <- lpar$info
   }
-  # # if `upper` is fixed bound
-  # if(flag_upper_fix & flag_info_in_upar){
-  #   info0 <- upar$info
-  # }else{
-  #   info0 <- info
-  # }
-  # # if `upper` is spending bound
-  # if(flag_upper_spending & flag_info_in_upar){
-  #   info0 <- upar$info
-  # }else{
-  #   info0 <- info
-  # }
-  # ## if `gs_spending_bound` is used for lower bound
-  # if(flag_lower_spending & flag_info_in_lpar){
-  #   info1 <- lpar$info
-  # }else{
-  #   info1 <- info
-  # }
-  
+  if(is.null(info0)){info0 <- info}
+  if(is.null(info1)){info1 <- info}
   # --------------------------------------------- #
   #     set up info_scale                         #
   # --------------------------------------------- #
@@ -261,7 +239,7 @@ gs_power_npe <- function(
     
     if(k == 1){
       # compute the probability to cross upper/lower bound
-      upperProb[1] <- if(b[1] < Inf) {pnorm(b[1], mean = sqrt(info[1]) * theta[1], lower.tail = FALSE)}else{0}
+      upperProb[1] <- if(b[1] < Inf) {pnorm(sqrt(info[1])*(theta[1] - b[1]/sqrt(info0[1])))}else{0}
       lowerProb[1] <- if(a[1] > -Inf){pnorm(a[1], mean = sqrt(info[1]) * theta[1])}else{0}
       # update the grids
       if(!is.null(info0)){hgm1_0 <- h1(r = r, theta = 0, I = info0[1], a = if(binding){a[1]}else{-Inf}, b = b[1])}
