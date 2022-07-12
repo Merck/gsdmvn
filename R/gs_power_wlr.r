@@ -228,6 +228,7 @@ gs_power_wlr <- function(
   y_H1 <- gs_power_npe(
     theta = x$theta, 
     info = x$info, 
+    info0 = x$info0,
     info_scale = info_scale,
     binding = binding,
     upper = upper, 
@@ -240,8 +241,9 @@ gs_power_wlr <- function(
     tol = tol)
   
   y_H0 <- gs_power_npe(
-    theta = x$theta, 
+    theta = 0, #x$theta, 
     info = x$info0, 
+    info0 = x$info0,
     info_scale = info_scale,
     binding = binding,
     upper = upper, 
