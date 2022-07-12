@@ -39,6 +39,8 @@ NULL
 #' @param info proportionate statistical information at all analyses for input \code{theta}
 #' @param info0 proportionate statistical information under null hypothesis, if different than alternative;
 #' impacts null hypothesis bound calculation
+#' @param info1 proportionate statistical information under alternate hypothesis;
+#' impacts null hypothesis bound calculation
 #' @param alpha One-sided Type I error
 #' @param beta Type II error
 #' @param binding indicator of whether futility bound is binding; default of FALSE is recommended
@@ -214,6 +216,7 @@ gs_design_npe <- function(
   theta = .1, 
   info = 1, 
   info0 = NULL, 
+  info1 = NULL,
   info_scale = c(0, 1, 2),
   alpha = 0.025, 
   beta = .1, 
@@ -233,20 +236,16 @@ gs_design_npe <- function(
   K <- length(info)
   info_scale <- if(methods::missingArg(info_scale)){2}else{match.arg(as.character(info_scale), choices = 0:2)}
   
-  flag_info_in_upar <- "info" %in% names(upar)
-  flag_info_in_lpar <- "info" %in% names(lpar)
-  flag_upper_spending <- identical(upper, gs_spending_bound)
-  flag_lower_spending <- identical(lower, gs_spending_bound)
-  flag_upper_fix <- identical(upper, gs_b)
-  flag_lower_fix <- identical(lower, gs_b)
-  
   # --------------------------------------------- #
   #     set up info, info0                        #
   # --------------------------------------------- #
   # upper boundary
-  if(flag_info_in_upar){
-    warning(paste0("gs_design_npe: we use the statistical information in upar and ignore the argumet info0 = ", info0))
-    info0 <- upar$info
+  if("info" %in% names(upar) ){
+    if(!is.null(info0)){
+      warning("gs_design_npe: we use the statistical information in info0 and ignore the argumet info in upar.")
+    }else{
+      info0 <- upar$info
+    }
   }else{
     info0 <- if(is.null(info0)){info}else{info0}
   }
@@ -260,10 +259,14 @@ gs_design_npe <- function(
   # }
   
   # lower boundary
-  if(flag_info_in_lpar){
-    info1 <- lpar$info
+  if("info" %in% names(lpar) ){
+    if(!is.null(info1)){
+      warning("gs_design_npe: we use the statistical information in info1 and ignore the argumet info in lpar.")
+    }else{
+      info1 <- lpar$info
+    }
   }else{
-    info1 <- info
+    info1 <- if(is.null(info1)){info}else{info1}
   }
   # ## if `gs_spending_bound` is used for lower bound
   # if(identical(lower, gs_spending_bound) & ("info" %in% names(lpar))){
@@ -353,7 +356,7 @@ gs_design_npe <- function(
   } 
   
   # find an interval for information inflation to give correct power
-  if(!flag_info_in_upar){
+  if(!"info" %in%  names(upar)){
     upar_new <- c(upar, info = list(info0 * minx))
   }else{
     upar_new <- upar
@@ -362,6 +365,8 @@ gs_design_npe <- function(
   minpwr <- gs_power_npe(
     theta = theta, 
     info = info * minx, 
+    info0 = info0 * minx,
+    info1 = info * minx,
     info_scale = info_scale,
     binding = binding,
     upper = upper, upar = upar_new, test_upper = test_upper,
@@ -387,10 +392,12 @@ gs_design_npe <- function(
     maxx <- 1.05 * minx
     err <- 1
     upar_new$info <- info * maxx
-    for(i in 1:100){
+    for(i in 1:10){
       maxpwr <- gs_power_npe(
         theta = theta, 
         info = info * maxx, 
+        info0 = info0 * maxx,
+        info1 = info * maxx,
         info_scale = info_scale,
         binding = binding,
         upper = upper, upar = upar_new, test_upper = test_upper, 
@@ -419,6 +426,8 @@ gs_design_npe <- function(
       if (1  - beta < gs_power_npe(
         theta = theta, 
         info = info * minx, 
+        info0 = info0 * maxx,
+        info1 = info * maxx,
         info_scale = info_scale,
         binding = binding,
         upper = upper, lower = lower, 
@@ -454,7 +463,7 @@ gs_design_npe <- function(
             theta = theta, 
             K = K, 
             beta = beta,
-            info = info, info0 = info0, info_scale = info_scale,
+            info = info, info0 = info0, info1 = info1, info_scale = info_scale,
             binding = binding,
             Zupper = upper, Zlower = lower, 
             upar = upar, lpar = lpar,
@@ -471,6 +480,8 @@ gs_design_npe <- function(
   out_H1 <- gs_power_npe(
     theta = theta, 
     info = info * res$root, 
+    info0 = info0 * res$root,
+    info1 = info1 * res$root,
     info_scale = info_scale,
     binding = binding,
     upper = upper, 
@@ -493,6 +504,8 @@ gs_design_npe <- function(
   out_H0 <- gs_power_npe(
     theta = 0, 
     info = info * res$root, 
+    info0 = info0 * res$root,
+    info1 = info1 * res$root,
     info_scale = info_scale,
     binding = binding,
     upper = gs_b, upar = list(par = (bound_H1 %>% filter(Bound == "Upper"))$Z), test_upper = test_upper,
@@ -517,6 +530,7 @@ errbeta <- function(x = 1, K = 1,
                     theta = .1, 
                     info = 1, 
                     info0 = 1,
+                    info1 = 1,
                     info_scale = 2,
                     binding = FALSE,
                     Zupper = gs_b, upar = qnorm(.975), test_upper = TRUE,
@@ -526,6 +540,8 @@ errbeta <- function(x = 1, K = 1,
     beta -
     gs_power_npe(theta = theta, 
                  info = info * x, 
+                 info0 = info0 * x,
+                 info1 = info1 * x,
                  binding = binding,
                  info_scale = info_scale,
                  upper = Zupper, lower = Zlower, 

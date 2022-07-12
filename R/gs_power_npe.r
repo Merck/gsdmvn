@@ -240,7 +240,7 @@ gs_power_npe <- function(
     if(k == 1){
       # compute the probability to cross upper/lower bound
       upperProb[1] <- if(b[1] < Inf) {pnorm(sqrt(info[1])*(theta[1] - b[1]/sqrt(info0[1])))}else{0}
-      lowerProb[1] <- if(a[1] > -Inf){pnorm(a[1], mean = sqrt(info[1]) * theta[1])}else{0}
+      lowerProb[1] <- if(a[1] > -Inf){pnorm(-sqrt(info[1])*(theta[1] - a[1]/sqrt(info0[1])))}else{0}
       # update the grids
       if(!is.null(info0)){hgm1_0 <- h1(r = r, theta = 0, I = info0[1], a = if(binding){a[1]}else{-Inf}, b = b[1])}
       hgm1 <- h1(r = r, theta = theta[1],  I = info[1],  a = a[1], b = b[1])
