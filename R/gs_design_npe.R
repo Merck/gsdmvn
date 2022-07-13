@@ -214,6 +214,7 @@ NULL
 #'   
 gs_design_npe <- function(
   theta = .1, 
+  theta1 = NULL,
   info = 1, 
   info0 = NULL, 
   info1 = NULL,
@@ -303,6 +304,9 @@ gs_design_npe <- function(
   if (length(theta) == 1 && K > 1) theta <- rep(theta, K)
   if (length(theta) != K) stop("gs_design_npe(): if length(theta) > 1, must be same as info")
   if (theta[K] <= 0) stop("gs_design_npe(): final effect size must be > 0")
+  if (is.null(theta1)){theta1 <- theta}else if (length(theta1)==1) theta1 <- rep(theta1,K)
+  if (!is.vector(theta1, mode = "numeric")) stop("gs_design_npe(): theta1 must be a real vector")
+  if (length(theta1) != K) stop("gs_design_npe(): if length(theta1) > 1, must be same as info")
   
   # --------------------------------------------- #
   #     check test_upper & test_lower             #
@@ -364,6 +368,7 @@ gs_design_npe <- function(
   
   minpwr <- gs_power_npe(
     theta = theta, 
+    theta1 = theta1,
     info = info * minx, 
     info0 = info0 * minx,
     info1 = info * minx,
@@ -395,6 +400,7 @@ gs_design_npe <- function(
     for(i in 1:10){
       maxpwr <- gs_power_npe(
         theta = theta, 
+        theta1 = theta1,
         info = info * maxx, 
         info0 = info0 * maxx,
         info1 = info * maxx,
@@ -425,6 +431,7 @@ gs_design_npe <- function(
     for(i in 1:10){
       if (1  - beta < gs_power_npe(
         theta = theta, 
+        theta1 = theta1,
         info = info * minx, 
         info0 = info0 * maxx,
         info1 = info * maxx,
@@ -460,7 +467,7 @@ gs_design_npe <- function(
   # Now we can solve for the inflation factor for the enrollment rate to achieve the desired power
   res <- try(
     uniroot(errbeta, lower = minx, upper = maxx,
-            theta = theta, 
+            theta = theta, theta1 = theta1,
             K = K, 
             beta = beta,
             info = info, info0 = info0, info1 = info1, info_scale = info_scale,
@@ -479,6 +486,7 @@ gs_design_npe <- function(
   # calculate the probability under H1
   out_H1 <- gs_power_npe(
     theta = theta, 
+    theta1 = theta1,
     info = info * res$root, 
     info0 = info0 * res$root,
     info1 = info1 * res$root,
@@ -528,6 +536,7 @@ gs_design_npe <- function(
 errbeta <- function(x = 1, K = 1, 
                     beta = .1, 
                     theta = .1, 
+                    theta1 = .1,
                     info = 1, 
                     info0 = 1,
                     info1 = 1,
@@ -539,6 +548,7 @@ errbeta <- function(x = 1, K = 1,
   out <- 1 -  
     beta -
     gs_power_npe(theta = theta, 
+                 theta1 = theta1,
                  info = info * x, 
                  info0 = info0 * x,
                  info1 = info1 * x,
