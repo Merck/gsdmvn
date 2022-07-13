@@ -33,6 +33,7 @@ NULL
 #' are not supported by \code{gs_power_npe()}.
 #' @param theta natural parameter for group sequential design representing
 #' expected incremental drift at all analyses; used for power calculation
+#' @param theta1 natural parameter for alternate hypothesis, if needed for lower bound computation
 #' @param info statistical information at all analyses for input \code{theta}
 #' @param info0 statistical information under null hypothesis, if different than \code{info};
 #' impacts null hypothesis bound calculation
@@ -166,6 +167,7 @@ NULL
 
 gs_power_npe <- function(
   theta = .1, 
+  theta1 = NULL,
   info = 1, 
   info0 = NULL,
   info1 = NULL,
@@ -186,6 +188,7 @@ gs_power_npe <- function(
   # --------------------------------------------- #
   K <- length(info)
   if (length(theta) == 1 && K > 1) theta <- rep(theta, K)
+  if (is.null(theta1)){theta1 <- theta}else if (length(theta1)==1) theta1 <- rep(theta1,K)
   if (length(test_upper) == 1 && K > 1) test_upper <- rep(test_upper, K)
   if (length(test_lower) == 1 && K > 1) test_lower <- rep(test_lower, K)
   
@@ -221,6 +224,7 @@ gs_power_npe <- function(
   a <- rep(-Inf, K)
   b <- rep(Inf, K)
   hgm1_0 <- NULL
+  hgm1_1 <- NULL
   hgm1 <- NULL
   upperProb <- rep(NA, K)
   lowerProb <- rep(NA, K)
@@ -230,20 +234,20 @@ gs_power_npe <- function(
   # --------------------------------------------- #
   for(k in 1:K){
     # compute/update lower bound
-    a[k] <- lower(k = k, par = lpar$par, hgm1 = hgm1, info = info1, #info = info, 
-                  r = r, tol = tol, test_bound = test_lower,
-                  theta = theta, efficacy = FALSE)
+    a[k] <- lower(k = k, par = lpar$par, hgm1 = hgm1_1, info = info1, r = r, tol = tol, test_bound = test_lower,
+                  theta = theta1, efficacy = FALSE)
     # compute/update upper bound
-    b[k] <- upper(k = k, par = upar$par, hgm1 = hgm1_0, info = info0,
-                  r = r, tol = tol, test_bound = test_upper)
+    b[k] <- upper(k = k, par = upar$par, hgm1 = hgm1_0, info = info0, r = r, tol = tol, test_bound = test_upper)
     
     if(k == 1){
       # compute the probability to cross upper/lower bound
       upperProb[1] <- if(b[1] < Inf) {pnorm(sqrt(info[1])*(theta[1] - b[1]/sqrt(info0[1])))}else{0}
       lowerProb[1] <- if(a[1] > -Inf){pnorm(-sqrt(info[1])*(theta[1] - a[1]/sqrt(info0[1])))}else{0}
       # update the grids
-      if(!is.null(info0)){hgm1_0 <- h1(r = r, theta = 0, I = info0[1], a = if(binding){a[1]}else{-Inf}, b = b[1])}
-      hgm1 <- h1(r = r, theta = theta[1],  I = info[1],  a = a[1], b = b[1])
+      #if(!is.null(info0)){hgm1_0 <- h1(r = r, theta = 0, I = info0[1], a = if(binding){a[1]}else{-Inf}, b = b[1])}
+      hgm1_0 <- h1(r = r, theta = 0,         I = info0[1], a = if(binding){a[1]}else{-Inf}, b = b[1])
+      hgm1_1 <- h1(r = r, theta = theta1[1], I = info1[1], a = a[1], b = b[1])
+      hgm1   <- h1(r = r, theta = theta[1],  I = info[1],  a = a[1], b = b[1])
     }else{
       # compute the probability to cross upper bound
       upperProb[k] <- if(b[k]< Inf){
@@ -258,12 +262,13 @@ gs_power_npe <- function(
       
       # update the grids
       if(k < K){
-        if(!is.null(info0)){
-          hgm1_0 <- hupdate(r = r, theta = 0, thetam1 = 0, I = info0[k], Im1 = info0[k-1],
-                            a = if(binding){a[k]}else{-Inf}, b = b[k], gm1 = hgm1_0)
-        }
-        hgm1   <- hupdate(r = r, theta = theta[k], thetam1 = theta[k-1], I = info[k],  Im1 = info[k-1],
-                          a = a[k], b = b[k], gm1 = hgm1)
+        # if(!is.null(info0)){
+        #   hgm1_0 <- hupdate(r = r, theta = 0, thetam1 = 0, I = info0[k], Im1 = info0[k-1],
+        #                     a = if(binding){a[k]}else{-Inf}, b = b[k], gm1 = hgm1_0)
+        # }
+        hgm1_0 <- hupdate(r = r, theta = 0,         I = info0[k], a = if(binding){a[k]}else{-Inf}, b = b[k], thetam1 = 0,           Im1 = info0[k-1], gm1 = hgm1_0)
+        hgm1_1 <- hupdate(r = r, theta = theta1[k], I = info1[k], a = a[k],                        b = b[k], thetam1 = theta1[k-1], Im1 = info1[k-1], gm1 = hgm1_1)
+        hgm1   <- hupdate(r = r, theta = theta[k],  I = info[k],  a = a[k],                        b = b[k], thetam1 = theta[k-1],  Im1 = info[k-1],  gm1 = hgm1)
       }
     }
   }
@@ -274,6 +279,7 @@ gs_power_npe <- function(
     Z = c(b, a),
     Probability = c(cumsum(upperProb), cumsum(lowerProb)),
     theta = rep(theta, 2),
+    theta1 = rep(theta1, 2),
     IF = rep(info / max(info), 2),
     info = rep(info, 2)) %>% 
     mutate(info0 = if(is.null(info0)){NA}else{rep(info0, 2)},
