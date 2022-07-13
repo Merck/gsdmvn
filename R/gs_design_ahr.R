@@ -242,7 +242,7 @@ gs_design_ahr <- function(
   # --------------------------------------------- #
   suppressMessages(
   allout <- gs_design_npe(
-    theta = y$theta, 
+    theta = y$theta, theta1 = theta1, 
     info = y$info, info0 = y$info0, info1 = info1, 
     info_scale = info_scale,
     alpha = alpha, beta = beta, binding = binding,
