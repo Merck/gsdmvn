@@ -111,6 +111,8 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
     design_mtd <- "RD"
   }else if("MaxCombo" %in% class(x)){
     design_mtd <- "MaxCombo"
+  }else if("RMST" %in% class(x)){
+    design_mtd <- "RMST"
   }
   
   
@@ -122,7 +124,8 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
                      "MB" = {"Fixed Design under Magirr-Burman Method"},
                      "LF" = {"Fixed Design under Lachin and Foulkes Method"},
                      "RD" = {"Fixed Design of Risk Difference under Farrington-Manning Method"},
-                     "MaxCombo" = {"Fixed Design under Max Combo Method"}
+                     "MaxCombo" = {"Fixed Design under Max Combo Method"},
+                     "RMST" = {"Fixed Design under RMST Method"}
                      )
   }
   
@@ -142,7 +145,9 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
                         "MaxCombo" = {paste0("Power for MaxCombo test with Fleming-Harrington tests",
                                              substr(x$Design, 9, nchar(x$Design)), "."
                                              # paste(apply(do.call(rbind, x$design_par), 2 , paste , collapse = "," ), collapse = ") and ("),
-                                             )})  
+                                             )},
+                        "RMST" = {"Power computed with restricted mean survival time method."}
+                        )  
   }
   
   ans <- x %>% 

@@ -28,7 +28,7 @@
 #'                   failRates = tibble::tibble(Stratum = "All", duration = 100, failRate = log(2) / 12, hr = .7, dropoutRate = .001),
 #'                   studyDuration = 36)
 #' 
-fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo", "RSMT"), 
+fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo", "RMST"), 
                          alpha = 0.025, power = NULL, ratio = 1, studyDuration = 36, ...){
    # --------------------------------------------- #
    #     check inputs                              #
@@ -271,7 +271,7 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo", "RSMT"
                   list(sum_ = tibble::tibble(Option = 5, Design = "RD") # everything that needs to be returned should be in the tibble (p_C, p_E, N, alpha, and power)
                 )},
                  
-               "RSMT" = {
+               "RMST" = {
                   if(!is.null(power)){
                      d <- fixed_design_size_rmst(alpha = alpha, beta = 1 - power, ratio = ratio, 
                                                  enrollRates = enrollRates, failRates = failRates,
@@ -283,7 +283,7 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo", "RSMT"
                   }
                   
                   # get the output of max combo
-                  ans <- tibble::tibble(Design = "RSMT",
+                  ans <- tibble::tibble(Design = "RMST",
                                         N = d$analysis$N,
                                         Events = d$analysis$Events,
                                         Time = d$analysis$Time,
@@ -291,7 +291,7 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo", "RSMT"
                                         alpha = alpha,
                                         Power = (d$bounds %>% filter(Bound == "Upper"))$Probability)
                   
-                  list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "RSMT")
+                  list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "RMST")
                }
                )
    

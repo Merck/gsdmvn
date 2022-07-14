@@ -53,7 +53,6 @@ fixed_design_size_rmst <- function(enrollRates,
               bounds = bounds,
               analysis = analysis, 
               design = "RMST")
-  class(res) <- c("fixed_design", "list")
   
   res
 }
@@ -117,8 +116,6 @@ fixed_design_power_rmst <- function(enrollRates,
               bounds = bounds,
               analysis = analysis, 
               design = "RMST")
-  
-  class(res) <- c("fixed_design", "list")
 
   res
 }
