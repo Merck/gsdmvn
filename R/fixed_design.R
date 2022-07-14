@@ -42,20 +42,27 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo", "RMST"
    has_tau <- "tau" %in% names(args)
    has_enrollRates <- "enrollRates" %in% names(args)
    has_failRates <- "failRates" %in% names(args)
+   has_N <- "N" %in% names(args)
    
+   # ------------------------- #
+   #     check inputs          #
+   # ------------------------- #
    
-   if(!has_enrollRates){
+   # check enrollment rate (not expected for RD)
+   if(!has_enrollRates && x != "RD"){
       stop("fixed_design: please input enrollRates!")
    }else{
       enrollRates <- args$enrollRates
    }
    
-   if(!has_failRates){
+   # check failure rate (not expected for RD)
+   if(!has_failRates && x != "RD"){
       stop("fixed_design: please input failRates!")
    }else{
       failRates <- args$failRates
    }
    
+   # check test parameters, like rho, gamma, tau 
    if(has_rho & length(args$rho) > 1 & x %in% c("FH", "MB")){
       stop("fixed_design: multiple rho can not be used in Fleming-Harrington or Magirr-Burman method!")
    }
@@ -72,7 +79,17 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo", "RMST"
       stop("fixed_design: rho and gamma are not needed for Magirr-Burman (MB) method!")
    }
    
+   # check inputs necessary for RD
+   if(x == "RD"){
+      if(!"p_c" %in% names(args)){stop("fixed_design: p_c is needed for RD!")}
+      if(!"p_e" %in% names(args)){stop("fixed_design: p_e is needed for RD!")}
+      if(!"rd0" %in% names(args)){stop("fixed_design: rd0 is needed for RD!")}
+      if(is.null(power) && !has_N){stop("fixed_design: sample size N = ... is needed for RD!")}
+   }
    
+   # ------------------------- #
+   #     generate design       #
+   # ------------------------- #
    y <- switch(x, 
                "AHR" = {
                   if (!is.null(power)){
@@ -268,8 +285,32 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo", "RMST"
                },
                
                "RD" = {
-                  list(sum_ = tibble::tibble(Option = 5, Design = "RD") # everything that needs to be returned should be in the tibble (p_C, p_E, N, alpha, and power)
-                )},
+                  if(!is.null(power)){
+                     d <- gs_design_rd(p_c = tibble::tibble(Stratum = "All", Rate = args$p_c),
+                                       p_e = tibble::tibble(Stratum = "All", Rate = args$p_e),
+                                       alpha = alpha, beta = 1 - power, ratio = ratio,
+                                       upper = gs_b, upar = list(par = qnorm(1 - alpha)),
+                                       lower = gs_b, lpar = list(par = -Inf),
+                                       rd0 = args$rd0, weight = "un-stratified", k = 1, IF = 1) 
+                  }else{
+                     d <- gs_power_rd(p_c = tibble::tibble(Stratum = "All", Rate = args$p_c),
+                                      p_e = tibble::tibble(Stratum = "All", Rate = args$p_e),
+                                      ratio = ratio,
+                                      upper = gs_b, upar = list(par = qnorm(1 - alpha)),
+                                      lower = gs_b, lpar = list(par = -Inf),
+                                      N = tibble::tibble(Stratum = "All", N = args$N, Analysis = 1),
+                                      rd0 = args$rd0,  weight = "un-stratified") 
+                  }
+                  
+                  # get the output of max combo
+                  ans <- tibble::tibble(Design = "RD",
+                                        N = d$analysis$N,
+                                        Bound = (d$bounds %>% filter(Bound == "Upper"))$Z,
+                                        alpha = alpha,
+                                        Power = (d$bounds %>% filter(Bound == "Upper"))$Probability)
+                  
+                  list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "RD")
+                },
                  
                "RMST" = {
                   if(!is.null(power)){
