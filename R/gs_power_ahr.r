@@ -207,6 +207,8 @@ gs_power_ahr <- function(
   y_H1 <- gs_power_npe(
     theta = x$theta, 
     info = x$info, 
+    info0 = x$info0,
+    info1 = x$info,
     info_scale = info_scale,
     binding = binding,
     upper = upper, 
@@ -218,9 +220,12 @@ gs_power_ahr <- function(
     r = r, 
     tol = tol) 
   
+  
   y_H0 <- gs_power_npe(
     theta = 0, 
     info = x$info0, 
+    info0 = x$info0,
+    info1 = x$info,
     info_scale = info_scale,
     binding = binding,
     upper = upper, 

@@ -227,8 +227,10 @@ gs_power_rd <- function(
   #         calculate the power              #
   # ---------------------------------------- #
   y_H1 <- gs_power_npe(
-    theta = x$theta, 
-    info = x$info, 
+    theta = x$rd, 
+    info = x$info1, 
+    info0 = x$info0,
+    info1 = x$info1,
     info_scale = info_scale,
     binding = binding,
     upper = upper, 
@@ -241,8 +243,10 @@ gs_power_rd <- function(
     tol = tol) 
   
   y_H0 <- gs_power_npe(
-    theta = x$theta0, 
+    theta = x$rd0, 
     info = x$info0, 
+    info0 = x$info0,
+    info1 = x$info1,
     info_scale = info_scale,
     binding = binding,
     upper = upper, 
@@ -259,19 +263,18 @@ gs_power_rd <- function(
   # ---------------------------------------- #
   # summarize the bounds
   suppressMessages(
-    bounds <- y_H0 %>% 
-      mutate(`~Risk difference at bound` = Z / sqrt(info) / theta * (rd -rd0)  + rd0,  `Nominal p` = pnorm(-Z)) %>% 
-      dplyr::rename(Probability0 = Probability) %>% 
-      left_join(y_H1 %>% select(Analysis, Bound, Probability)) %>% 
+    bounds <- y_H1 %>% 
+      mutate(`~Risk difference at bound` = Z / sqrt(info) / theta * (x$rd[1] - x$rd0[1])  + x$rd0[1],  `Nominal p` = pnorm(-Z)) %>% 
+      left_join(y_H0 %>% select(Analysis, Bound, Probability) %>% dplyr::rename(Probability0 = Probability)) %>% 
       select(Analysis, Bound, Probability, Probability0, Z, `~Risk difference at bound`, `Nominal p`)
   )
   # summarize the analysis
   suppressMessages(
     analysis <- x %>% 
-      select(Analysis, N, rd, rd0, theta, theta0) %>% 
+      select(Analysis, N, rd, rd0, theta1, theta0) %>% 
       left_join(y_H1 %>% select(Analysis, info, IF) %>% unique()) %>%
       left_join(y_H0 %>% select(Analysis, info, IF) %>% dplyr::rename(info0 = info, IF0 = IF) %>% unique()) %>%
-      select(Analysis, N, rd, rd0, theta, theta0, info, info0, IF, IF0)
+      select(Analysis, N, rd, rd0, theta1, theta0, info, info0, IF, IF0)
   )
   
   output <- list(

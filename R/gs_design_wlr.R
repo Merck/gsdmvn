@@ -170,11 +170,8 @@ gs_design_wlr <- function(
   # --------------------------------------------- #
   #     get information at input analysisTimes    #
   # --------------------------------------------- #
-  y <- gs_info_wlr(
-    enrollRates, failRates, 
-    ratio = ratio, events = NULL, 
-    analysisTimes = analysisTimes,
-    weight = weight, approx = approx)
+  y <- gs_info_wlr(enrollRates, failRates, ratio = ratio, events = NULL, 
+                   analysisTimes = analysisTimes, weight = weight, approx = approx)
   
   finalEvents <- y$Events[nrow(y)]
   IFalt <- y$Events / finalEvents
@@ -216,8 +213,8 @@ gs_design_wlr <- function(
   # --------------------------------------------- #
   suppressMessages(
   allout <- gs_design_npe(
-    theta = y$theta, 
-    info = y$info, info0 = y$info0, info_scale = info_scale,
+    theta = y$theta, theta1 = theta1,
+    info = y$info, info0 = y$info0, info1 = info1, info_scale = info_scale,
     alpha = alpha, beta = beta, binding = binding,
     upper = upper, upar = upar, test_upper = test_upper,
     lower = lower, lpar = lpar, test_lower = test_lower,
