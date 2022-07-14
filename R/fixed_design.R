@@ -28,13 +28,11 @@
 #'                   failRates = tibble::tibble(Stratum = "All", duration = 100, failRate = log(2) / 12, hr = .7, dropoutRate = .001),
 #'                   studyDuration = 36)
 #' 
-fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"), 
+fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo", "RSMT"), 
                          alpha = 0.025, power = NULL, ratio = 1, studyDuration = 36, ...){
    # --------------------------------------------- #
    #     check inputs                              #
    # --------------------------------------------- #
-   
-   
    x <- match.arg(x)
    args <- list(...)
    
@@ -273,7 +271,28 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
                   list(sum_ = tibble::tibble(Option = 5, Design = "RD") # everything that needs to be returned should be in the tibble (p_C, p_E, N, alpha, and power)
                 )},
                  
-               
+               "RSMT" = {
+                  if(!is.null(power)){
+                     d <- fixed_design_size_rmst(alpha = alpha, beta = 1 - power, ratio = ratio, 
+                                                 enrollRates = enrollRates, failRates = failRates,
+                                                 analysisTimes = studyDuration) 
+                  }else{
+                     d <- fixed_design_power_rmst(alpha = alpha, ratio = ratio,
+                                                  enrollRates = enrollRates, failRates = failRates,  
+                                                  analysisTimes = studyDuration) 
+                  }
+                  
+                  # get the output of max combo
+                  ans <- tibble::tibble(Design = "RSMT",
+                                        N = d$analysis$N,
+                                        Events = d$analysis$Events,
+                                        Time = d$analysis$Time,
+                                        Bound = (d$bounds %>% filter(Bound == "Upper"))$Z,
+                                        alpha = alpha,
+                                        Power = (d$bounds %>% filter(Bound == "Upper"))$Probability)
+                  
+                  list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "RSMT")
+               }
                )
    
    class(y) <- c("fixed_design", class(y))
