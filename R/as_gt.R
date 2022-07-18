@@ -113,6 +113,8 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
     design_mtd <- "MaxCombo"
   }else if("RMST" %in% class(x)){
     design_mtd <- "RMST"
+  }else if("RD" %in% class(x)){
+    design_mtd <- "RD"
   }
   
   
@@ -125,7 +127,8 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
                      "LF" = {"Fixed Design under Lachin and Foulkes Method"},
                      "RD" = {"Fixed Design of Risk Difference under Farrington-Manning Method"},
                      "MaxCombo" = {"Fixed Design under Max Combo Method"},
-                     "RMST" = {"Fixed Design under RMST Method"}
+                     "RMST" = {"Fixed Design under RMST Method"},
+                     "RD" = "Fixed Design of Risk Difference"
                      )
   }
   

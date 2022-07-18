@@ -1,11 +1,14 @@
 ---
 title: "Fixed Design"
 output:
-  html_document:
+  rmarkdown::html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 2
+    number_sections: true
     code_folding: hide
-    toc: yes
-    toc_depth: 4
-    number_sections: yes
+    highlight: "textmate"
+    css: "custom.css"
 bibliography: gsDesign.bib
 vignette: |
   %\VignetteIndexEntry{Group Sequential Bound Tables}
@@ -258,6 +261,55 @@ fixed_design(x = "MaxCombo", alpha = alpha,
 ```
 
 
+
+# RMST {.tabset}
+
+## under fixed power 
+```{r}
+x <- fixed_design(x = "RMST", 
+                  alpha = alpha, power = 1 - beta, 
+                  enrollRates = enrollRates, failRates = failRates, 
+                  studyDuration = studyDuration, ratio = ratio) 
+
+x %>% summary()
+
+x %>% summary() %>% as_gt()
+```
+
+## under fixed sample size
+```{r}
+fixed_design(x = "RMST", 
+             alpha = alpha,  
+             enrollRates = enrollRates, failRates = failRates, 
+             studyDuration = studyDuration, ratio = ratio) %>% 
+  summary() %>% 
+  as_gt()
+```
+
+
+# RD {.tabset}
+
+## under fixed power 
+```{r}
+x <- fixed_design(x = "RD", 
+                  alpha = alpha, power = 1 - beta, 
+                  p_c = .15, p_e = .1, rd0 = 0,
+                  ratio = ratio) 
+
+x %>% summary()
+x %>% summary() %>% as_gt()
+```
+
+## under fixed sample size
+```{r}
+fixed_design(x = "RD", 
+             alpha = alpha, power = NULL, 
+             p_c = .15, p_e = .1, rd0 = 0,
+             N = 2000, ratio = ratio) %>% 
+  summary() %>% 
+  as_gt()
+```
+
 # Multiple Designs
 
 ```{r, message = FALSE}
@@ -280,6 +332,9 @@ x_MaxCombo <- fixed_design(x = "MaxCombo", alpha = alpha, ratio = ratio,
                            enrollRates = enrollRates, failRates = failRates, studyDuration = studyDuration,
                            rho = c(0, 0.5, 0.5), gamma = c(0, 0, 0.5), tau = c(-1, 4, 6))
 
-rbind(summary(x_AHR), summary(x_FH), summary(x_MB), summary(x_LF), summary(x_MaxCombo)) %>% gt()
+x_RMST <- fixed_design(x = "RMST", alpha = alpha, ratio = ratio, 
+                       enrollRates = enrollRates, failRates = failRates, studyDuration = studyDuration)
+
+rbind(summary(x_AHR), summary(x_FH), summary(x_MB), summary(x_LF), summary(x_MaxCombo), summary(x_RMST)) %>% gt()
 ```
 
