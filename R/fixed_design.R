@@ -2,12 +2,13 @@
 #'
 #' Computes fixed design sample size for many sample size methods.
 #' Returns a `tibble` with a basic summary
-#' @param x Sample size method; default is "AHR"; see examples and details.
+#' @param x Sample size method; default is \code{"AHR"}; 
+#'          other options include \code{"FH"}, \code{"MB"}, \code{"LF"}, \code{"RD"}, \code{"MaxCombo"}, \code{"RMST"}.
 #' @param alpha One-sided Type I error (strictly between 0 and 1)
 #' @param power Power (`NULL` to compute power or strictly between 0 and `1 - alpha` otherwise)
 #' @param ratio Experimental:Control randomization ratio
 #' @param studyDuration study duration
-#' @param ...
+#' @param ... additional arguments like \code{enrollRates}, \code{failRates}, \code{rho}, \code{gamma}, \code{tau}
 #' 
 #' @return
 #' @export
@@ -15,7 +16,7 @@
 #' @examples
 #' # Average hazard ratio
 #' y <- fixed_design("AHR", 
-#'                   alpha = .025, Power = .9, 
+#'                   alpha = .025, power = .9, 
 #'                   enrollRates = tibble::tibble(Stratum = "All",  duration = 18, rate = 1),
 #'                   failRates = tibble::tibble(Stratum = "All", duration = c(4, 100), failRate = log(2) / 12, hr = c(1, .6), dropoutRate = .001),
 #'                   studyDuration = 36)
@@ -23,7 +24,7 @@
 #' 
 #' # Lachin and Foulkes (uses gsDesign::nSurv())
 #' y <- fixed_design("LF", 
-#'                   alpha = .025, Power = .9, 
+#'                   alpha = .025, power = .9, 
 #'                   enrollRates = tibble::tibble(Stratum = "All",  duration = 18, rate = 1),
 #'                   failRates = tibble::tibble(Stratum = "All", duration = 100, failRate = log(2) / 12, hr = .7, dropoutRate = .001),
 #'                   studyDuration = 36)

@@ -6,8 +6,10 @@
 \usage{
 gs_design_npe(
   theta = 0.1,
+  theta1 = NULL,
   info = 1,
   info0 = NULL,
+  info1 = NULL,
   info_scale = c(0, 1, 2),
   alpha = 0.025,
   beta = 0.1,
@@ -26,9 +28,15 @@ gs_design_npe(
 \item{theta}{natural parameter for group sequential design representing expected incremental drift at all analyses;
 used for power calculation}
 
+\item{theta1}{natural parameter used for lower bound spending; if \code{NULL}, this will be set to \code{theta}
+which yields the usual beta-spending. If set to 0, spending is 2-sided under null hypothesis.}
+
 \item{info}{proportionate statistical information at all analyses for input \code{theta}}
 
 \item{info0}{proportionate statistical information under null hypothesis, if different than alternative;
+impacts null hypothesis bound calculation}
+
+\item{info1}{proportionate statistical information under alternate hypothesis;
 impacts null hypothesis bound calculation}
 
 \item{alpha}{One-sided Type I error}
@@ -55,9 +63,6 @@ lower bound}
 \item{r}{Integer, at least 2; default of 18 recommended by Jennison and Turnbull}
 
 \item{tol}{Tolerance parameter for boundary convergence (on Z-scale)}
-
-\item{theta1}{natural parameter used for lower bound spending; if \code{NULL}, this will be set to \code{theta}
-which yields the usual beta-spending. If set to 0, spending is 2-sided under null hypothesis.}
 }
 \value{
 a \code{tibble} with columns Analysis, Bound, Z, Probability,  theta, info, info0

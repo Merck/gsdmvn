@@ -6,6 +6,7 @@
 \usage{
 gs_power_npe(
   theta = 0.1,
+  theta1 = NULL,
   info = 1,
   info0 = NULL,
   info1 = NULL,
@@ -24,6 +25,8 @@ gs_power_npe(
 \arguments{
 \item{theta}{natural parameter for group sequential design representing
 expected incremental drift at all analyses; used for power calculation}
+
+\item{theta1}{natural parameter for alternate hypothesis, if needed for lower bound computation}
 
 \item{info}{statistical information at all analyses for input \code{theta}}
 

@@ -5,7 +5,7 @@
 \title{Fixed design sample size}
 \usage{
 fixed_design(
-  x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo"),
+  x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo", "RMST"),
   alpha = 0.025,
   power = NULL,
   ratio = 1,
@@ -14,7 +14,8 @@ fixed_design(
 )
 }
 \arguments{
-\item{x}{Sample size method; default is "AHR"; see examples and details.}
+\item{x}{Sample size method; default is \code{"AHR"};
+other options include \code{"FH"}, \code{"MB"}, \code{"LF"}, \code{"RD"}, \code{"MaxCombo"}, \code{"RMST"}.}
 
 \item{alpha}{One-sided Type I error (strictly between 0 and 1)}
 
@@ -24,7 +25,7 @@ fixed_design(
 
 \item{studyDuration}{study duration}
 
-\item{...}{}
+\item{...}{additional arguments like \code{enrollRates}, \code{failRates}, \code{rho}, \code{gamma}, \code{tau}}
 }
 \value{
 
@@ -36,7 +37,7 @@ Returns a \code{tibble} with a basic summary
 \examples{
 # Average hazard ratio
 y <- fixed_design("AHR", 
-                  alpha = .025, Power = .9, 
+                  alpha = .025, power = .9, 
                   enrollRates = tibble::tibble(Stratum = "All",  duration = 18, rate = 1),
                   failRates = tibble::tibble(Stratum = "All", duration = c(4, 100), failRate = log(2) / 12, hr = c(1, .6), dropoutRate = .001),
                   studyDuration = 36)
@@ -44,7 +45,7 @@ y \%>\% summary_fix()
 
 # Lachin and Foulkes (uses gsDesign::nSurv())
 y <- fixed_design("LF", 
-                  alpha = .025, Power = .9, 
+                  alpha = .025, power = .9, 
                   enrollRates = tibble::tibble(Stratum = "All",  duration = 18, rate = 1),
                   failRates = tibble::tibble(Stratum = "All", duration = 100, failRate = log(2) / 12, hr = .7, dropoutRate = .001),
                   studyDuration = 36)
