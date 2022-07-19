@@ -55,10 +55,10 @@ fixed_design_size_rmst <- function(enrollRates,
   )
   
   analysis <- tibble::tibble(
-    design = "RMST", 
+    Analysis = 1, 
+    Time = analysisTimes,
     N = npsurv[["n"]], 
-    Events = npsurv[["d"]], 
-    Time = analysisTimes
+    Events = npsurv[["d"]]
   )
   
   
@@ -130,10 +130,10 @@ fixed_design_power_rmst <- function(enrollRates,
     Z = - qnorm(alpha))
   
   analysis <- tibble::tibble(
-    design = "RMST", 
+    Analysis = 1, 
+    Time = analysisTimes,
     N = n, 
-    Events = d, 
-    Time = analysisTimes)
+    Events = d)
   
   res <- list(enrollRates = enrollRates, 
               failRates = failRates, 
