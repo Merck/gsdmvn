@@ -113,6 +113,8 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
     design_mtd <- "MaxCombo"
   }else if("Milestone" %in% class(x)){
     design_mtd <- "Milestone"
+  }else if("RMST" %in% class(x)){
+    design_mtd <- "RMST"
   }else if("RD" %in% class(x)){
     design_mtd <- "RD"
   }
@@ -128,7 +130,8 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
                      "RD" = {"Fixed Design of Risk Difference under Farrington-Manning Method"},
                      "MaxCombo" = {"Fixed Design under Max Combo Method"},
                      "Milestone" = {"Fixed Design under Milestone Method"},
-                     "RD" = "Fixed Design of Risk Difference"
+                     "RMST" = {"Fixed Design under Restricted Mean Survival Time Method"},
+                     "RD" = {"Fixed Design of Risk Difference"}
                      )
   }
   
@@ -149,7 +152,8 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL){
                                              substr(x$Design, 9, nchar(x$Design)), "."
                                              # paste(apply(do.call(rbind, x$design_par), 2 , paste , collapse = "," ), collapse = ") and ("),
                                              )},
-                        "Milestone" = {paste0("Power for ", x$Design, " computed with method of Yung and Liu.")}
+                        "Milestone" = {paste0("Power for ", x$Design, " computed with method of Yung and Liu.")},
+                        "RMST" = {paste0("Power for ", x$Design, " computed with method of Yung and Liu.")}
                         )  
   }
   

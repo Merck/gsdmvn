@@ -6,8 +6,10 @@
 #' @param ratio Experimental:Control randomization ratio
 #' @param alpha One-sided Type I error (strictly between 0 and 1)
 #' @param beta  Power (`NULL` to compute power or strictly between 0 and `1 - alpha` otherwise)
-#' @param tau desired milestone
-#' 
+#' @param test A string specifies the type of statistical test.
+#'             Default is \code{"survival difference"} (a Kaplan-Meier based test). 
+#'             One can also set it as \code{"rmst difference"} (another Kaplan-Meier based test)
+#' @param tau desired milestone for \code{test = "survival difference"} or \code{test = "rmst difference"}
 #' @return a list with \code{enrollRates}, \code{failRates}, \code{bounds}, \code{analysis} and \code{design}
 #'
 #' @examples 
@@ -31,6 +33,7 @@ fixed_design_size_rmst <- function(enrollRates,
                                    ratio = 1,
                                    alpha = 0.025, 
                                    beta = 0.1,
+                                   test = "rmst difference",
                                    tau = NULL){
   
   gs_arm <- gs_create_arm(enrollRates, failRates, ratio = ratio,  total_time = analysisTimes) 
@@ -39,10 +42,10 @@ fixed_design_size_rmst <- function(enrollRates,
   
   n <- sum(enrollRates$duration * enrollRates$rate)
   
-  # Sample size for RMST at cut point 36. 
+  # Sample size for RMST at cut point 
   npsurv <- npsurvSS::size_two_arm(arm0, arm1, 
                                    alpha = alpha, power = 1 - beta,  
-                                   test = list(test = "rmst difference", milestone = if(is.null(tau)){arm0$total_time}else{tau})) 
+                                   test = list(test = test, milestone = if(is.null(tau)){arm0$total_time}else{tau})) 
   bounds <- tibble::tibble(
     Analysis = 1,
     Bound = "Upper",
@@ -62,8 +65,7 @@ fixed_design_size_rmst <- function(enrollRates,
   res <- list(enrollRates = enrollRates %>% mutate(rate = rate * npsurv[["n"]] / n), 
               failRates = failRates, 
               bounds = bounds,
-              analysis = analysis, 
-              design = "Milestone")
+              analysis = analysis)
   
   res
 }
@@ -76,7 +78,10 @@ fixed_design_size_rmst <- function(enrollRates,
 #' @param analysisTimes Minimum time of analysis
 #' @param ratio Experimental:Control randomization ratio
 #' @param alpha One-sided Type I error (strictly between 0 and 1)
-#' @param tau desired milestone
+#' @param test A string specifies the type of statistical test.
+#'             Default is \code{"survival difference"} (a Kaplan-Meier based test). 
+#'             One can also set it as \code{"rmst difference"} (another Kaplan-Meier based test)
+#' @param tau desired milestone for \code{test = "survival difference"} or \code{test = "rmst difference"}
 #' 
 #' @examples 
 #' # set enrollment rates
@@ -97,6 +102,7 @@ fixed_design_power_rmst <- function(enrollRates,
                                     analysisTimes,
                                     ratio = 1,
                                     alpha = 0.025,
+                                    test = "rmst difference",
                                     tau = NULL){
   
   gs_arm <- gs_create_arm(enrollRates, failRates, ratio = ratio,  total_time = analysisTimes) 
@@ -114,7 +120,7 @@ fixed_design_power_rmst <- function(enrollRates,
   # Sample size for RMST at cut point 
   npsurv <- npsurvSS::power_two_arm(arm0, arm1, 
                                     alpha = alpha, 
-                                    test = list(test = "rmst difference", milestone = if(is.null(tau)){arm0$total_time}else{tau})) 
+                                    test = list(test = test, milestone = if(is.null(tau)){arm0$total_time}else{tau})) 
   
   bounds <- tibble::tibble(
     Analysis = 1,
@@ -132,8 +138,7 @@ fixed_design_power_rmst <- function(enrollRates,
   res <- list(enrollRates = enrollRates, 
               failRates = failRates, 
               bounds = bounds,
-              analysis = analysis, 
-              design = "Milestone")
+              analysis = analysis)
 
   res
 }

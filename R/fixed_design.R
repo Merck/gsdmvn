@@ -30,6 +30,14 @@
 #'                   studyDuration = 36)
 #' x %>% summary()
 #' 
+#' # RMST
+#' x <- fixed_design("RMST", alpha = .025, power = .9, 
+#'                   enrollRates = tibble::tibble(Stratum = "All",  duration = 18, rate = 1),
+#'                   failRates = tibble::tibble(Stratum = "All", duration = 100, failRate = log(2) / 12, hr = .7, dropoutRate = .001),
+#'                   studyDuration = 36,
+#'                   tau = 18)
+#' x %>% summary()
+#' 
 #' # Milestone 
 #' x <- fixed_design("Milestone", alpha = .025, power = .9, 
 #'                   enrollRates = tibble::tibble(Stratum = "All",  duration = 18, rate = 1),
@@ -38,7 +46,7 @@
 #'                   tau = 18)
 #' x %>% summary()
 #' 
-fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo", "Milestone"), 
+fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo", "RMST", "Milestone"), 
                          alpha = 0.025, power = NULL, ratio = 1, studyDuration = 36, ...){
    # --------------------------------------------- #
    #     check inputs                              #
@@ -322,15 +330,48 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo", "Miles
                   list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "RD")
                 },
                  
+               
+               "RMST" = {
+                  if(!is.null(power)){
+                     d <- fixed_design_size_rmst(alpha = alpha, beta = 1 - power, ratio = ratio, 
+                                                 enrollRates = enrollRates, failRates = failRates,
+                                                 analysisTimes = studyDuration, 
+                                                 test = "rmst difference",
+                                                 tau = ifelse(has_tau, args$tau, studyDuration)) 
+                  }else{
+                     d <- fixed_design_power_rmst(alpha = alpha, ratio = ratio,
+                                                  enrollRates = enrollRates, failRates = failRates,  
+                                                  analysisTimes = studyDuration, 
+                                                  test = "rmst difference",
+                                                  tau = ifelse(has_tau, args$tau, studyDuration)) 
+                  }
+                  
+                  # get the output 
+                  ans <- tibble::tibble(Design = "RMST",
+                                        N = d$analysis$N,
+                                        Events = d$analysis$Events,
+                                        Time = d$analysis$Time,
+                                        Bound = (d$bounds %>% filter(Bound == "Upper"))$Z,
+                                        alpha = alpha,
+                                        Power = (d$bounds %>% filter(Bound == "Upper"))$Probability)
+                  
+                  list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, 
+                       design = "RMST", design_par = list(tau = ifelse(has_tau, args$tau, studyDuration)))
+               },
+               
                "Milestone" = {
                   if(!is.null(power)){
                      d <- fixed_design_size_rmst(alpha = alpha, beta = 1 - power, ratio = ratio, 
                                                  enrollRates = enrollRates, failRates = failRates,
-                                                 analysisTimes = studyDuration, tau = ifelse(has_tau, args$tau, studyDuration)) 
+                                                 analysisTimes = studyDuration, 
+                                                 test = "survival difference",
+                                                 tau = ifelse(has_tau, args$tau, studyDuration)) 
                   }else{
                      d <- fixed_design_power_rmst(alpha = alpha, ratio = ratio,
-                                                  enrollRates = enrollRates, failRates = failRates,  
-                                                  analysisTimes = studyDuration, tau = ifelse(has_tau, args$tau, studyDuration)) 
+                                                  enrollRates = enrollRates, failRates = failRates,
+                                                  analysisTimes = studyDuration, 
+                                                  test = "survival difference",
+                                                  tau = ifelse(has_tau, args$tau, studyDuration)) 
                   }
                   
                   # get the output of max combo

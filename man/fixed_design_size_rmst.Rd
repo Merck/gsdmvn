@@ -11,6 +11,7 @@ fixed_design_size_rmst(
   ratio = 1,
   alpha = 0.025,
   beta = 0.1,
+  test = "rmst difference",
   tau = NULL
 )
 }
@@ -27,7 +28,11 @@ fixed_design_size_rmst(
 
 \item{beta}{Power (\code{NULL} to compute power or strictly between 0 and \code{1 - alpha} otherwise)}
 
-\item{tau}{desired milestone}
+\item{test}{A string specifies the type of statistical test.
+Default is \code{"survival difference"} (a Kaplan-Meier based test).
+One can also set it as \code{"rmst difference"} (another Kaplan-Meier based test)}
+
+\item{tau}{desired milestone for \code{test = "survival difference"} or \code{test = "rmst difference"}}
 }
 \value{
 a list with \code{enrollRates}, \code{failRates}, \code{bounds}, \code{analysis} and \code{design}

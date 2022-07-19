@@ -5,7 +5,7 @@
 \title{Fixed design sample size}
 \usage{
 fixed_design(
-  x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo", "Milestone"),
+  x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo", "RMST", "Milestone"),
   alpha = 0.025,
   power = NULL,
   ratio = 1,
@@ -49,6 +49,14 @@ x <- fixed_design("LF",
                   enrollRates = tibble::tibble(Stratum = "All",  duration = 18, rate = 1),
                   failRates = tibble::tibble(Stratum = "All", duration = 100, failRate = log(2) / 12, hr = .7, dropoutRate = .001),
                   studyDuration = 36)
+x \%>\% summary()
+
+# RMST
+x <- fixed_design("RMST", alpha = .025, power = .9, 
+                  enrollRates = tibble::tibble(Stratum = "All",  duration = 18, rate = 1),
+                  failRates = tibble::tibble(Stratum = "All", duration = 100, failRate = log(2) / 12, hr = .7, dropoutRate = .001),
+                  studyDuration = 36,
+                  tau = 18)
 x \%>\% summary()
 
 # Milestone 

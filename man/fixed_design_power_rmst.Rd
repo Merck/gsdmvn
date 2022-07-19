@@ -10,6 +10,7 @@ fixed_design_power_rmst(
   analysisTimes,
   ratio = 1,
   alpha = 0.025,
+  test = "rmst difference",
   tau = NULL
 )
 }
@@ -24,7 +25,11 @@ fixed_design_power_rmst(
 
 \item{alpha}{One-sided Type I error (strictly between 0 and 1)}
 
-\item{tau}{desired milestone}
+\item{test}{A string specifies the type of statistical test.
+Default is \code{"survival difference"} (a Kaplan-Meier based test).
+One can also set it as \code{"rmst difference"} (another Kaplan-Meier based test)}
+
+\item{tau}{desired milestone for \code{test = "survival difference"} or \code{test = "rmst difference"}}
 }
 \description{
 Power calculation based on RMST method
