@@ -269,7 +269,8 @@ fixed_design(x = "MaxCombo", alpha = alpha,
 x <- fixed_design(x = "RMST", 
                   alpha = alpha, power = 1 - beta, 
                   enrollRates = enrollRates, failRates = failRates, 
-                  studyDuration = studyDuration, ratio = ratio) 
+                  studyDuration = studyDuration, ratio = ratio,
+                  tau = 18) 
 
 x %>% summary()
 
@@ -281,7 +282,35 @@ x %>% summary() %>% as_gt()
 fixed_design(x = "RMST", 
              alpha = alpha,  
              enrollRates = enrollRates, failRates = failRates, 
-             studyDuration = studyDuration, ratio = ratio) %>% 
+             studyDuration = studyDuration, ratio = ratio,
+             tau = 18) %>% 
+  summary() %>% 
+  as_gt()
+```
+
+
+# Milestone {.tabset}
+
+## under fixed power 
+```{r}
+x <- fixed_design(x = "Milestone", 
+                  alpha = alpha, power = 1 - beta, 
+                  enrollRates = enrollRates, failRates = failRates, 
+                  studyDuration = studyDuration, ratio = ratio,
+                  tau = 18) 
+
+x %>% summary()
+
+x %>% summary() %>% as_gt()
+```
+
+## under fixed sample size
+```{r}
+fixed_design(x = "Milestone", 
+             alpha = alpha,  
+             enrollRates = enrollRates, failRates = failRates, 
+             studyDuration = studyDuration, ratio = ratio,
+             tau = 18) %>% 
   summary() %>% 
   as_gt()
 ```
@@ -333,8 +362,13 @@ x_MaxCombo <- fixed_design(x = "MaxCombo", alpha = alpha, ratio = ratio,
                            rho = c(0, 0.5, 0.5), gamma = c(0, 0, 0.5), tau = c(-1, 4, 6))
 
 x_RMST <- fixed_design(x = "RMST", alpha = alpha, ratio = ratio, 
-                       enrollRates = enrollRates, failRates = failRates, studyDuration = studyDuration)
+                       enrollRates = enrollRates, failRates = failRates, studyDuration = studyDuration,
+                       tau = 30)
 
-rbind(summary(x_AHR), summary(x_FH), summary(x_MB), summary(x_LF), summary(x_MaxCombo), summary(x_RMST)) %>% gt()
+x_Milestone <- fixed_design(x = "Milestone", alpha = alpha, ratio = ratio, 
+                       enrollRates = enrollRates, failRates = failRates, studyDuration = studyDuration,
+                       tau = 30)
+
+rbind(summary(x_AHR), summary(x_FH), summary(x_MB), summary(x_LF), summary(x_MaxCombo), summary(x_RMST), summary(x_Milestone)) %>% gt()
 ```
 
