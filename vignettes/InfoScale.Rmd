@@ -1,0 +1,576 @@
+---
+title: "Usage of `info_scale`"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  rmarkdown::html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    theme: flatly
+    code_folding: hide
+    number_sections: true
+    highlight: "textmate"
+    css: "custom.css"
+vignette: |
+  %\VignetteIndexEntry{Usage of `info_scale`}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+library(gsDesign)
+library(dplyr)
+library(gt)
+library(testthat)
+library(tibble)
+#library(gsdmvn)
+devtools::load_all()
+```
+
+# `gs_power_npe` 
+
+## Case 1 {.tabset}
+
+```{r}
+tibble(info = 700, info0 = 500, info1 = "NULL") %>% gt() %>% tab_header(title = "Input Information")
+```
+
+
+### `info_scale = 0`
+```{r}
+gs_power_npe(
+  theta = .1, 
+  info = 700, 
+  info_scale = 0,
+  upper = gs_spending_bound,
+  lower = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = 500),
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  test_upper = TRUE,
+  test_lower = TRUE) %>% gt()
+```
+
+### `info_scale = 1`
+```{r}
+gs_power_npe(
+  theta = .1, 
+  info = 700, 
+  info_scale = 1,
+  upper = gs_spending_bound,
+  lower = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = 500),
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  test_upper = TRUE,
+  test_lower = TRUE) %>% gt()
+```
+
+
+### `info_scale = 2`
+```{r}
+gs_power_npe(
+  theta = .1, 
+  info = 700, 
+  info_scale = 2,
+  upper = gs_spending_bound,
+  lower = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = 500),
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  test_upper = TRUE,
+  test_lower = TRUE) %>% gt()
+```
+
+## Case 2 {.tabset}
+
+```{r}
+tibble(info = 700, info0 = "NULL", info1 = "NULL") %>% gt() %>% tab_header(title = "Input Information")
+```
+
+### `info_scale = 0`
+```{r}
+gs_power_npe(
+  theta = .1, 
+  info = 700, 
+  info_scale = 0,
+  upper = gs_spending_bound,
+  lower = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  test_upper = TRUE,
+  test_lower = TRUE) %>% gt()
+```
+
+### `info_scale = 1`
+```{r}
+gs_power_npe(
+  theta = .1, 
+  info = 700, 
+  info_scale = 1,
+  upper = gs_spending_bound,
+  lower = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  test_upper = TRUE,
+  test_lower = TRUE) %>% gt()
+```
+
+
+### `info_scale = 2`
+```{r}
+gs_power_npe(
+  theta = .1, 
+  info = 700, 
+  info_scale = 2,
+  upper = gs_spending_bound,
+  lower = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  test_upper = TRUE,
+  test_lower = TRUE) %>% gt()
+```
+
+
+
+## Case 3 {.tabset}
+
+```{r}
+tibble(info = 700, info0 = 500, info1 = 800) %>% gt() %>% tab_header(title = "Input Information")
+```
+
+### `info_scale = 0`
+```{r}
+gs_power_npe(
+  theta = .1, 
+  info = 700, 
+  info_scale = 0,
+  upper = gs_spending_bound,
+  lower = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = 500),
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = 800),
+  test_upper = TRUE,
+  test_lower = TRUE) %>% gt()
+```
+
+### `info_scale = 1`
+```{r}
+gs_power_npe(
+  theta = .1, 
+  info = 700, 
+  info_scale = 1,
+  upper = gs_spending_bound,
+  lower = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = 500),
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = 800),
+  test_upper = TRUE,
+  test_lower = TRUE) %>% gt()
+```
+
+
+### `info_scale = 2`
+```{r}
+gs_power_npe(
+  theta = .1, 
+  info = 700, 
+  info_scale = 2,
+  upper = gs_spending_bound,
+  lower = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = 500),
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = 800),
+  test_upper = TRUE,
+  test_lower = TRUE) %>% gt()
+```
+
+
+
+
+# `gs_design_npe`
+
+## Case 1 {.tabset}
+
+```{r}
+tibble(info = 700, info0 = 500, info1 = "NULL") %>% gt() %>% tab_header(title = "Input Information")
+```
+
+### `info_scale = 0`
+```{r}
+gs_design_npe(
+  theta = .1,
+  info = 700,
+  info0 = NULL,
+  info_scale = 0,
+  upper = gs_spending_bound,
+  lower = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = 500),
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL))
+  ) %>% gt()
+```
+
+### `info_scale = 1`
+```{r}
+gs_design_npe(
+  theta = .1,
+  info = 700,
+  info0 = NULL,
+  info_scale = 1,
+  upper = gs_spending_bound,
+  lower = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = 500),
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL))
+  ) %>% gt()
+```
+
+### `info_scale = 2`
+```{r}
+gs_design_npe(
+  theta = .1,
+  info = 700,
+  info0 = NULL,
+  info_scale = 2,
+  upper = gs_spending_bound,
+  lower = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = 500),
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL))
+  ) %>% gt()
+```
+
+
+## Case 2 {.tabset}
+
+```{r}
+tibble(info = 700, info0 = 500, info1 = 800) %>% gt() %>% tab_header(title = "Input Information")
+```
+
+### `info_scale = 0`
+```{r}
+gs_design_npe(
+  theta = .1,
+  info = 700,
+  info0 = NULL,
+  info_scale = 0,
+  upper = gs_spending_bound,
+  lower = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = 500),
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = 800)
+  ) %>% gt()
+```
+
+### `info_scale = 1`
+```{r}
+gs_design_npe(
+  theta = .1,
+  info = 700,
+  info0 = NULL,
+  info_scale = 1,
+  upper = gs_spending_bound,
+  lower = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = 500),
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = 800)
+  ) %>% gt()
+```
+
+### `info_scale = 2`
+```{r}
+gs_design_npe(
+  theta = .1,
+  info = 700,
+  info0 = NULL,
+  info_scale = 2,
+  upper = gs_spending_bound,
+  lower = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = 500),
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+              info = 800)
+  ) %>% gt()
+```
+
+
+
+
+# Binary Endpoint 
+
+## Fixed Design with Un-stratified Population {.tabset}
+
+### `gsdmvn`
+
+```{r}
+x0 <- gs_design_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .28),
+  p_e = tibble::tibble(Stratum = "All", Rate = .4),
+  k = 1,
+  rd0 = 0, 
+  alpha = 0.025,   
+  beta = 0.1,   
+  ratio = 1,
+  weight = "un-stratified",
+  upper = gs_spending_bound,
+  lower = gs_b,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  lpar = list(par = -Inf),
+  info_scale = 0)
+
+x1 <- gs_design_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .28),
+  p_e = tibble::tibble(Stratum = "All", Rate = .4),
+  k = 1,
+  rd0 = 0, 
+  alpha = 0.025,   
+  beta = 0.1,   
+  ratio = 1,
+  weight = "un-stratified",
+  upper = gs_spending_bound,
+  lower = gs_b,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  lpar = list(par = -Inf),
+  info_scale = 1)
+
+x2 <- gs_design_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .28),
+  p_e = tibble::tibble(Stratum = "All", Rate = .4),
+  k = 1,
+  rd0 = 0, 
+  alpha = 0.025,   
+  beta = 0.1,   
+  ratio = 1,
+  weight = "un-stratified",
+  upper = gs_spending_bound,
+  lower = gs_b,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  lpar = list(par = -Inf),
+  info_scale = 2)
+
+tibble(`info_scale = 0` = x0$analysis$N,
+       `info_scale = 1` = x1$analysis$N,
+       `info_scale = 2` = x2$analysis$N
+       ) %>% 
+  gt() %>% 
+  tab_header(title = "Sample Size Calculated by `gs_design_rd()`", 
+             subtitle = "under spending bound without info in `upar`/ `lpar`")
+```
+
+
+### `gsDesign`
+```{r}
+x <- nBinomial(p1 = .28, p2 = .4, delta0 = 0, alpha = .025, sided = 1, beta = .1, outtype = 3)
+
+tibble(n = x$n) %>% 
+  gt() %>% 
+  tab_header(title = "Sample Size Calculated by `gsDesign`")
+```
+
+
+### EAST 
+```{r label = EastFix, echo = FALSE, fig.cap = "Sample size calculated by EAST", out.width = '90%'}
+knitr::include_graphics("./figures/east_n_fix.png")
+```
+
+
+## Group Sequential Design with Un-stratified Population   {.tabset}
+
+### `gsdmvn` {.tabset}
+
+#### Fixed Boundary
+```{r}
+y0 <- gs_design_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .15),
+  p_e = tibble::tibble(Stratum = "All", Rate = .1),
+  k = 3,
+  IF = 1:3/3,
+  rd0 = 0, 
+  alpha = .025,                  
+  beta = .1,                
+  ratio = 1,
+  weight = "un-stratified",
+  upper = gs_b,
+  lower = gs_b,
+  upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  lpar = list(par = rep(-Inf, 3)),
+  test_lower = FALSE,
+  info_scale = 0
+)
+
+y1 <- gs_design_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .15),
+  p_e = tibble::tibble(Stratum = "All", Rate = .1),
+  k = 3,
+  IF = 1:3/3,
+  rd0 = 0, 
+  alpha = .025,                  
+  beta = .1,                
+  ratio = 1,
+  weight = "un-stratified",
+  upper = gs_b,
+  lower = gs_b,
+  upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  lpar = list(par = rep(-Inf, 3)),
+  test_lower = FALSE,
+  info_scale = 1
+)
+
+y2 <- gs_design_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .15),
+  p_e = tibble::tibble(Stratum = "All", Rate = .1),
+  k = 3,
+  IF = 1:3/3,
+  rd0 = 0, 
+  alpha = .025,                  
+  beta = .1,                
+  ratio = 1,
+  weight = "un-stratified",
+  upper = gs_b,
+  lower = gs_b,
+  upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  lpar = list(par = rep(-Inf, 3)),
+  test_lower = FALSE,
+  info_scale = 2
+)
+
+tibble(`info_scale = 0` = y0$analysis$N,
+       `info_scale = 1` = y1$analysis$N,
+       `info_scale = 2` = y2$analysis$N) %>% 
+  gt() %>% 
+  tab_header(title = "Sample Size Calculated by `gsdmvn`",
+             subtitle = "under Group Sequential Design with Fixed Boundary")
+```
+
+
+#### Spending Boundary
+```{r}
+yy0 <- gs_design_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .15),
+  p_e = tibble::tibble(Stratum = "All", Rate = .1),
+  k = 3,
+  IF = 1:3/3,
+  rd0 = 0, 
+  alpha = .025,                  
+  beta = .1,                
+  ratio = 1,
+  weight = "un-stratified",
+  upper = gs_spending_bound,
+  lower = gs_b,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  lpar = list(par = rep(-Inf, 3)),
+  test_lower = FALSE,
+  info_scale = 0
+)
+
+yy1 <- gs_design_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .15),
+  p_e = tibble::tibble(Stratum = "All", Rate = .1),
+  k = 3,
+  IF = 1:3/3,
+  rd0 = 0, 
+  alpha = .025,                  
+  beta = .1,                
+  ratio = 1,
+  weight = "un-stratified",
+  upper = gs_spending_bound,
+  lower = gs_b,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  lpar = list(par = rep(-Inf, 3)),
+  test_lower = FALSE,
+  info_scale = 1
+)
+
+yy2 <- gs_design_rd(
+  p_c = tibble::tibble(Stratum = "All", Rate = .15),
+  p_e = tibble::tibble(Stratum = "All", Rate = .1),
+  k = 3,
+  IF = 1:3/3,
+  rd0 = 0, 
+  alpha = .025,                  
+  beta = .1,                
+  ratio = 1,
+  weight = "un-stratified",
+  upper = gs_spending_bound,
+  lower = gs_b,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+  lpar = list(par = rep(-Inf, 3)),
+  test_lower = FALSE,
+  info_scale = 2
+)
+
+tibble(`info_scale = 0` = yy0$analysis$N,
+       `info_scale = 1` = yy1$analysis$N,
+       `info_scale = 2 without info1 in lpar` = yy2$analysis$N
+       ) %>% 
+  gt() %>% 
+  tab_header(title = "Sample Size Calculated by `gsdmvn`",
+             subtitle = "under Group Sequential Design with Spending Boundary and info specified in the upar/lpar")
+```
+
+### `gsDesign`
+
+```{r}
+n_fix <- nBinomial(
+  # Control event rate
+  p1 = .15, 
+  # Experimental event rate
+  p2 = .1, 
+  # Null hypothesis event rate difference (control - experimental)
+  delta0 = 0, 
+  # 1-sided Type I error
+  alpha = .025, 
+  # Type II error (1 - Power)
+  beta = .1, 
+  # Experimental/Control randomization ratio
+  ratio = 1) 
+
+cat("The sample size of fixed-design calculated by `gsDesign` is ", n_fix, ".\n")
+
+x <- gsDesign(
+  k = 3,
+  test.type = 1,
+  # 1-sided Type I error
+  alpha = .025, 
+  # Type II error (1 - Power)
+  beta = .1,    
+  # If test.type = 5 or 6, this sets maximum spending for futility
+  # under the null hypothesis. Otherwise, this is ignored.
+  astar = 0,
+  timing = 1:3/3,
+  sfu = sfLDOF,
+  sfupar = NULL,
+  sfl = sfLDOF,
+  sflpar = NULL,
+  # Difference in event rates under alternate hypothesis
+  delta = 0,
+  # Difference in rates under H1
+  delta1 = .05,
+  # Difference in rates under H0
+  delta0 = 0,
+  endpoint = "Binomial",
+  # Fixed design sample size from nBinomial above
+  n.fix = n_fix)
+
+tibble(n = x$n.I) %>% 
+  gt() %>% 
+  tab_header(title = "Sample Size Calcuated by `gsDesign`")
+```
+
+
+
+### EAST 
+```{r label = EastGs, echo = FALSE, fig.cap = "Sample size calculated by EAST", out.width = '90%'}
+knitr::include_graphics("./figures/east_n_gs.png")
+```

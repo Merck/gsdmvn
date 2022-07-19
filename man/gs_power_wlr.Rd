@@ -16,12 +16,13 @@ gs_power_wlr(
   analysisTimes = NULL,
   binding = FALSE,
   upper = gs_b,
-  upar = gsDesign(k = length(events), test.type = 1, n.I = events, maxn.IPlan =
-    max(events), sfu = sfLDOF, sfupar = NULL)$upper$bound,
-  lower = gs_b,
-  lpar = c(qnorm(0.1), rep(-Inf, length(events) - 1)),
+  upar = list(par = gsDesign::gsDesign(k = 3, test.type = 1, n.I = c(30, 40, 50),
+    maxn.IPlan = 50, sfu = sfLDOF, sfupar = NULL)$upper$bound),
   test_upper = TRUE,
+  lower = gs_b,
+  lpar = list(par = c(qnorm(0.1), rep(-Inf, length(events) - 1))),
   test_lower = TRUE,
+  info_scale = c(0, 1, 2),
   r = 18,
   tol = 1e-06
 )
@@ -57,12 +58,12 @@ gs_power_wlr(
 
 \item{upar}{Parameter passed to \code{upper()}}
 
+\item{test_upper}{indicator of which analyses should include an upper (efficacy) bound; single value of TRUE (default) indicates all analyses;
+otherwise, a logical vector of the same length as \code{info} should indicate which analyses will have an efficacy bound}
+
 \item{lower}{Function to compute lower bound}
 
 \item{lpar}{Parameter passed to \code{lower()}}
-
-\item{test_upper}{indicator of which analyses should include an upper (efficacy) bound; single value of TRUE (default) indicates all analyses;
-otherwise, a logical vector of the same length as \code{info} should indicate which analyses will have an efficacy bound}
 
 \item{test_lower}{indicator of which analyses should include an lower bound; single value of TRUE (default) indicates all analyses;
 single value FALSE indicated no lower bound; otherwise, a logical vector of the same length as \code{info} should indicate which analyses will have a
@@ -89,3 +90,140 @@ Group sequential design power using weighted log rank test under non-proportiona
 \if{html}{The contents of this section are shown in PDF user manual only.}
 }
 
+\examples{
+# set enrollment rates
+enrollRates <- tibble::tibble(Stratum = "All", duration = 12, rate = 500/12)
+
+# set failure rates
+failRates <- tibble::tibble(
+  Stratum = "All",
+  duration = c(4, 100),
+  failRate = log(2) / 15,  # median survival 15 month
+  hr = c(1, .6),
+  dropoutRate = 0.001)
+  
+# set the targeted number of events and analysis time
+target_events <- c(30, 40, 50)
+target_analysisTime <- c(10, 24, 30)
+
+# -------------------------#
+#       example 1          #
+# ------------------------ #
+# fixed bounds and calculate the power for targeted number of events
+gs_power_wlr(
+  enrollRates = enrollRates,
+  failRates = failRates,
+  events = target_events,
+  analysisTimes = NULL,
+  upper = gs_b,
+  upar = list(par = gsDesign::gsDesign(k = length(target_events), test.type = 1, n.I = target_events, maxn.IPlan = max(target_events), sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  lower = gs_b,
+  lpar = list(par = c(qnorm(.1), rep(-Inf, length(events) - 1))))
+  
+# -------------------------#
+#       example 2          #
+# ------------------------ #
+# fixed bounds and calculate the power for targeted analysis time
+gs_power_wlr(
+  enrollRates = enrollRates,
+  failRates = failRates,
+  events = NULL,
+  analysisTimes = target_analysisTime,
+  upper = gs_b,
+  upar = list(par = gsDesign::gsDesign(k = length(target_events), test.type = 1, n.I = target_events, maxn.IPlan = max(target_events), sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  lower = gs_b,
+  lpar = list(par = c(qnorm(.1), rep(-Inf, length(events) - 1))))
+
+# -------------------------#
+#       example 3          #
+# ------------------------ #
+# fixed bounds and calculate the power for targeted analysis time & number of events
+gs_power_wlr(
+  enrollRates = enrollRates,
+  failRates = failRates,
+  events = target_events,
+  analysisTimes = target_analysisTime,
+  upper = gs_b,
+  upar = list(par = gsDesign::gsDesign(k = length(target_events), test.type = 1, n.I = target_events, maxn.IPlan = max(target_events), sfu = sfLDOF, sfupar = NULL)$upper$bound),
+  lower = gs_b,
+  lpar = list(par = c(qnorm(.1), rep(-Inf, length(events) - 1))))
+  
+# -------------------------#
+#       example 4          #
+# ------------------------ #
+# spending bounds and calculate the power for targeted number of events
+gs_power_wlr(
+  enrollRates = enrollRates,
+  failRates = failRates,
+  events = target_events,
+  analysisTimes = NULL,
+  upper = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025)),
+  lower = gs_spending_bound,
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.2)))
+  
+# if users change the info in `upar`, the the boundary will be changed
+gs_power_wlr(
+  enrollRates = enrollRates,
+  failRates = failRates,
+  events = target_events,
+  analysisTimes = NULL,
+  upper = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+              info = c(7, 10, 15)),
+  lower = gs_spending_bound,
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.2)))
+  
+# -------------------------#
+#       example 5          #
+# ------------------------ #
+# spending bounds and calculate the power for targeted analysis time
+gs_power_wlr(
+  enrollRates = enrollRates,
+  failRates = failRates,
+  events = NULL,
+  analysisTimes = target_analysisTime,
+  upper = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025)),
+  lower = gs_spending_bound,
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.2)))
+  
+# if users change the info in `upar`, the the boundary will be changed
+gs_power_wlr(
+  enrollRates = enrollRates,
+  failRates = failRates,
+  events = NULL,
+  analysisTimes = target_analysisTime,
+  upper = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+              info = c(7, 10, 15)),
+  lower = gs_spending_bound,
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.2)))
+
+# -------------------------#
+#       example 6          #
+# ------------------------ #
+# spending bounds and calculate the power for targeted analysis time & number of events
+gs_power_wlr(
+  enrollRates = enrollRates,
+  failRates = failRates,
+  events = target_events,
+  analysisTimes = target_analysisTime,
+  upper = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025)),
+  lower = gs_spending_bound,
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.2)))
+  
+# if users change the info in `upar`, the the boundary will be changed
+gs_power_wlr(
+  enrollRates = enrollRates,
+  failRates = failRates,
+  events = target_events,
+  analysisTimes = target_analysisTime,
+  upper = gs_spending_bound,
+  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+              info = c(7, 10, 15)),
+  lower = gs_spending_bound,
+  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.2)))
+  
+}

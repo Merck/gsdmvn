@@ -104,12 +104,31 @@ NULL
 #'   analysisTimes = c(12, 24, 36),
 #'   binding = TRUE,
 #'   upper = gs_spending_bound,
-#'   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025,
-#'               param = NULL, timing = NULL),
+#'   upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
 #'   lower = gs_spending_bound,
-#'   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025,
-#'               param = NULL, timing = NULL),
+#'   lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
 #'   h1_spending = FALSE)
+#'   
+#' gs_design_ahr(
+#'   analysisTimes = c(12, 24, 36),
+#'   binding = TRUE,
+#'   upper = gs_spending_bound,
+#'   upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+#'               info = c(20, 50, 80)),
+#'   lower = gs_spending_bound,
+#'   lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+#'   h1_spending = FALSE)
+#'
+#'gs_design_ahr(
+#'  analysisTimes = c(12, 24, 36),
+#'  binding = TRUE,
+#'  info_scale = 1,
+#'  upper = gs_spending_bound,
+#'  upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+#'              info = c(20, 50, 80)),
+#'  lower = gs_spending_bound,
+#'  lpar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
+#'  h1_spending = FALSE)
 #' 
 #' # 2-sided asymmetric design with O'Brien-Fleming upper spending
 #' # Pocock lower spending under H1 (NPH)
@@ -117,23 +136,22 @@ NULL
 #'   analysisTimes = c(12, 24, 36),
 #'   binding = TRUE,
 #'   upper = gs_spending_bound,
-#'   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025,
-#'               param = NULL, timing = NULL),
+#'   upar = list(par = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)),
 #'   lower = gs_spending_bound,
-#'   lpar = list(sf = gsDesign::sfLDPocock, total_spend = 0.1,
-#'               param = NULL, timing = NULL),
+#'   lpar = list(par = list(sf = gsDesign::sfLDPocock, total_spend = 0.1, param = NULL, timing = NULL)),
 #'   h1_spending = TRUE)
-
-
+#'   
 gs_design_ahr <- function(
-  enrollRates = tibble::tibble(Stratum = "All",
-                               duration = c(2, 2, 10),
-                               rate = c(3, 6, 9)),
-  failRates = tibble::tibble(Stratum = "All",
-                             duration = c(3, 100),
-                             failRate = log(2)/c(9, 18),
-                             hr = c(.9, .6),
-                             dropoutRate = rep(.001, 2)),
+  enrollRates = tibble::tibble(
+    Stratum = "All",
+    duration = c(2, 2, 10),
+    rate = c(3, 6, 9)),
+  failRates = tibble::tibble(
+    Stratum = "All",
+    duration = c(3, 100),
+    failRate = log(2) / c(9, 18),
+    hr = c(.9, .6),
+    dropoutRate = rep(.001, 2)),
   ratio = 1,                       # Experimental:Control randomization ratio
   alpha = 0.025,                   # One-sided Type I error
   beta = 0.1,                      # NULL if enrollment is not adapted
@@ -141,12 +159,13 @@ gs_design_ahr <- function(
   analysisTimes = 36,              # Targeted times of analysis or just planned study duration
   binding = FALSE,
   upper = gs_b,                    # Default is Lan-DeMets approximation of
-  upar = gsDesign::gsDesign(k = 3, test.type = 1, n.I = c(.25, .75, 1), sfu = sfLDOF, sfupar = NULL)$upper$bound,
+  upar = list(par = gsDesign::gsDesign(k = 3, test.type = 1, n.I = c(.25, .75, 1), sfu = sfLDOF, sfupar = NULL)$upper$bound),
   lower = gs_b,
-  lpar = c(qnorm(.1), -Inf, -Inf), # Futility only at IA1
+  lpar = list(par = c(qnorm(.1), -Inf, -Inf)), # Futility only at IA1
   h1_spending = TRUE,
   test_upper = TRUE,
   test_lower = TRUE,
+  info_scale = c(0, 1, 2),
   r = 18,
   tol = 1e-6
 ){
@@ -163,7 +182,7 @@ gs_design_ahr <- function(
   if (max(IF) != 1) stop(msg)
   msg <- "gs_design_ahr() IF and analysisTimes must have the same length if both have length > 1"
   if ((length(analysisTimes) > 1) & (length(IF) > 1) & (length(IF) != length(analysisTimes))) stop(msg)
-  
+  info_scale <- if(methods::missingArg(info_scale)){2}else{match.arg(as.character(info_scale), choices = 0:2)}
   # --------------------------------------------- #
   #     get information at input analysisTimes    #
   # --------------------------------------------- #
@@ -173,6 +192,7 @@ gs_design_ahr <- function(
     ratio = ratio, 
     events = NULL,
     analysisTimes = analysisTimes)
+  
   finalEvents <- y$Events[nrow(y)]
   IFalt <- y$Events / finalEvents
   
@@ -190,25 +210,20 @@ gs_design_ahr <- function(
     for(i in seq_along(IFindx)){
       # if ...
       if(length(IFalt) == 1){
-        y <- rbind(gsDesign2::tEvents(enrollRates, failRates, 
-                                      targetEvents = IF[K - i] * finalEvents, 
-                                      ratio = ratio, interval = c(.01, nextTime)
-                                      ) %>% 
-                     mutate(theta = -log(AHR), Analysis = K - i),
-                   y)
+        y <- rbind(
+          gsDesign2::tEvents(enrollRates, failRates, ratio = ratio, targetEvents = IF[K - i] * finalEvents, interval = c(.01, nextTime)) %>% 
+            dplyr::mutate(theta = -log(AHR), Analysis = K - i),
+          y)
       }else if(IF[K-i] > IFalt[K-i]){
       # if the planned IF > IF under H1
-        y[K - i,] <- gsDesign2::tEvents(enrollRates, failRates, 
-                                        targetEvents = IF[K - i] * finalEvents, 
-                                        ratio = ratio, interval = c(.01, nextTime)
-                                        ) %>%
+        y[K - i,] <- gsDesign2::tEvents(enrollRates, failRates, ratio = ratio, targetEvents = IF[K - i] * finalEvents, interval = c(.01, nextTime)) %>%
           dplyr::transmute(Analysis = K - i, Time, Events, AHR, theta = -log(AHR), info, info0)
       } 
       nextTime <- y$Time[K - i]
     }
   }
   
-  # update `y` with 
+  # update `y` (an object from `gs_power_ahr`) with 
   # 1) analysis NO.
   # 2) the accrual sample size, i.e., `N`
   # 3) `theta1` and `info1`
@@ -225,9 +240,11 @@ gs_design_ahr <- function(
   # --------------------------------------------- #
   #     combine all the calculations              #
   # --------------------------------------------- #
+  suppressMessages(
   allout <- gs_design_npe(
-    theta = y$theta, theta1 = theta1,
-    info = y$info, info0 = y$info0, info1 = info1,
+    theta = y$theta, theta1 = theta1, 
+    info = y$info, info0 = y$info0, info1 = info1, 
+    info_scale = info_scale,
     alpha = alpha, beta = beta, binding = binding,
     upper = upper, upar = upar, test_upper = test_upper,
     lower = lower, lpar = lpar, test_lower = test_lower,
@@ -237,8 +254,6 @@ gs_design_ahr <- function(
     # add `~HR at bound`, `HR generic` and `Nominal p`
     mutate(
       "~HR at bound" = exp(-Z / sqrt(info0)),
-      #"HR generic (H0)" = exp(-Z / sqrt(info0)),
-      #"HR generic (H1)" = exp(-Z / sqrt(info)),
       "Nominal p" = pnorm(-Z)
     ) %>% 
     
@@ -251,18 +266,14 @@ gs_design_ahr <- function(
     # select variables to be output
     select(
       c("Analysis", "Bound", "Time", "N", "Events", 
-        "Z", "Probability", "AHR", "theta", 
-        "info", # "info0", "info1", 
-        "IF", 
-        "hypothesis",
-        "~HR at bound", "Nominal p" #, "HR generic (H0)", "HR generic (H1)" 
-        )
-    ) %>% # "AHR", "theta", "info", "info0")) %>%
+        "Z", "Probability", "Probability0", "AHR", "theta", 
+        "info", "info0", "IF", 
+        "~HR at bound", "Nominal p")
+    ) %>% 
     
     # arrange the output table
-    arrange(
-      desc(hypothesis), desc(Bound), Analysis
-    )   # arrange(desc(Bound), Analysis, desc(hypothesis))
+    arrange(desc(Bound), Analysis)
+  )
   
   allout$Events <- allout$Events * allout$info[K] / y$info[K]
   allout$N <- allout$N * allout$info[K] / y$info[K]
@@ -271,16 +282,13 @@ gs_design_ahr <- function(
   #     get bounds to output                      #
   # --------------------------------------------- #
   bounds <- allout %>% 
-    select(all_of(c("Analysis", "Bound", "Probability", "hypothesis", "Z",
-                    "~HR at bound", "Nominal p" #,"HR generic (H0)", "HR generic (H1)" 
-                    )))
+    select(all_of(c("Analysis", "Bound", "Probability", "Probability0", "Z",
+                    "~HR at bound", "Nominal p"))) 
   # --------------------------------------------- #
   #     get analysis summary to output            #
   # --------------------------------------------- #
   analysis <- allout %>% 
-    select(Analysis, Time, N, Events, AHR, theta, info, 
-           # info0, info1, 
-           IF, hypothesis) %>% 
+    select(Analysis, Time, N, Events, AHR, theta, info, info0, IF) %>% 
     unique()
   
   # --------------------------------------------- #
@@ -291,7 +299,7 @@ gs_design_ahr <- function(
     failRates = failRates,
     bounds = bounds,
     analysis = analysis)
-  class(output) <- c("ahr", class(output))
+  class(output) <- c("ahr", "gs_design", class(output))
   return(output)
   
 }
