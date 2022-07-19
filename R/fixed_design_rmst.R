@@ -1,5 +1,16 @@
 #' Sample Size Calculation based on RMST method 
 #' 
+#' @param enrollRates enrollment rates
+#' @param failRates failure and dropout rates
+#' @param analysisTimes Minimum time of analysis
+#' @param ratio Experimental:Control randomization ratio
+#' @param alpha One-sided Type I error (strictly between 0 and 1)
+#' @param beta  Power (`NULL` to compute power or strictly between 0 and `1 - alpha` otherwise)
+#' @param tau desired milestone
+#' 
+#' @return a list with \code{enrollRates}, \code{failRates}, \code{bounds}, \code{analysis} and \code{design}
+#' @export
+#'
 #' @examples 
 #' # set enrollment rates
 #' enrollRates <- tibble::tibble(Stratum = "All", duration = 12, rate = 500/12)
@@ -13,14 +24,15 @@
 #'   dropoutRate = 0.001)
 #'
 #' fixed_design_size_rmst(enrollRates, failRates, analysisTimes = 36)
-#' fixed_design_power_rmst(enrollRates, failRates, analysisTimes = 36)
 #' fixed_design_size_rmst(enrollRates, failRates, analysisTimes = 36, beta = 1 - 0.887)
+#' fixed_design_size_rmst(enrollRates, failRates, analysisTimes = 36, tau = 18)
 fixed_design_size_rmst <- function(enrollRates, 
                                    failRates, 
                                    analysisTimes,
                                    ratio = 1,
                                    alpha = 0.025, 
-                                   beta = 0.1){
+                                   beta = 0.1,
+                                   tau = NULL){
   
   gs_arm <- gs_create_arm(enrollRates, failRates, ratio = ratio,  total_time = analysisTimes) 
   arm0 <- gs_arm[["arm0"]]
@@ -31,7 +43,7 @@ fixed_design_size_rmst <- function(enrollRates,
   # Sample size for RMST at cut point 36. 
   npsurv <- npsurvSS::size_two_arm(arm0, arm1, 
                                    alpha = alpha, power = 1 - beta,  
-                                   test = list(test = "rmst difference", milestone = arm0$total_time)) 
+                                   test = list(test = "rmst difference", milestone = if(is.null(tau)){arm0$total_time}else{tau})) 
   bounds <- tibble::tibble(
     Analysis = 1,
     Bound = "Upper",
@@ -60,6 +72,13 @@ fixed_design_size_rmst <- function(enrollRates,
 
 #' Power calculation based on RMST method 
 #' 
+#' @param enrollRates enrollment rates
+#' @param failRates failure and dropout rates
+#' @param analysisTimes Minimum time of analysis
+#' @param ratio Experimental:Control randomization ratio
+#' @param alpha One-sided Type I error (strictly between 0 and 1)
+#' @param tau desired milestone
+#' 
 #' @examples 
 #' # set enrollment rates
 #' enrollRates <- tibble::tibble(Stratum = "All", duration = 12, rate = 500/12)
@@ -73,13 +92,13 @@ fixed_design_size_rmst <- function(enrollRates,
 #'   dropoutRate = 0.001)
 #'
 #' fixed_design_power_rmst(enrollRates, failRates, analysisTimes = 36)
-#' fixed_design_power_rmst(enrollRates, failRates, analysisTimes = 36)
-#' fixed_design_power_rmst(enrollRates, failRates, analysisTimes = 36, beta = 1 - 0.887)
+#' fixed_design_power_rmst(enrollRates, failRates, analysisTimes = 36, tau = 18)
 fixed_design_power_rmst <- function(enrollRates, 
                                     failRates, 
                                     analysisTimes,
                                     ratio = 1,
-                                    alpha = 0.025){
+                                    alpha = 0.025,
+                                    tau = NULL){
   
   gs_arm <- gs_create_arm(enrollRates, failRates, ratio = ratio,  total_time = analysisTimes) 
   arm0 <- gs_arm[["arm0"]]
@@ -96,7 +115,7 @@ fixed_design_power_rmst <- function(enrollRates,
   # Sample size for RMST at cut point 
   npsurv <- npsurvSS::power_two_arm(arm0, arm1, 
                                     alpha = alpha, 
-                                    test = list(test = "rmst difference", milestone = arm0$total_time)) 
+                                    test = list(test = "rmst difference", milestone = if(is.null(tau)){arm0$total_time}else{tau})) 
   
   bounds <- tibble::tibble(
     Analysis = 1,
