@@ -9,7 +9,6 @@
 #' @param tau desired milestone
 #' 
 #' @return a list with \code{enrollRates}, \code{failRates}, \code{bounds}, \code{analysis} and \code{design}
-#' @export
 #'
 #' @examples 
 #' # set enrollment rates

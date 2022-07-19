@@ -10,8 +10,27 @@ fixed_design_size_rmst(
   analysisTimes,
   ratio = 1,
   alpha = 0.025,
-  beta = 0.1
+  beta = 0.1,
+  tau = NULL
 )
+}
+\arguments{
+\item{enrollRates}{enrollment rates}
+
+\item{failRates}{failure and dropout rates}
+
+\item{analysisTimes}{Minimum time of analysis}
+
+\item{ratio}{Experimental:Control randomization ratio}
+
+\item{alpha}{One-sided Type I error (strictly between 0 and 1)}
+
+\item{beta}{Power (\code{NULL} to compute power or strictly between 0 and \code{1 - alpha} otherwise)}
+
+\item{tau}{desired milestone}
+}
+\value{
+a list with \code{enrollRates}, \code{failRates}, \code{bounds}, \code{analysis} and \code{design}
 }
 \description{
 Sample Size Calculation based on RMST method
@@ -29,6 +48,6 @@ failRates <- tibble::tibble(
   dropoutRate = 0.001)
 
 fixed_design_size_rmst(enrollRates, failRates, analysisTimes = 36)
-fixed_design_power_rmst(enrollRates, failRates, analysisTimes = 36)
 fixed_design_size_rmst(enrollRates, failRates, analysisTimes = 36, beta = 1 - 0.887)
+fixed_design_size_rmst(enrollRates, failRates, analysisTimes = 36, tau = 18)
 }
