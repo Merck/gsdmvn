@@ -64,7 +64,7 @@ fixed_design_size_rmst <- function(enrollRates,
               failRates = failRates, 
               bounds = bounds,
               analysis = analysis, 
-              design = "RMST")
+              design = "Milestone")
   
   res
 }
@@ -134,7 +134,7 @@ fixed_design_power_rmst <- function(enrollRates,
               failRates = failRates, 
               bounds = bounds,
               analysis = analysis, 
-              design = "RMST")
+              design = "Milestone")
 
   res
 }
