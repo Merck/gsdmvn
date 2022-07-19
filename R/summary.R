@@ -94,7 +94,7 @@ summary.fixed_design <- function(x, ...){
                      "AHR" = {"Average hazard ratio"},
                      "LF" = {"Lachin and Foulkes"},
                      "RD" = {"Risk difference"},
-                     "RMST" = {"RMST"},
+                     "Milestone" = {paste0("Milestone: tau = ", x$design_par$tau)},
                      "MB" = {paste0("Modestly weighted LR: tau = ", x$design_par$tau)}, 
                      "FH" = {
                        if(x$design_par$rho == 0 & x$design_par$gamma == 0){
