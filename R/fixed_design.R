@@ -3,7 +3,7 @@
 #' Computes fixed design sample size for many sample size methods.
 #' Returns a `tibble` with a basic summary
 #' @param x Sample size method; default is \code{"AHR"}; 
-#'          other options include \code{"FH"}, \code{"MB"}, \code{"LF"}, \code{"RD"}, \code{"MaxCombo"}, \code{"RMST"}.
+#'          other options include \code{"FH"}, \code{"MB"}, \code{"LF"}, \code{"RD"}, \code{"MaxCombo"}, \code{"Milestone"}.
 #' @param alpha One-sided Type I error (strictly between 0 and 1)
 #' @param power Power (`NULL` to compute power or strictly between 0 and `1 - alpha` otherwise)
 #' @param ratio Experimental:Control randomization ratio
@@ -15,21 +15,38 @@
 #'
 #' @examples
 #' # Average hazard ratio
-#' y <- fixed_design("AHR", 
+#' x <- fixed_design("AHR", 
 #'                   alpha = .025, power = .9, 
 #'                   enrollRates = tibble::tibble(Stratum = "All",  duration = 18, rate = 1),
 #'                   failRates = tibble::tibble(Stratum = "All", duration = c(4, 100), failRate = log(2) / 12, hr = c(1, .6), dropoutRate = .001),
 #'                   studyDuration = 36)
-#' y %>% summary_fix()            
+#' x %>% summary()            
 #' 
 #' # Lachin and Foulkes (uses gsDesign::nSurv())
-#' y <- fixed_design("LF", 
+#' x <- fixed_design("LF", 
 #'                   alpha = .025, power = .9, 
 #'                   enrollRates = tibble::tibble(Stratum = "All",  duration = 18, rate = 1),
 #'                   failRates = tibble::tibble(Stratum = "All", duration = 100, failRate = log(2) / 12, hr = .7, dropoutRate = .001),
 #'                   studyDuration = 36)
+#' x %>% summary()
 #' 
-fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo", "RMST"), 
+#' # RMST
+#' x <- fixed_design("RMST", alpha = .025, power = .9, 
+#'                   enrollRates = tibble::tibble(Stratum = "All",  duration = 18, rate = 1),
+#'                   failRates = tibble::tibble(Stratum = "All", duration = 100, failRate = log(2) / 12, hr = .7, dropoutRate = .001),
+#'                   studyDuration = 36,
+#'                   tau = 18)
+#' x %>% summary()
+#' 
+#' # Milestone 
+#' x <- fixed_design("Milestone", alpha = .025, power = .9, 
+#'                   enrollRates = tibble::tibble(Stratum = "All",  duration = 18, rate = 1),
+#'                   failRates = tibble::tibble(Stratum = "All", duration = 100, failRate = log(2) / 12, hr = .7, dropoutRate = .001),
+#'                   studyDuration = 36,
+#'                   tau = 18)
+#' x %>% summary()
+#' 
+fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo", "RMST", "Milestone"), 
                          alpha = 0.025, power = NULL, ratio = 1, studyDuration = 36, ...){
    # --------------------------------------------- #
    #     check inputs                              #
@@ -313,18 +330,23 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo", "RMST"
                   list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "RD")
                 },
                  
+               
                "RMST" = {
                   if(!is.null(power)){
                      d <- fixed_design_size_rmst(alpha = alpha, beta = 1 - power, ratio = ratio, 
                                                  enrollRates = enrollRates, failRates = failRates,
-                                                 analysisTimes = studyDuration) 
+                                                 analysisTimes = studyDuration, 
+                                                 test = "rmst difference",
+                                                 tau = ifelse(has_tau, args$tau, studyDuration)) 
                   }else{
                      d <- fixed_design_power_rmst(alpha = alpha, ratio = ratio,
                                                   enrollRates = enrollRates, failRates = failRates,  
-                                                  analysisTimes = studyDuration) 
+                                                  analysisTimes = studyDuration, 
+                                                  test = "rmst difference",
+                                                  tau = ifelse(has_tau, args$tau, studyDuration)) 
                   }
                   
-                  # get the output of max combo
+                  # get the output 
                   ans <- tibble::tibble(Design = "RMST",
                                         N = d$analysis$N,
                                         Events = d$analysis$Events,
@@ -333,7 +355,36 @@ fixed_design <- function(x = c("AHR", "FH", "MB", "LF", "RD", "MaxCombo", "RMST"
                                         alpha = alpha,
                                         Power = (d$bounds %>% filter(Bound == "Upper"))$Probability)
                   
-                  list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, design = "RMST")
+                  list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, 
+                       design = "RMST", design_par = list(tau = ifelse(has_tau, args$tau, studyDuration)))
+               },
+               
+               "Milestone" = {
+                  if(!is.null(power)){
+                     d <- fixed_design_size_rmst(alpha = alpha, beta = 1 - power, ratio = ratio, 
+                                                 enrollRates = enrollRates, failRates = failRates,
+                                                 analysisTimes = studyDuration, 
+                                                 test = "survival difference",
+                                                 tau = ifelse(has_tau, args$tau, studyDuration)) 
+                  }else{
+                     d <- fixed_design_power_rmst(alpha = alpha, ratio = ratio,
+                                                  enrollRates = enrollRates, failRates = failRates,
+                                                  analysisTimes = studyDuration, 
+                                                  test = "survival difference",
+                                                  tau = ifelse(has_tau, args$tau, studyDuration)) 
+                  }
+                  
+                  # get the output of max combo
+                  ans <- tibble::tibble(Design = "Milestone",
+                                        N = d$analysis$N,
+                                        Events = d$analysis$Events,
+                                        Time = d$analysis$Time,
+                                        Bound = (d$bounds %>% filter(Bound == "Upper"))$Z,
+                                        alpha = alpha,
+                                        Power = (d$bounds %>% filter(Bound == "Upper"))$Probability)
+                  
+                  list(enrollRates = d$enrollRates, failRates = d$failRates, analysis = ans, 
+                       design = "Milestone", design_par = list(tau = ifelse(has_tau, args$tau, studyDuration)))
                }
                )
    

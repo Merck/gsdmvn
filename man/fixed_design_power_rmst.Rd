@@ -9,8 +9,27 @@ fixed_design_power_rmst(
   failRates,
   analysisTimes,
   ratio = 1,
-  alpha = 0.025
+  alpha = 0.025,
+  test = "rmst difference",
+  tau = NULL
 )
+}
+\arguments{
+\item{enrollRates}{enrollment rates}
+
+\item{failRates}{failure and dropout rates}
+
+\item{analysisTimes}{Minimum time of analysis}
+
+\item{ratio}{Experimental:Control randomization ratio}
+
+\item{alpha}{One-sided Type I error (strictly between 0 and 1)}
+
+\item{test}{A string specifies the type of statistical test.
+Default is \code{"survival difference"} (a Kaplan-Meier based test).
+One can also set it as \code{"rmst difference"} (another Kaplan-Meier based test)}
+
+\item{tau}{desired milestone for \code{test = "survival difference"} or \code{test = "rmst difference"}}
 }
 \description{
 Power calculation based on RMST method
@@ -28,6 +47,5 @@ failRates <- tibble::tibble(
   dropoutRate = 0.001)
 
 fixed_design_power_rmst(enrollRates, failRates, analysisTimes = 36)
-fixed_design_power_rmst(enrollRates, failRates, analysisTimes = 36)
-fixed_design_power_rmst(enrollRates, failRates, analysisTimes = 36, beta = 1 - 0.887)
+fixed_design_power_rmst(enrollRates, failRates, analysisTimes = 36, tau = 18)
 }
