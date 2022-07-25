@@ -246,7 +246,8 @@ gs_power_ahr <- function(
     mutate(`~HR at bound` = exp(-Z / sqrt(info)), `Nominal p` = pnorm(-Z)) %>% 
     dplyr::rename(Probability0 = Probability) %>% 
     left_join(y_H1 %>% select(Analysis, Bound, Probability)) %>% 
-    select(Analysis, Bound, Probability, Probability0, Z, `~HR at bound`, `Nominal p`)
+    select(Analysis, Bound, Probability, Probability0, Z, `~HR at bound`, `Nominal p`) %>% 
+    arrange(Analysis, desc(Bound))
   )
   # summarize the analysis
   suppressMessages(
@@ -255,7 +256,8 @@ gs_power_ahr <- function(
     mutate(N = gsDesign2::eAccrual(x = x$Time, enrollRates = enrollRates)) %>% 
     left_join(y_H1 %>% select(Analysis, info, IF, theta) %>% unique()) %>%
     left_join(y_H0 %>% select(Analysis, info, IF) %>% dplyr::rename(info0 = info, IF0 = IF) %>% unique()) %>%
-    select(Analysis, Time, N, Events, AHR, theta, info, info0, IF, IF0)
+    select(Analysis, Time, N, Events, AHR, theta, info, info0, IF, IF0) %>% 
+    arrange(Analysis)
   )
   
   output <- list(

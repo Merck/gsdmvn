@@ -222,7 +222,7 @@ gs_design_wlr <- function(
     # Add Time, Events, AHR, N from gs_info_ahr call above
     full_join(y %>% select(-c(info, info0, theta)), by = "Analysis") %>%
     select(c("Analysis", "Bound", "Time","N", "Events", "Z", "Probability", "Probability0","AHR", "theta", "info", "info0", "IF")) %>%  
-    arrange(desc(Bound), Analysis)  
+    arrange(Analysis,desc(Bound))  
   )
   
   allout$Events <- allout$Events * allout$info[K] / y$info[K]
@@ -237,13 +237,15 @@ gs_design_wlr <- function(
   #     get bounds to output                      #
   # --------------------------------------------- #
   bounds <- allout %>% 
-    select(all_of(c("Analysis", "Bound", "Probability", "Probability0", "Z", "~HR at bound", "Nominal p" ))) 
+    select(all_of(c("Analysis", "Bound", "Probability", "Probability0", "Z", "~HR at bound", "Nominal p" ))) %>%  
+    arrange(Analysis,desc(Bound))  
   # --------------------------------------------- #
   #     get analysis summary to output            #
   # --------------------------------------------- #
   analysis <- allout %>% 
     select(Analysis, Time, N, Events, AHR, theta, info, info0, IF) %>% 
-    unique()
+    unique() %>%  
+    arrange(Analysis)  
   
   # --------------------------------------------- #
   #     return the output                         #

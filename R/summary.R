@@ -368,7 +368,8 @@ summary.gs_design <- function(
   analyses <- x_analysis %>%
     dplyr::group_by(Analysis) %>%
     dplyr::filter(dplyr::row_number() == 1) %>%
-    dplyr::select(all_of(c("Analysis", analysis_vars)))
+    dplyr::select(all_of(c("Analysis", analysis_vars))) %>% 
+    dplyr::arrange(Analysis)
   
   # --------------------------------------------- #
   #             merge 2 tables:                   #
@@ -394,7 +395,9 @@ summary.gs_design <- function(
   }
   # change Upper -> bound_names[1], e.g., Efficacy
   # change Lower -> bound_names[2], e.g., Futility
-  xy <- xy %>% dplyr::mutate(Bound = dplyr::recode(Bound, "Upper" = bound_names[1], "Lower" = bound_names[2])) 
+  xy <- xy %>% 
+    dplyr::mutate(Bound = dplyr::recode(Bound, "Upper" = bound_names[1], "Lower" = bound_names[2]))  %>%  
+    dplyr::arrange(Analysis,desc(Bound))  
   
   # tbl_a <- x_bounds %>% 
   #   dplyr::filter(hypothesis == "H1") %>% 

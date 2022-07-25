@@ -182,7 +182,8 @@ gs_power_combo <- function(
   # --------------------------------------------- #
   bounds <- db %>% 
     dplyr::mutate(`Nominal p` = pnorm(Z * (-1))) %>% 
-    dplyr::select(Analysis, Bound, Probability, Z, `Nominal p`)
+    dplyr::select(Analysis, Bound, Probability, Z, `Nominal p`)  %>%  
+    arrange(Analysis,desc(Bound))  
   
   # --------------------------------------------- #
   #     get analysis summary to output            #
@@ -218,7 +219,8 @@ gs_power_combo <- function(
     unique() %>% 
     mutate(AHR = AHR_dis) %>% 
     mutate(N = N *n / max(info_fh$N),
-           Events = Events * n / max(info_fh$N))
+           Events = Events * n / max(info_fh$N)) %>%  
+    arrange(Analysis)
 
   # --------------------------------------------- #
   #     output                                    #

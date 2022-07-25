@@ -266,7 +266,8 @@ gs_power_wlr <- function(
     left_join(x %>% select(Analysis, Events)) %>% 
     mutate(`~HR at bound` = gsDesign::zn2hr(z = Z, n = Events, ratio = ratio), `Nominal p` = pnorm(-Z)) %>% 
     left_join(y_H1 %>% select(Analysis, Bound, Probability)) %>% 
-    select(Analysis, Bound, Probability, Probability0, Z, `~HR at bound`, `Nominal p`)
+    select(Analysis, Bound, Probability, Probability0, Z, `~HR at bound`, `Nominal p`) %>% 
+    arrange(Analysis, desc(Bound))
   )
   
   # summarize the analysis
@@ -276,7 +277,8 @@ gs_power_wlr <- function(
     mutate(N = gsDesign2::eAccrual(x = x$Time, enrollRates = enrollRates)) %>% 
     left_join(y_H1 %>% select(Analysis, info, IF, theta) %>% unique()) %>%
     left_join(y_H0 %>% select(Analysis, info, IF) %>% dplyr::rename(info0 = info, IF0 = IF) %>% unique()) %>%
-    select(Analysis, Time, N, Events, AHR, theta, info, info0, IF, IF0)
+    select(Analysis, Time, N, Events, AHR, theta, info, info0, IF, IF0) %>% 
+    arrange(Analysis)
   )
 
   output <- list(

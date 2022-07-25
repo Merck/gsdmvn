@@ -282,14 +282,15 @@ gs_design_ahr <- function(
   #     get bounds to output                      #
   # --------------------------------------------- #
   bounds <- allout %>% 
-    select(all_of(c("Analysis", "Bound", "Probability", "Probability0", "Z",
-                    "~HR at bound", "Nominal p"))) 
+    select(all_of(c("Analysis", "Bound", "Probability", "Probability0", "Z", "~HR at bound", "Nominal p"))) %>% 
+    arrange(Analysis, desc(Bound))
   # --------------------------------------------- #
   #     get analysis summary to output            #
   # --------------------------------------------- #
   analysis <- allout %>% 
     select(Analysis, Time, N, Events, AHR, theta, info, info0, IF) %>% 
-    unique()
+    unique() %>% 
+    arrange(Analysis)
   
   # --------------------------------------------- #
   #     return the output                         #
