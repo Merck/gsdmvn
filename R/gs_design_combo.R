@@ -245,7 +245,8 @@ gs_design_combo <- function(
   # --------------------------------------------- #
   bounds <- out %>% 
     #rbind(out_H1, out_H0) %>% 
-    select(Analysis, Bound, Probability, Probability0, Z, `Nominal p`)
+    select(Analysis, Bound, Probability, Probability0, Z, `Nominal p`) %>%  
+    arrange(Analysis,desc(Bound))  
   
   # --------------------------------------------- #
   #     get analysis summary to output            #
@@ -281,7 +282,8 @@ gs_design_combo <- function(
     unique() %>% 
     mutate(AHR = AHR_dis) %>% 
     mutate(N = N *n / max(info_fh$N),
-           Events = Events * n / max(info_fh$N))
+           Events = Events * n / max(info_fh$N)) %>%  
+    arrange(Analysis)
 
   # --------------------------------------------- #
   #     output                                    #

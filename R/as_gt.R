@@ -385,6 +385,7 @@ as_gt.gs_design <- function(
   
   x <- x %>% 
     subset(Bound %in% display_bound) %>%
+    dplyr::arrange(Analysis) %>% 
     dplyr::group_by(Analysis) %>%
     gt::gt() %>%
     gt::tab_spanner(
