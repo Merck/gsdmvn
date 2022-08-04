@@ -122,7 +122,7 @@ gs_delta_wlr <- function(arm0,
         ( p0 * prob_risk(arm0, x, tmax) + p1 * prob_risk(arm1, x, tmax) )^2 *
         ( p0 * dens_event(arm0, x, tmax) + p1 * dens_event(arm1, x, tmax))},
       lower=0,
-      upper= tmax)$valu
+      upper= tmax)$value
   } else {
 
     stop("gs_delta_wlr(): Please specify a valid approximation for the mean.", call.=F)
@@ -262,8 +262,8 @@ gs_info_wlr <- function(enrollRates=tibble::tibble(Stratum="All",
     p_event[i]      <- p0 * prob_event.arm(arm0, tmax = t) + p1 * prob_event.arm(arm1, tmax = t)
     p_subject[i]    <- p0 * npsurvSS::paccr(t, arm0) + p1 * npsurvSS::paccr(t, arm1)
     delta[i]        <- gs_delta_wlr(arm0, arm1, tmax = t, weight = weight, approx = approx)
-    log_ahr[i]          <- delta[i] / gs_delta_wlr(arm0, arm1, tmax = t, weight = weight,
-                                                   approx = "generalized schoenfeld", normalization = TRUE)
+    # log_ahr[i]          <- delta[i] / gs_delta_wlr(arm0, arm1, tmax = t, weight = weight,
+    #                                                approx = "generalized schoenfeld", normalization = TRUE)
     sigma2_h1[i]    <- gs_sigma2_wlr(arm0, arm1, tmax = t, weight = weight, approx = approx)
     sigma2_h0[i]    <- gs_sigma2_wlr(arm_null, arm_null, tmax = t, weight = weight, approx = approx)
   }
@@ -274,7 +274,7 @@ gs_info_wlr <- function(enrollRates=tibble::tibble(Stratum="All",
              Time = time,
              N = N,
              Events = avehr$Events,
-             AHR = exp(log_ahr),
+             AHR = avehr$AHR,
              delta = delta,
              sigma2 = sigma2_h1,
              theta = theta,
