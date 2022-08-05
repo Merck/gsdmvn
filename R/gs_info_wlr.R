@@ -257,14 +257,23 @@ gs_info_wlr <- function(enrollRates=tibble::tibble(Stratum="All",
   sigma2_h0 <- c()    # sigma square of effect size in each analysis under alternative
   p_event <- c()   # probability of events in each analysis
   p_subject <- c() # probability of subjects enrolled
-  log_ahr <- c()
+  num_log_ahr <- c()
+  dem_log_ahr <- c()
+  
+  # Used to calculate average hazard ratio
+  arm01 <- arm0; arm01$size <- 1
+  arm11 <- arm1; arm11$size <- 1
+  
   for(i in seq_along(time)){
     t <- time[i]
     p_event[i]      <- p0 * prob_event.arm(arm0, tmax = t) + p1 * prob_event.arm(arm1, tmax = t)
     p_subject[i]    <- p0 * npsurvSS::paccr(t, arm0) + p1 * npsurvSS::paccr(t, arm1)
     delta[i]        <- gs_delta_wlr(arm0, arm1, tmax = t, weight = weight, approx = approx)
-    # log_ahr[i]          <- delta[i] / gs_delta_wlr(arm0, arm1, tmax = t, weight = weight,
-    #                                                approx = "generalized schoenfeld", normalization = TRUE)
+    
+    num_log_ahr[i] <- gs_delta_wlr(arm01, arm11, tmax = t, weight = weight, approx = approx)
+    dem_log_ahr[i] <- gs_delta_wlr(arm01, arm11, tmax = t, weight = weight,
+                                   approx = "generalized schoenfeld", normalization = TRUE)
+
     sigma2_h1[i]    <- gs_sigma2_wlr(arm0, arm1, tmax = t, weight = weight, approx = approx)
     sigma2_h0[i]    <- gs_sigma2_wlr(arm_null, arm_null1, tmax = t, weight = weight, approx = approx)
   }
@@ -275,7 +284,7 @@ gs_info_wlr <- function(enrollRates=tibble::tibble(Stratum="All",
              Time = time,
              N = N,
              Events = avehr$Events,
-             AHR = avehr$AHR,
+             AHR = exp(num_log_ahr/dem_log_ahr),
              delta = delta,
              sigma2 = sigma2_h1,
              theta = theta,
