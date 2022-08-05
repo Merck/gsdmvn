@@ -61,21 +61,24 @@ test_that("Validate the function based on examples with individual functions",{
   
   evt01 <- gsdmvn:::prob_event.arm(arm0, tmax = analysisTimes) * n0 +
     gsdmvn:::prob_event.arm(arm1, tmax = analysisTimes) * n1
-  log_ahr <- sapply(analysisTimes, function(t_k) {
-    gsdmvn:::gs_delta_wlr(arm0, arm1, tmax = t_k, weight = weight) /
-      gsdmvn:::gs_delta_wlr(
-        arm0, arm1,
-        tmax = t_k,
-        weight = weight,
-        approx = "generalized schoenfeld",
-        normalization = TRUE
-      )
-  })
+  # log_ahr <- sapply(analysisTimes, function(t_k) {
+  #   gsdmvn:::gs_delta_wlr(arm0, arm1, tmax = t_k, weight = weight) /
+  #     gsdmvn:::gs_delta_wlr(
+  #       arm0, arm1,
+  #       tmax = t_k,
+  #       weight = weight,
+  #       approx = "generalized schoenfeld",
+  #       normalization = TRUE
+  #     )
+  # })
+  
+  avehr <- gsDesign2::AHR(enrollRates = enrollRates, failRates = failRates, ratio = ratio,
+                          totalDuration = analysisTimes)
   
   #FH(0,1)
   expect_equal(object = as.numeric(fh01$N), expected = rep(N01,3), tolerance = 1)
   expect_equal(object = as.numeric(fh01$Events), expected = evt01, tolerance = 1)
-  # expect_equal(object = as.numeric(fh01$AHR), expected = exp(log_ahr), tolerance = .025)
+  #expect_equal(object = as.numeric(fh01$AHR), expected = exp(log_ahr), tolerance = .025)
   expect_equal(object = as.numeric(fh01$delta), expected = -delta01, tolerance = .01)
   expect_equal(object = as.numeric(fh01$sigma2), expected = sigma201, tolerance = .01)
   expect_equal(object = as.numeric(fh01$theta), expected = theta01, tolerance = .2)
