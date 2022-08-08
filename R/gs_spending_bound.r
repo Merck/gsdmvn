@@ -161,7 +161,10 @@ gs_spending_bound <- function(k = 1,
       dpikdb <- hg$h[1] / hg$w[1] # Derivative of bound crossing at b[k]
       b_old <- b
       b <- b - (spend - pik) / dpikdb # Newton-Raphson update
-      if (abs(b - b_old) < tol) return(b)
+      if(is.infinite(b) & is.infinite(b_old)){
+        stop(paste("gs_spending_bound(): bound_update did not converge for upper bound calculation, analysis", k))
+      }
+      if(abs(b - b_old) < tol) return(b)
     }
     stop(paste("gs_spending_bound(): bound_update did not converge for upper bound calculation, analysis", k))
   }
