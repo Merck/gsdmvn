@@ -241,31 +241,41 @@ gs_info_wlr <- function(enrollRates=tibble::tibble(Stratum="All",
   arm0 <- gs_arm$arm0
   arm1 <- gs_arm$arm1
 
-  arm_null <- arm0
-  arm_null$surv_scale <- (arm0$surv_scale + arm1$surv_scale)/2
-
   # Randomization ratio
   p0 <- arm0$size/(arm0$size + arm1$size)
   p1 <- 1 - p0
+  
+  # Null Arm
+  arm_null <- arm0
+  arm_null$surv_scale <- p0* arm0$surv_scale + p1 * arm1$surv_scale
 
-  # Group sequential sample size ratio
-  n_ratio <- (npsurvSS::paccr(time, arm0) + npsurvSS::paccr(time, arm1))/2
-
+  arm_null1 <- arm_null
+  arm_null1$size <- arm1$size
+    
   delta <- c()     # delta of effect size in each analysis
   sigma2_h1 <- c()    # sigma square of effect size in each analysis under null
   sigma2_h0 <- c()    # sigma square of effect size in each analysis under alternative
   p_event <- c()   # probability of events in each analysis
   p_subject <- c() # probability of subjects enrolled
-  log_ahr <- c()
+  num_log_ahr <- c()
+  dem_log_ahr <- c()
+  
+  # Used to calculate average hazard ratio
+  arm01 <- arm0; arm01$size <- 1
+  arm11 <- arm1; arm11$size <- 1
+  
   for(i in seq_along(time)){
     t <- time[i]
     p_event[i]      <- p0 * prob_event.arm(arm0, tmax = t) + p1 * prob_event.arm(arm1, tmax = t)
     p_subject[i]    <- p0 * npsurvSS::paccr(t, arm0) + p1 * npsurvSS::paccr(t, arm1)
     delta[i]        <- gs_delta_wlr(arm0, arm1, tmax = t, weight = weight, approx = approx)
-    # log_ahr[i]          <- delta[i] / gs_delta_wlr(arm0, arm1, tmax = t, weight = weight,
-    #                                                approx = "generalized schoenfeld", normalization = TRUE)
+    
+    num_log_ahr[i] <- gs_delta_wlr(arm01, arm11, tmax = t, weight = weight, approx = approx)
+    dem_log_ahr[i] <- gs_delta_wlr(arm01, arm11, tmax = t, weight = weight,
+                                   approx = "generalized schoenfeld", normalization = TRUE)
+
     sigma2_h1[i]    <- gs_sigma2_wlr(arm0, arm1, tmax = t, weight = weight, approx = approx)
-    sigma2_h0[i]    <- gs_sigma2_wlr(arm_null, arm_null, tmax = t, weight = weight, approx = approx)
+    sigma2_h0[i]    <- gs_sigma2_wlr(arm_null, arm_null1, tmax = t, weight = weight, approx = approx)
   }
 
   N <- tail(avehr$Events / p_event,1) * p_subject
@@ -274,7 +284,7 @@ gs_info_wlr <- function(enrollRates=tibble::tibble(Stratum="All",
              Time = time,
              N = N,
              Events = avehr$Events,
-             AHR = avehr$AHR,
+             AHR = exp(num_log_ahr/dem_log_ahr),
              delta = delta,
              sigma2 = sigma2_h1,
              theta = theta,
