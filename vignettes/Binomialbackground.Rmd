@@ -1264,7 +1264,7 @@ tibble::tibble(INVAR = x_invar$analysis$N[1:3],
 
 
 ```{r}
-run_simulation <- function(N, weight_method, n_sim, prevalence_ratio, IF, under_H0 = TRUE){
+run_simulation <- function(N, weight_method, n_sim, prevalence_ratio, IF, under_H0 = TRUE, integration = "gs_power_npe"){
   
   ans <- NULL
   
@@ -1351,52 +1351,105 @@ run_simulation <- function(N, weight_method, n_sim, prevalence_ratio, IF, under_
     
     
     # calculate the power
-    if(weight_method == "invar_H0"){
-      if(under_H0){
-        IF_sim <- x$info0_invar_H0 / x$info0_invar_H0[3]
-        mean_sim <- x$rd_invar_H0 * sqrt(x$info0_invar_H0)
-      }else{
-        IF_sim <- x$info_invar_H1 / x$info_invar_H1[3]
-        mean_sim <- x$rd_invar_H1 * sqrt(x$info_invar_H1)
+    if(integration == "gs_power_npe"){
+      res <- switch (weight_method,
+      "invar_H0" = {
+        gs_power_npe(theta = x$rd_invar_H0, 
+                     info = x$info_invar_H0, 
+                     info_scale = 2,
+                     binding = FALSE,
+                     upper = gs_b, 
+                     lower = gs_b, 
+                     upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+                     lpar = list(par = c(qnorm(.1), rep(-Inf, 2))),
+                     test_upper = TRUE,
+                     test_lower = TRUE,
+                     r = 18,
+                     tol = 1e-6
+                    )
+      },
+      "invar_H1" = {
+        gs_power_npe(theta = x$rd_invar_H1, 
+                     info = x$info_invar_H1, 
+                     info_scale = 2,
+                     binding = FALSE,
+                     upper = gs_b, 
+                     lower = gs_b, 
+                     upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+                     lpar = list(par = c(qnorm(.1), rep(-Inf, 2))),
+                     test_upper = TRUE,
+                     test_lower = TRUE,
+                     r = 18,
+                     tol = 1e-6
+                   ) 
+      },
+      "ss" = {
+        gs_power_npe(theta = x$rd_ss, 
+                     info = x$info_ss, 
+                     info_scale = 2,
+                     binding = FALSE,
+                     upper = gs_b, 
+                     lower = gs_b, 
+                     upar = list(par = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound),
+                     lpar = list(par = c(qnorm(.1), rep(-Inf, 2))),
+                     test_upper = TRUE,
+                     test_lower = TRUE,
+                     r = 18,
+                     tol = 1e-6
+                     )
       }
+      )
+      
+      ans_new <- tibble::tibble(simu_ID = simu, method = weight_method,
+                                power = res %>% filter(Bound == "Upper", Analysis == 3) %>% select(Probability) %>% unlist() %>% as.numeric())
     }
     
-    if(weight_method == "invar_H1"){
-      mean_sim <- x$rd_invar_H1
-      if(under_H0){
-        IF_sim <- x$info0_invar_H1 / x$info0_invar_H1[3]
-        mean_sim <- x$rd_invar_H1 * sqrt(x$info0_invar_H1)
-      }else{
-        IF_sim <- x$info_invar_H1 / x$info_invar_H1[3]
-        mean_sim <- x$rd_invar_H1 * sqrt(x$info_invar_H1)
+    if(integration == "pmvtnorm"){
+      
+      if(weight_method == "invar_H0"){
+        if(under_H0){
+          IF_sim <- x$info0_invar_H0 / x$info0_invar_H0[3]
+          mean_sim <- x$rd_invar_H0 * sqrt(x$info0_invar_H0)
+          }else{
+            IF_sim <- x$info_invar_H1 / x$info_invar_H1[3]
+            mean_sim <- x$rd_invar_H1 * sqrt(x$info_invar_H1)
+          }
       }
-    }
-    
-    if(weight_method == "ss"){
-      mean_sim <- x$rd_ss
-      if(under_H0){
-        IF_sim <- x$info0_ss / x$info0_ss[3]
-        mean_sim <- x$rd_ss * sqrt(x$info0_ss)
-      }else{
-        IF_sim <- x$info_ss / x$info_ss[3]
-        mean_sim <- x$rd_ss * sqrt(x$info_ss)
+      
+      if(weight_method == "invar_H1"){
+        if(under_H0){
+          IF_sim <- x$info0_invar_H1 / x$info0_invar_H1[3]
+          mean_sim <- x$rd_invar_H1 * sqrt(x$info0_invar_H1)
+          }else{
+            IF_sim <- x$info_invar_H1 / x$info_invar_H1[3]
+            mean_sim <- x$rd_invar_H1 * sqrt(x$info_invar_H1)
+          }
       }
-    }
-    
-    p <- pmvnorm(lower = c(rep(-Inf, 3)),
-                 upper = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound,
-                 mean = mean_sim,
-                 corr = matrix(c(1,                         sqrt(IF_sim[1]/IF_sim[2]), sqrt(IF_sim[1]/IF_sim[3]),
+      
+      if(weight_method == "ss"){
+        
+        if(under_H0){
+          IF_sim <- x$info0_ss / x$info0_ss[3]
+          mean_sim <- x$rd_ss * sqrt(x$info0_ss)
+          }else{
+            IF_sim <- x$info_ss / x$info_ss[3]
+            mean_sim <- x$rd_ss * sqrt(x$info_ss)
+          }
+      }
+      
+      p <- pmvnorm(lower = c(rep(-Inf, 3)),
+                   upper = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound,
+                   mean = mean_sim,
+                   corr = matrix(c(1,                         sqrt(IF_sim[1]/IF_sim[2]), sqrt(IF_sim[1]/IF_sim[3]),
                                  sqrt(IF_sim[1]/IF_sim[2]), 1,                         sqrt(IF_sim[2]/IF_sim[3]),
                                  sqrt(IF_sim[1]/IF_sim[3]), sqrt(IF_sim[2]/IF_sim[3]), 1), 
                                nrow = 3, byrow = TRUE), 
-                 sigma = NULL,
-                 algorithm = GenzBretz(maxpts = 1e5, abseps = 1e-5), keepAttr = FALSE)
-  
-    # summarize this simulation
-    ans_new <- tibble::tibble(simu_ID = simu,
-                              method = weight_method,
-                              power = 1- p)
+                   sigma = NULL,
+                   algorithm = GenzBretz(maxpts = 1e5, abseps = 1e-5), keepAttr = FALSE)
+      
+      # summarize this simulation
+      ans_new <- tibble::tibble(simu_ID = simu, method = weight_method, power = 1- p)
+    }
     
     ans <- rbind(ans, ans_new)
     #print(simu)
@@ -1418,7 +1471,7 @@ ans_H0 <- do.call(cbind,
                          function(x){return(run_simulation(N = x[[2]], 
                                                            weight_method = x[[1]], 
                                                            n_sim = n_sim, prevalence_ratio = prevalence_ratio, 
-                                                           IF = IF, under_H0 = TRUE))})) 
+                                                           IF = IF, under_H0 = TRUE, integration = "gs_power_npe"))})) 
 
 ans_H1 <- do.call(cbind, 
                   lapply(list(
@@ -1428,7 +1481,7 @@ ans_H1 <- do.call(cbind,
                          function(x){return(run_simulation(N = x[[2]], 
                                                            weight_method = x[[1]], 
                                                            n_sim = n_sim, prevalence_ratio = prevalence_ratio, 
-                                                           IF = IF, under_H0 = TRUE))})) 
+                                                           IF = IF, under_H0 = FALSE, integration = "gs_power_npe"))})) 
 
 ans <- tibble::tibble(simu_ID = rep(ans_H0$simu_ID, 2),
                       ss = c(ans_H0[, 3], ans_H1[, 3]), 
@@ -1436,7 +1489,7 @@ ans <- tibble::tibble(simu_ID = rep(ans_H0$simu_ID, 2),
                       invar_H1 = c(ans_H0[, 9], ans_H1[, 9]),
                       `calculated under` = c(rep("H0", n_sim), rep("H1", n_sim))) 
 
-save(ans, file = "./fixture/rd_simu_power_3_weight.Rdata")
+save(ans, file = "./fixture/rd_simu_power_gspowernpe_3_weight.Rdata")
 ```
 
 
