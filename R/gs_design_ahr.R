@@ -241,42 +241,36 @@ gs_design_ahr <- function(
   #     combine all the calculations              #
   # --------------------------------------------- #
   suppressMessages(
-  allout <- gs_design_npe(
-    theta = y$theta, theta1 = theta1, 
-    info = y$info, info0 = y$info0, info1 = info1, 
-    info_scale = info_scale,
-    alpha = alpha, beta = beta, binding = binding,
-    upper = upper, upar = upar, test_upper = test_upper,
-    lower = lower, lpar = lpar, test_lower = test_lower,
-    r = r, tol = tol
-    ) %>%
-    
+    allout <- gs_design_npe(
+      theta = y$theta, theta1 = theta1, 
+      info = y$info, info0 = y$info0, info1 = info1, info_scale = info_scale,
+      alpha = alpha, beta = beta, binding = binding,
+      upper = upper, upar = upar, test_upper = test_upper,
+      lower = lower, lpar = lpar, test_lower = test_lower,
+      r = r, tol = tol)
+    )
+
+  allout <- allout %>%
     # add `~HR at bound`, `HR generic` and `Nominal p`
     mutate(
       "~HR at bound" = exp(-Z / sqrt(info0)),
-      "Nominal p" = pnorm(-Z)
-    ) %>% 
-    
+      "Nominal p" = pnorm(-Z)) %>% 
     # Add `Time`, `Events`, `AHR`, `N` from gs_info_ahr call above
     full_join(
       y %>% select(-c(info, info0, theta)), 
-      by = "Analysis"
-    ) %>%
-    
+      by = "Analysis") %>%
     # select variables to be output
     select(
       c("Analysis", "Bound", "Time", "N", "Events", 
         "Z", "Probability", "Probability0", "AHR", "theta", 
         "info", "info0", "IF", 
-        "~HR at bound", "Nominal p")
-    ) %>% 
-    
+        "~HR at bound", "Nominal p")) %>% 
     # arrange the output table
-    arrange(desc(Bound), Analysis)
-  )
+    arrange(Analysis, desc(Bound))
   
-  allout$Events <- allout$Events * allout$info[K] / y$info[K]
-  allout$N <- allout$N * allout$info[K] / y$info[K]
+  inflac_fct <- (allout %>% filter(Analysis == K, Bound == "Upper"))$info / (y %>% filter(Analysis == K))$info
+  allout$Events <- allout$Events * inflac_fct
+  allout$N <- allout$N * inflac_fct
   
   # --------------------------------------------- #
   #     get bounds to output                      #
@@ -296,7 +290,7 @@ gs_design_ahr <- function(
   #     return the output                         #
   # --------------------------------------------- #
   output <- list(
-    enrollRates = enrollRates %>% mutate(rate = rate * allout$info[K] / y$info[K]),
+    enrollRates = enrollRates %>% mutate(rate = rate * inflac_fct),
     failRates = failRates,
     bounds = bounds,
     analysis = analysis)

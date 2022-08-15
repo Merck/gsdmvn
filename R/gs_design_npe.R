@@ -231,54 +231,43 @@ gs_design_npe <- function(
   r = 18, 
   tol = 1e-6){
   
-  # --------------------------------------------- #
-  #     check & set up parameters                 #
-  # --------------------------------------------- #
+  
   K <- length(info)
-  info_scale <- if(methods::missingArg(info_scale)){2}else{match.arg(as.character(info_scale), choices = 0:2)}
+  
+  # --------------------------------------------- #
+  #     check & set up theta & theta1             #
+  # --------------------------------------------- #
+  if(length(theta) == 1){
+    theta <- rep(theta, K)
+  }
+  
+  if(is.null(theta1)){
+    theta1 <- theta
+  }else if(length(theta1) == 1){
+    theta1 <- rep(theta1, K)
+  }
+  
+  if (!is.vector(theta, mode = "numeric")) stop("gs_design_npe(): theta must be a real vector")
+  if (length(theta) == 1 && K > 1) theta <- rep(theta, K)
+  if (length(theta) != K) stop("gs_design_npe(): if length(theta) > 1, must be same as info")
+  if (theta[K] <= 0) stop("gs_design_npe(): final effect size must be > 0")
+  if (is.null(theta1)){theta1 <- theta}else if (length(theta1)==1) theta1 <- rep(theta1,K)
+  if (!is.vector(theta1, mode = "numeric")) stop("gs_design_npe(): theta1 must be a real vector")
+  if (length(theta1) != K) stop("gs_design_npe(): if length(theta1) > 1, must be same as info")
   
   # --------------------------------------------- #
   #     set up info, info0                        #
   # --------------------------------------------- #
-  # upper boundary
-  if("info" %in% names(upar) ){
-    if(!is.null(info0)){
-      warning("gs_design_npe: we use the statistical information in info0 and ignore the argumet info in upar.")
-    }else{
-      info0 <- upar$info
-    }
-  }else{
-    info0 <- if(is.null(info0)){info}else{info0}
+  if(is.null(info0)){
+    info0 <- info
   }
-  # if(flag_upper_spending & flag_info_in_upar){
-  #   if(is.null(info0)){
-  #     warning(paste0("gs_design_npe: we use the statistical information in upar and ignore the argumet info0 = ", info0))
-  #     info0 <- upar$info
-  #   }
-  # }else{
-  #   info0 <- if(is.null(info0)){info}else{info0}
-  # }
   
-  # lower boundary
-  if("info" %in% names(lpar) ){
-    if(!is.null(info1)){
-      warning("gs_design_npe: we use the statistical information in info1 and ignore the argumet info in lpar.")
-    }else{
-      info1 <- lpar$info
-    }
-  }else{
-    info1 <- if(is.null(info1)){info}else{info1}
+  if(is.null(info1)){
+    info1 <- info
   }
-  # ## if `gs_spending_bound` is used for lower bound
-  # if(identical(lower, gs_spending_bound) & ("info" %in% names(lpar))){
-  #   info1 <- lpar$info
-  # }else{
-  #   info1 <- info
-  # }
   
-  # --------------------------------------------- #
-  #     set info_scale                            #
-  # --------------------------------------------- #
+  info_scale <- if(methods::missingArg(info_scale)){2}else{match.arg(as.character(info_scale), choices = 0:2)}
+  
   if(info_scale == 0){
     info <- info0
     info1 <- info0
@@ -300,13 +289,6 @@ gs_design_npe <- function(
   # --------------------------------------------- #
   #     check theta, theta0, theta1               #
   # --------------------------------------------- #
-  if (!is.vector(theta, mode = "numeric")) stop("gs_design_npe(): theta must be a real vector")
-  if (length(theta) == 1 && K > 1) theta <- rep(theta, K)
-  if (length(theta) != K) stop("gs_design_npe(): if length(theta) > 1, must be same as info")
-  if (theta[K] <= 0) stop("gs_design_npe(): final effect size must be > 0")
-  if (is.null(theta1)){theta1 <- theta}else if (length(theta1)==1) theta1 <- rep(theta1,K)
-  if (!is.vector(theta1, mode = "numeric")) stop("gs_design_npe(): theta1 must be a real vector")
-  if (length(theta1) != K) stop("gs_design_npe(): if length(theta1) > 1, must be same as info")
   
   # --------------------------------------------- #
   #     check test_upper & test_lower             #
@@ -327,7 +309,6 @@ gs_design_npe <- function(
   # --------------------------------------------- #
   #     check alpha & beta                        #
   # --------------------------------------------- #
-  ## Check alpha and beta numeric, scalar, 0 < alpha < 1 - beta
   if (!is.numeric(alpha)) stop("gs_design_npe(): alpha must be numeric")
   if (!is.numeric(beta)) stop("gs_design_npe(): beta must be numeric")
   if (length(alpha) != 1 || length(beta) != 1) stop("gs_design_npe(): alpha and beta must be length 1")
@@ -359,13 +340,6 @@ gs_design_npe <- function(
     return(out)
   } 
   
-  # find an interval for information inflation to give correct power
-  if(!"info" %in%  names(upar)){
-    upar_new <- c(upar, info = list(info0 * minx))
-  }else{
-    upar_new <- upar
-  }
-  
   minpwr <- gs_power_npe(
     theta = theta, 
     theta1 = theta1,
@@ -374,7 +348,7 @@ gs_design_npe <- function(
     info1 = info * minx,
     info_scale = info_scale,
     binding = binding,
-    upper = upper, upar = upar_new, test_upper = test_upper,
+    upper = upper, upar = upar, test_upper = test_upper,
     lower = lower, lpar = lpar, test_lower = test_lower,
     r = r, tol = tol
   ) %>% 
@@ -396,7 +370,6 @@ gs_design_npe <- function(
     ## Ensure maxx is sufficient information inflation to overpower
     maxx <- 1.05 * minx
     err <- 1
-    upar_new$info <- info * maxx
     for(i in 1:10){
       maxpwr <- gs_power_npe(
         theta = theta, 
@@ -406,7 +379,7 @@ gs_design_npe <- function(
         info1 = info * maxx,
         info_scale = info_scale,
         binding = binding,
-        upper = upper, upar = upar_new, test_upper = test_upper, 
+        upper = upper, upar = upar, test_upper = test_upper, 
         lower = lower, lpar = lpar, test_lower = test_lower,
         r = r, tol = tol
       )%>% 
@@ -438,7 +411,7 @@ gs_design_npe <- function(
         info_scale = info_scale,
         binding = binding,
         upper = upper, lower = lower, 
-        upar = c(upar, info = list(info0 * minx)), lpar = lpar,
+        upar = upar, lpar = lpar,
         test_upper = test_upper, test_lower = test_lower,
         r = r, tol = tol
       ) %>% 
@@ -494,7 +467,7 @@ gs_design_npe <- function(
     binding = binding,
     upper = upper, 
     lower = lower,
-    upar = c(upar, info = list(info0 * res$root)), 
+    upar = upar, 
     lpar = lpar, 
     test_upper = test_upper, test_lower = test_lower,
     r = r, tol = tol)
@@ -555,7 +528,7 @@ errbeta <- function(x = 1, K = 1,
                  binding = binding,
                  info_scale = info_scale,
                  upper = Zupper, lower = Zlower, 
-                 upar = c(upar, info = list(info0 * x)), lpar = lpar,
+                 upar = upar, lpar = lpar,
                  test_upper = test_upper, test_lower = test_lower,
                  r = r, tol = tol
     )%>% 
