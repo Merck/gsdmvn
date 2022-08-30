@@ -1279,12 +1279,12 @@ run_simulation <- function(N, weight_method, n_sim, prevalence_ratio, IF, under_
     set.seed(simu)
   
     # observations of 3 strata in FA
-    x_e_S1 <- lapply(diff(c(0, N_S1/2)), function(x){rbinom(n = x, size = 1, prob = p_e$Rate[1])})
-    x_e_S2 <- lapply(diff(c(0, N_S2/2)), function(x){rbinom(n = x, size = 1, prob = p_e$Rate[2])})
-    x_e_S3 <- lapply(diff(c(0, N_S3/2)), function(x){rbinom(n = x, size = 1, prob = p_e$Rate[3])})
-    x_c_S1 <- lapply(diff(c(0, N_S1/2)), function(x){rbinom(n = x, size = 1, prob = p_c$Rate[1])})
-    x_c_S2 <- lapply(diff(c(0, N_S2/2)), function(x){rbinom(n = x, size = 1, prob = p_c$Rate[2])})
-    x_c_S3 <- lapply(diff(c(0, N_S3/2)), function(x){rbinom(n = x, size = 1, prob = p_c$Rate[3])})
+    x_e_S1 <- lapply(diff(c(0, ceiling(N_S1/2))), function(x){rbinom(n = x, size = 1, prob = p_e$Rate[1])})
+    x_e_S2 <- lapply(diff(c(0, ceiling(N_S2/2))), function(x){rbinom(n = x, size = 1, prob = p_e$Rate[2])})
+    x_e_S3 <- lapply(diff(c(0, ceiling(N_S3/2))), function(x){rbinom(n = x, size = 1, prob = p_e$Rate[3])})
+    x_c_S1 <- lapply(diff(c(0, ceiling(N_S1/2))), function(x){rbinom(n = x, size = 1, prob = p_c$Rate[1])})
+    x_c_S2 <- lapply(diff(c(0, ceiling(N_S2/2))), function(x){rbinom(n = x, size = 1, prob = p_c$Rate[2])})
+    x_c_S3 <- lapply(diff(c(0, ceiling(N_S3/2))), function(x){rbinom(n = x, size = 1, prob = p_c$Rate[3])})
 
     # calculate the number of events at FA
     n_e_S1 <- cumsum(do.call(c, lapply(x_e_S1, sum)))
@@ -1461,7 +1461,7 @@ run_simulation <- function(N, weight_method, n_sim, prevalence_ratio, IF, under_
 
 
 ```{r, message=FALSE, eval=FALSE}
-n_sim <- 2e3
+n_sim <- 1e3
 # run simulations
 ans_H0 <- do.call(cbind, 
                   lapply(list(
@@ -1489,21 +1489,33 @@ ans <- tibble::tibble(simu_ID = rep(ans_H0$simu_ID, 2),
                       invar_H1 = c(ans_H0[, 9], ans_H1[, 9]),
                       `calculated under` = c(rep("H0", n_sim), rep("H1", n_sim))) 
 
-save(ans, file = "./fixture/rd_simu_power_gspowernpe_3_weight.Rdata")
+save(ans, file = "./fixture/rd_simu_power_gspowernpe_3_weight_new.Rdata")
 ```
 
 
 ```{r}
-load("./fixture/rd_simu_power_3_weight.Rdata")
+load("./fixture/rd_simu_power_gspowernpe_3_weight_new.Rdata")
 ans %>% 
   group_by(`calculated under`) %>% 
   summarize(`simulated power - ss` = mean(ss), 
          `simulated power - invar H0` = mean(invar_H0), 
          `simulated power - invar H1` = mean(invar_H1)) %>% 
   gt::gt() %>% 
-  gt::tab_header(title = "Simulated power under different weightin methods")
+  gt::tab_header(title = "Simulated power under different weightin methods",
+                 subtitle = "by gs_power_npe")
 ```
 
+```{r}
+load("./fixture/rd_simu_power_pmvtnorm_3_weight.Rdata")
+ans %>% 
+  group_by(`calculated under`) %>% 
+  summarize(`simulated power - ss` = mean(ss), 
+         `simulated power - invar H0` = mean(invar_H0), 
+         `simulated power - invar H1` = mean(invar_H1)) %>% 
+  gt::gt() %>% 
+  gt::tab_header(title = "Simulated power under different weightin methods",
+                 subtitle = "by pmvtnorm")
+```
 
 # Summary
 
