@@ -15,8 +15,8 @@ gs_design_nph(
   analysisTimes = 30,
   IF = c(0.25, 0.75, 1),
   upper = gs_b,
-  upar = gsDesign::gsDesign(k = 3, test.type = 1, n.I = c(0.25, 0.75, 1), maxn.IPlan =
-    1, sfu = sfLDOF, sfupar = NULL)$upper$bound,
+  upar = gsDesign::gsDesign(k = 3, test.type = 1, n.I = c(0.25, 0.75, 1), maxn.IPlan = 1,
+    sfu = sfLDOF, sfupar = NULL)$upper$bound,
   lower = gs_b,
   lpar = c(qnorm(0.1), rep(-Inf, length(IF) - 1)),
   r = 18

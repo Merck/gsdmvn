@@ -3,7 +3,7 @@ Title: Group sequential design with non-constant effect
 Version: 0.2.0
 Authors@R: c(
     person("Keaven", "Anderson", email = "keaven_anderson@merck.com", role = c("aut", "cre")),
-    person("Merck Sharp & Dohme Corp", role = "cph")
+    person("Merck & Co., Inc., Rahway, NJ, USA and its affiliates", role = "cph")
     )
 Description: Basic group sequential design computations extended.
 License: GPL-3
@@ -39,6 +39,6 @@ Remotes:
     Merck/simtrial,
     Merck/gsDesign2
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 LinkingTo: 
     Rcpp
