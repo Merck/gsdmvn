@@ -211,7 +211,7 @@ gs_design_wlr <- function(
   # --------------------------------------------- #
   #     combine all the calculations              #
   # --------------------------------------------- #
-  #suppressMessages(
+  suppressMessages(
   allout <- gs_design_npe(
     theta = y$theta, theta1 = theta1,
     info = y$info, info0 = y$info0, info1 = info1, info_scale = info_scale,
@@ -223,10 +223,12 @@ gs_design_wlr <- function(
     full_join(y %>% select(-c(info, info0, theta)), by = "Analysis") %>%
     select(c("Analysis", "Bound", "Time","N", "Events", "Z", "Probability", "Probability0","AHR", "theta", "info", "info0", "IF")) %>%  
     arrange(Analysis, desc(Bound))  
-  #)
+  )
   
-  allout$Events <- allout$Events * allout$info[K] / y$info[K]
-  allout$N <- allout$N * allout$info[K] / y$info[K]
+  # calculate sample size & events
+  inflac_fct <- (allout %>% filter(Analysis == K, Bound == "Upper"))$info / (y %>% filter(Analysis == K))$info
+  allout$Events <- allout$Events * inflac_fct
+  allout$N <- allout$N * inflac_fct
   
   # add `~HR at bound`, `HR generic` and `Nominal p`
   allout <- allout %>% mutate(
