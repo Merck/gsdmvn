@@ -1,9 +1,11 @@
-# Status [![Lifecycle: superseded](https://img.shields.io/badge/lifecycle-superseded-orange.svg)](https://www.tidyverse.org/lifecycle/#superseded)
+# gsdmvn
+
+## Status [![Lifecycle: superseded](https://img.shields.io/badge/lifecycle-superseded-blue.svg)](https://lifecycle.r-lib.org/articles/stages.html#superseded)
 
 gsdmvn is superseded: the functionality was included directly in the gsDesign2 package.
 We recommend using [gsDesign2](https://github.com/Merck/gsDesign2) instead.
 
-# gsdmvn
+## Introduction
 
 The goal of **gsdmvn** is to enable fixed or group sequential design
 under non-proportional hazards. Piecewise constant enrollment, failure
