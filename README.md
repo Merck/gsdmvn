@@ -1,13 +1,11 @@
-
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
 # gsdmvn
 
-<!-- badges: start -->
+## Status [![Lifecycle: superseded](https://img.shields.io/badge/lifecycle-superseded-blue.svg)](https://lifecycle.r-lib.org/articles/stages.html#superseded)
 
-[![R-CMD-check](https://github.com/Merck/gsdmvn/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Merck/gsdmvn/actions/workflows/R-CMD-check.yaml)
-[![Codecov test coverage](https://codecov.io/gh/Merck/gsdmvn/branch/main/graph/badge.svg)](https://app.codecov.io/gh/Merck/gsdmvn?branch=main)
-<!-- badges: end -->
+gsdmvn is superseded: the functionality was included directly in the gsDesign2 package.
+We recommend using [gsDesign2](https://github.com/Merck/gsDesign2) instead.
+
+## Introduction
 
 The goal of **gsdmvn** is to enable fixed or group sequential design
 under non-proportional hazards. Piecewise constant enrollment, failure
